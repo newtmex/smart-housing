@@ -7,11 +7,12 @@ import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol";
 import "./HousingSFT.sol";
 import "./RewardSharing.sol";
 import "../lib/TokenPayments.sol";
+import "./CallsSmartHousing.sol";
 
 /// @title Rents Module
 /// @notice Handles rent payments, reward calculations, and distribution for Housing projects.
 /// @dev This abstract contract should be inherited by the HousingProject contract.
-abstract contract RentsModule is HousingSFT {
+abstract contract RentsModule is HousingSFT, CallsSmartHousing {
 	using TokenPayments for ERC20TokenPayment;
 	using RewardShares for rewardshares;
 
@@ -117,17 +118,5 @@ abstract contract RentsModule is HousingSFT {
 		uint256 reward = computeReward(attr, currentRPS);
 
 		return splitReward(reward);
-	}
-
-	/// @dev Gets the referrer address for a given original owner.
-	/// @param originalOwner The original owner of the token.
-	/// @return The referrer address.
-	function getReferrer(
-		address originalOwner
-	) internal view returns (uint, address) {
-		// TODO Implement logic to get referrer address
-		// this will be a call to the SmartHousing contract
-		// Placeholder implementation
-		return (0, address(this));
 	}
 }

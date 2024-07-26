@@ -1,7 +1,7 @@
 import { expect } from "chai";
 import { ethers } from "hardhat";
 import { loadFixture } from "@nomicfoundation/hardhat-toolbox/network-helpers";
-import { AddressLike, BigNumberish, parseEther, ZeroAddress } from "ethers";
+import { BigNumberish, parseEther, ZeroAddress } from "ethers";
 import { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers";
 
 describe("HousingProject", function () {
@@ -12,7 +12,8 @@ describe("HousingProject", function () {
   async function deployFixtures() {
     const [owner, ...otherUsers] = await ethers.getSigners();
     const sht = await ethers.deployContract("MintableERC20", ["SmartHousingToken", "SHT"]);
-    const housingProject = await ethers.deployContract("HousingProject", [ZeroAddress, sht, "", amountRaised, name]);
+    const smartHousing = await ethers.deployContract("SmartHousing", [ZeroAddress, ZeroAddress]);
+    const housingProject = await ethers.deployContract("HousingProject", [smartHousing, sht, uri, amountRaised, name]);
 
     return {
       housingProject,

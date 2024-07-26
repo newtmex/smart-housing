@@ -7,9 +7,6 @@ import "./RentsModule.sol";
 /// @notice Represents a unique real estate project within the SmartHousing ecosystem.
 /// @dev This contract inherits from RentsModule and HousingSFT.
 contract HousingProject is RentsModule {
-	/// @notice The address of the main SmartHousing contract.
-	address immutable smartHousingAddr;
-
 	/// @notice Initializes the HousingProject contract.
 	/// @param smartHousingAddr_ The address of the main SmartHousing contract.
 	/// @param housingTokenAddr The address of the ERC20 token for the SmartHousing ecosystem.
@@ -22,7 +19,9 @@ contract HousingProject is RentsModule {
 		string memory uri,
 		uint256 amountRaised,
 		string memory name
-	) RentsModule(housingTokenAddr) HousingSFT(uri, name, amountRaised) {
-		smartHousingAddr = smartHousingAddr_;
-	}
+	)
+		CallsSmartHousing(smartHousingAddr_)
+		RentsModule(housingTokenAddr)
+		HousingSFT(uri, name, amountRaised)
+	{}
 }
