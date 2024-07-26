@@ -78,7 +78,7 @@ describe("HousingProject", function () {
   });
 
   describe("claimRentReward", function () {
-    it.only("can claim rent rewards after minting and receiving rent", async () => {
+    it("can claim rent rewards after minting and receiving rent", async () => {
       const {
         housingProject,
         otherUsers: [, tenant, investor],
