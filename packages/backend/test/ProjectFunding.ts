@@ -43,7 +43,7 @@ describe("ProjectFunding", function () {
   describe("Deployment", function () {
     it("deploys with correct coinbase address", async () => {
       const { projectFunding, coinbase } = await loadFixture(deployFixtures);
-      expect(await projectFunding.coinbase()).to.equal(coinbase.address);
+      expect(await projectFunding.coinbase()).to.equal(coinbase);
     });
   });
 
@@ -162,7 +162,7 @@ describe("ProjectFunding", function () {
       await fundingToken.connect(otherUser).approve(projectFunding, parseEther("500"));
 
       // Move time past fundingDeadline
-      time.increaseTo(fundingDeadline + 1);
+      await time.increaseTo(fundingDeadline + 1);
       await expect(
         projectFunding.connect(otherUser).fundProject(
           {
@@ -174,5 +174,91 @@ describe("ProjectFunding", function () {
         ),
       ).to.be.revertedWith("Cannot fund project after deadline");
     });
+  });
+
+  describe("claimProjectTokens", function () {
+    it("allows users to claim tokens from successful projects", async () => {
+      const { projectFunding, fundingToken, initFirstProject, otherUser, owner } = await loadFixture(deployFixtures);
+
+      await initFirstProject();
+
+      await fundingToken.mint(otherUser, parseEther("500"));
+      await fundingToken.connect(otherUser).approve(projectFunding, parseEther("500"));
+
+      await projectFunding.connect(otherUser).fundProject(
+        {
+          token: fundingToken,
+          amount: parseEther("500"),
+        },
+        1,
+        0,
+      );
+
+      // Simulate project success
+      const [, fundingGoal] = await projectFunding.getProjectData(1);
+      await fundingToken.mint(owner, fundingGoal);
+      await fundingToken.connect(owner).approve(projectFunding, fundingGoal);
+      await projectFunding.connect(owner).fundProject(
+        {
+          token: fundingToken,
+          amount: fundingGoal,
+        },
+        1,
+        0,
+      );
+      await time.increaseTo(fundingDeadline + 1);
+
+      await projectFunding.setProjectToken(1, "UloAku", "");
+
+      await expect(projectFunding.connect(otherUser).claimProjectTokens(1)).to.emit(
+        projectFunding,
+        "ProjectTokensClaimed",
+      );
+
+      const balance = await projectFunding.balanceOf(otherUser, await projectFunding.LOCKED_SHT_ID());
+      expect(balance).to.be.gt(0); // Expect some LkSHT balance
+    });
+
+    it("reverts if claiming tokens from an unsuccessful project", async () => {
+      const { projectFunding, fundingToken, initFirstProject, otherUser } = await loadFixture(deployFixtures);
+
+      await initFirstProject();
+
+      await fundingToken.mint(otherUser, parseEther("500"));
+      await fundingToken.connect(otherUser).approve(projectFunding, parseEther("500"));
+
+      await projectFunding.connect(otherUser).fundProject(
+        {
+          token: fundingToken,
+          amount: parseEther("500"),
+        },
+        1,
+        0,
+      );
+
+      // Simulate project failure
+      await time.increaseTo(fundingDeadline + 1);
+
+      await expect(projectFunding.connect(otherUser).claimProjectTokens(1)).to.be.revertedWith(
+        "Project not yet successful",
+      );
+    });
+  });
+
+  describe("whitelist", function () {
+    // TODO it("only allows whitelisted addresses to receive LkSHT", async () => {
+    //   const { projectFunding, coinbase, otherUser } = await loadFixture(deployFixtures);
+    //   await projectFunding.updateWhitelist(otherUser, true);
+    //   // Mint some LkSHT for the whitelisted user
+    //   await projectFunding._mint(parseEther("1000"), otherUser);
+    //   const balance = await projectFunding.balanceOf(otherUser, await projectFunding.LOCKED_SHT_ID());
+    //   expect(balance).to.equal(parseEther("1000"));
+    //   // Trying to transfer LkSHT to a non-whitelisted address
+    //   await expect(
+    //     projectFunding
+    //       .connect(otherUser)
+    //       .safeTransferFrom(otherUser, coinbase, await projectFunding.LOCKED_SHT_ID(), parseEther("1000"), []),
+    //   ).to.be.revertedWith("Address not whitelisted");
+    // });
   });
 });

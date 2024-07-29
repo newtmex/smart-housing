@@ -93,4 +93,32 @@ library ProjectStorage {
 		project.collectedFunds = project.collectedFunds.add(payment.amount);
 		usersDeposit[depositor] = usersDeposit[depositor].add(payment.amount);
 	}
+
+	/**
+	 * @dev Retrieves and updates the user's deposit for a specific project.
+	 * @param projectId The ID of the project to retrieve the deposit for.
+	 * @param depositor The address of the depositor.
+	 * @return (ProjectStorage.Data, uint256) The project data and deposit amount.
+	 */
+	function takeDeposit(
+		mapping(uint256 => Data) storage projects,
+		mapping(address => uint256) storage usersDeposit,
+		uint256 projectId,
+		address depositor
+	) internal returns (ProjectStorage.Data memory, uint256) {
+		ProjectStorage.Data storage project = projects[projectId];
+		require(project.id != 0, "Invalid project ID");
+		require(
+			project.status() == Status.Successful,
+			"Project not yet successful"
+		);
+
+		uint256 depositAmount = usersDeposit[depositor];
+		require(depositAmount > 0, "No deposit found");
+
+		// Update the deposit amount to zero
+		usersDeposit[depositor] = 0;
+
+		return (project, depositAmount);
+	}
 }

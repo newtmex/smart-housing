@@ -4,19 +4,23 @@ pragma solidity ^0.8.26;
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
+import "@openzeppelin/contracts/token/ERC1155/IERC1155.sol";
 
 import "../housing-project/HousingProject.sol";
 import "../main/SmartHousing.sol";
 import "../lib/ProjectStorage.sol";
+import "../lib/LkSHTAttributes.sol";
+import "../modules/LockedSmartHousingToken.sol";
 
 /**
  * @title ProjectFunding
  * @dev This contract is used for initializing and deploying housing projects.
  * It allows the deployment of a new housing project and manages project data.
  */
-contract ProjectFunding is Ownable {
+contract ProjectFunding is Ownable, LockedSmartHousingToken {
 	using SafeMath for uint256;
 	using ProjectStorage for mapping(uint256 => ProjectStorage.Data);
+	using ProjectStorage for ProjectStorage.Data;
 
 	address public coinbase; // Address authorized to initialize the first project
 	address public smartHousingAddress; // Address of the SmartHousing contract
@@ -38,6 +42,11 @@ contract ProjectFunding is Ownable {
 		uint256 indexed projectId,
 		address indexed depositor,
 		ERC20TokenPayment payment
+	);
+	event ProjectTokensClaimed(
+		address indexed depositor,
+		uint256 projectId,
+		uint256 amount
 	);
 
 	/**
@@ -142,5 +151,120 @@ contract ProjectFunding is Ownable {
 		);
 
 		emit ProjectFunded(projectId, depositor, depositPayment);
+	}
+
+	function setProjectToken(
+		uint256 projectId,
+		string memory name,
+		string memory uri
+	) external onlyOwner {
+		ProjectStorage.Data storage project = projects[projectId];
+		require(
+			project.status() == ProjectStorage.Status.Successful,
+			"Project Funding not yet successful"
+		);
+
+		SmartHousing(smartHousingAddress).addProject(project.projectAddress);
+
+		HousingProject(project.projectAddress).setTokenDetails(
+			name,
+			uri,
+			project.collectedFunds,
+			smartHousingAddress
+		);
+	}
+
+	/**
+	 * @dev Claims project tokens for a given project ID.
+	 * @param projectId The ID of the project to claim tokens from.
+	 */
+	function claimProjectTokens(uint256 projectId) external {
+		address depositor = msg.sender;
+
+		// Retrieve the project and deposit amount
+		(ProjectStorage.Data memory project, uint256 depositAmount) = projects
+			.takeDeposit(usersProjectDeposit[projectId], projectId, depositor);
+
+		HousingProject(project.projectAddress).mintSFT(
+			depositAmount,
+			depositor
+		);
+
+		// Mint LkSHT tokens if the project ID is 1
+		if (project.id == 1) {
+			uint256 shtAmount = depositAmount.mul(10000).div(
+				project.collectedFunds
+			); // TODO Adjust based on actual SHT ICO funds
+
+			_mint(shtAmount, depositor);
+		}
+
+		emit ProjectTokensClaimed(depositor, projectId, depositAmount);
+	}
+
+	/**
+	 * @dev Returns an array of all project IDs and their associated data.
+	 * @return projectList An array of tuples containing project details.
+	 */
+	function allProjects() public view returns (ProjectStorage.Data[] memory) {
+		ProjectStorage.Data[] memory projectList = new ProjectStorage.Data[](
+			projectCount
+		);
+
+		for (uint256 i = 1; i <= projectCount; i++) {
+			projectList[i - 1] = projects[i];
+		}
+
+		return projectList;
+	}
+
+	/**
+	 * @dev Returns the address of the HousingProject contract for a given project ID.
+	 * @param projectId The ID of the project.
+	 * @return projectAddress The address of the HousingProject contract.
+	 */
+	function getProjectAddress(
+		uint256 projectId
+	) external view returns (address projectAddress) {
+		ProjectStorage.Data storage project = projects[projectId];
+		return project.projectAddress;
+	}
+
+	/**
+	 * @dev Returns the details of a project by its ID.
+	 * @param projectId The ID of the project.
+	 * @return id The project ID.
+	 * @return fundingGoal The funding goal of the project.
+	 * @return fundingDeadline The deadline for the project funding.
+	 * @return fundingToken The address of the ERC20 token used for funding.
+	 * @return projectAddress The address of the HousingProject contract.
+	 * @return status The funding status of the project.
+	 * @return collectedFunds The amount of funds collected.
+	 */
+	function getProjectData(
+		uint256 projectId
+	)
+		external
+		view
+		returns (
+			uint256 id,
+			uint256 fundingGoal,
+			uint256 fundingDeadline,
+			address fundingToken,
+			address projectAddress,
+			uint8 status,
+			uint256 collectedFunds
+		)
+	{
+		ProjectStorage.Data storage project = projects[projectId];
+		return (
+			project.id,
+			project.fundingGoal,
+			project.fundingDeadline,
+			project.fundingToken,
+			project.projectAddress,
+			uint8(project.status()),
+			project.collectedFunds
+		);
 	}
 }

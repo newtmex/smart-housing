@@ -18,6 +18,13 @@ contract SmartHousing is Ownable, UserModule {
 	address public projectFundingAddress;
 	address public coinbaseAddress;
 
+	enum Permissions {
+		NONE,
+		X_PROJECT
+	}
+
+	mapping(address => Permissions) public permissions;
+
 	constructor(address conibase, address projectFunding) {
 		coinbaseAddress = conibase;
 		projectFundingAddress = projectFunding;
@@ -32,6 +39,19 @@ contract SmartHousing is Ownable, UserModule {
 		uint256 referrerId
 	) external onlyProjectFunding returns (uint256) {
 		return _createOrGetUserId(userAddr, referrerId);
+	}
+
+	/// @notice Adds a new project and sets its permissions.
+	/// @param projectAddress The address of the new project.
+	function addProject(address projectAddress) external onlyProjectFunding {
+		_setPermissions(projectAddress, Permissions.X_PROJECT);
+	}
+
+	/// @notice Sets the permissions for a given address.
+	/// @param addr The address to set permissions for.
+	/// @param perm The permissions to set.
+	function _setPermissions(address addr, Permissions perm) internal {
+		permissions[addr] = perm;
 	}
 
 	/// @notice Modifier to restrict access to housing project functions.
