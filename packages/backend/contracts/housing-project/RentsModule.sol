@@ -22,12 +22,6 @@ abstract contract RentsModule is HousingSFT, CallsSmartHousing {
 
 	ERC20Burnable housingToken;
 
-	/// @notice Initializes the RentsModule contract.
-	/// @param housingTokenAddr The address for the housingToken used by the ecosystem.
-	constructor(address housingTokenAddr) {
-		housingToken = ERC20Burnable(housingTokenAddr);
-	}
-
 	/// @notice Receives rent payments and distributes rewards.
 	/// @param rentPayment The details of the rent payment.
 	function receiveRent(ERC20TokenPayment calldata rentPayment) external {

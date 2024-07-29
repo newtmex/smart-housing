@@ -24,7 +24,7 @@ abstract contract HousingSFT is ERC1155, Ownable {
 	string public name;
 
 	/// @notice The amount of fungible tokens collected from investors to finance the development of this housing project.
-	uint256 public immutable amountRaised;
+	uint256 public amountRaised;
 
 	/// @notice The current amount out of the `MAX_SUPPLY` of tokens minted.
 	uint256 public totalSupply;
@@ -33,17 +33,8 @@ abstract contract HousingSFT is ERC1155, Ownable {
 	mapping(address => HousingAttributes) public housingAttributes;
 
 	/// @notice Initializes the HousingSFT contract.
-	/// @param uri The base URI for the token.
-	/// @param name_ The name of the housing project.
-	/// @param amountRaised_ The amount raised from investors for the housing project.
-	constructor(
-		string memory uri,
-		string memory name_,
-		uint256 amountRaised_
-	) ERC1155(uri) {
-		name = name_;
-		amountRaised = amountRaised_;
-	}
+	/// @dev Token URI will be set later
+	constructor() ERC1155("") {}
 
 	/// @notice Mints SFT tokens for a depositor based on the amount of deposit.
 	/// @param depositAmt The amount of fungible token deposited.

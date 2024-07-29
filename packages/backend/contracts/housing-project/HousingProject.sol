@@ -8,20 +8,31 @@ import "./RentsModule.sol";
 /// @dev This contract inherits from RentsModule and HousingSFT.
 contract HousingProject is RentsModule {
 	/// @notice Initializes the HousingProject contract.
-	/// @param smartHousingAddr_ The address of the main SmartHousing contract.
-	/// @param housingTokenAddr The address of the ERC20 token for the SmartHousing ecosystem.
-	/// @param uri The base URI for the token.
-	/// @param amountRaised The amount raised for the housing project.
-	/// @param name The name of the housing project.
+	/// @param smartHousingAddr The address of the main SmartHousing contract.
 	constructor(
-		address smartHousingAddr_,
-		address housingTokenAddr,
-		string memory uri,
-		uint256 amountRaised,
-		string memory name
-	)
-		CallsSmartHousing(smartHousingAddr_)
-		RentsModule(housingTokenAddr)
-		HousingSFT(uri, name, amountRaised)
-	{}
+		address smartHousingAddr
+	) CallsSmartHousing(smartHousingAddr) RentsModule() HousingSFT() {}
+
+	event TokenIssued(address tokenAddress, string name, uint256 amountRaised);
+
+	function setTokenDetails(
+		string memory name_,
+		string memory uri_,
+		uint256 amountRaised_,
+		address housingTokenAddr
+	) external onlyOwner {
+		require(
+			address(housingToken) == address(0),
+			"Token details set already"
+		);
+		require(amountRaised == 0, "Token details set already");
+
+		housingToken = ERC20Burnable(housingTokenAddr);
+
+		_setURI(uri_);
+		amountRaised = amountRaised_;
+		name = name_;
+
+		emit TokenIssued(address(this), name, amountRaised);
+	}
 }
