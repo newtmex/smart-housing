@@ -78,5 +78,6 @@ abstract contract LockedSmartHousingToken is ERC1155, Ownable {
 	) public override {
 		require(whitelist[to], "Recipient not whitelisted");
 		super.safeTransferFrom(from, to, id, amount, data);
+		// TODO take the token attributes from `from` and merge it to that of `to`
 	}
 }

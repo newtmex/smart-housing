@@ -21,6 +21,7 @@ contract ProjectFunding is Ownable, LockedSmartHousingToken {
 	using SafeMath for uint256;
 	using ProjectStorage for mapping(uint256 => ProjectStorage.Data);
 	using ProjectStorage for ProjectStorage.Data;
+	using LkSHTAttributes for LkSHTAttributes.Attributes;
 
 	address public coinbase; // Address authorized to initialize the first project
 	address public smartHousingAddress; // Address of the SmartHousing contract
@@ -54,6 +55,7 @@ contract ProjectFunding is Ownable, LockedSmartHousingToken {
 	 */
 	constructor(address _coinbase) {
 		coinbase = _coinbase;
+		startTimestamp = block.timestamp;
 	}
 
 	/**
@@ -200,6 +202,21 @@ contract ProjectFunding is Ownable, LockedSmartHousingToken {
 		}
 
 		emit ProjectTokensClaimed(depositor, projectId, depositAmount);
+	}
+
+	function unlockSHT() external {
+		address caller = msg.sender;
+		
+		uint256 lkShtBal = balanceOf(caller, LOCKED_SHT_ID);
+		require(lkShtBal > 0, "ProjectFunding: Nothing to unlock");
+
+		LkSHTAttributes.Attributes storage attr = tokenAttributes[caller];
+		uint256 totalUnlockedAmount = attr.unlockMatured();
+
+		// Transfer the total unlocked SHT tokens to the user's address
+		if (totalUnlockedAmount > 0) {
+			housingToken.transfer(caller, totalUnlockedAmount);
+		}
 	}
 
 	/**
