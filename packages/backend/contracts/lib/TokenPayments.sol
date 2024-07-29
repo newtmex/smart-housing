@@ -9,6 +9,10 @@ struct ERC20TokenPayment {
 }
 
 library TokenPayments {
+	function accept(ERC20TokenPayment calldata self) internal {
+		TokenPayments.receiveERC20(self, msg.sender);
+	}
+
 	function receiveERC20(ERC20TokenPayment calldata payment) internal {
 		TokenPayments.receiveERC20(payment, msg.sender);
 	}

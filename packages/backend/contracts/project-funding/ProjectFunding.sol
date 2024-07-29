@@ -6,6 +6,8 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 
 import "../housing-project/HousingProject.sol";
+import "../main/SmartHousing.sol";
+import "../lib/ProjectStorage.sol";
 
 /**
  * @title ProjectFunding
@@ -14,22 +16,16 @@ import "../housing-project/HousingProject.sol";
  */
 contract ProjectFunding is Ownable {
 	using SafeMath for uint256;
-
-	struct ProjectData {
-		uint256 id; // Unique identifier for the project
-		address projectAddress; // Address of the deployed HousingProject contract
-		uint256 fundingGoal; // Target funding amount for the project
-		uint256 fundingDeadline; // Deadline timestamp for the project funding
-		address fundingToken; // Address of the ERC20 token used for funding
-		uint256 collectedFunds; // Amount of funds collected for the project
-	}
+	using ProjectStorage for mapping(uint256 => ProjectStorage.Data);
 
 	address public coinbase; // Address authorized to initialize the first project
 	address public smartHousingAddress; // Address of the SmartHousing contract
 
-	mapping(uint256 => ProjectData) public projects; // Mapping of project ID to ProjectData
+	mapping(uint256 => ProjectStorage.Data) public projects; // Mapping of project ID to ProjectData
 	mapping(address => uint256) public projectsId; // Mapping of project address to project ID
 	uint256 public projectCount; // Counter for the total number of projects
+
+	mapping(uint256 => mapping(address => uint256)) public usersProjectDeposit;
 
 	IERC20 public housingToken; // Token used for funding projects
 
@@ -38,6 +34,11 @@ contract ProjectFunding is Ownable {
 	 * @param projectAddress Address of the newly deployed HousingProject contract.
 	 */
 	event ProjectDeployed(address indexed projectAddress);
+	event ProjectFunded(
+		uint256 indexed projectId,
+		address indexed depositor,
+		ERC20TokenPayment payment
+	);
 
 	/**
 	 * @param _coinbase Address authorized to initialize the first project.
@@ -57,25 +58,16 @@ contract ProjectFunding is Ownable {
 		uint256 fundingGoal,
 		uint256 fundingDeadline
 	) internal {
-		require(
-			block.timestamp < fundingDeadline,
-			"Funding deadline has passed"
-		);
-
-		projectCount = projectCount.add(1);
 		HousingProject newProject = new HousingProject(smartHousingAddress);
-
-		ProjectData memory projectData = ProjectData({
-			id: projectCount,
-			projectAddress: address(newProject),
-			fundingGoal: fundingGoal,
-			fundingDeadline: fundingDeadline,
-			fundingToken: fundingToken,
-			collectedFunds: 0
-		});
-
-		projects[projectCount] = projectData;
-		projectsId[projectData.projectAddress] = projectData.id;
+		ProjectStorage.Data memory projectData = projects.createNew(
+			projectsId,
+			projectCount,
+			fundingGoal,
+			fundingDeadline,
+			fundingToken,
+			address(newProject)
+		);
+		projectCount = projectData.id;
 
 		emit ProjectDeployed(projectData.projectAddress);
 	}
@@ -121,5 +113,34 @@ contract ProjectFunding is Ownable {
 		uint256 fundingDeadline
 	) public onlyOwner {
 		_deployProject(fundingToken, fundingGoal, fundingDeadline);
+	}
+
+	function fundProject(
+		ERC20TokenPayment calldata depositPayment,
+		uint256 projectId,
+		uint256 referrerId
+	) external payable {
+		require(
+			projectId > 0 && projectId <= projectCount,
+			"Invalid project ID"
+		);
+
+		address depositor = msg.sender;
+
+		// Register user with referrer (if needed)
+		SmartHousing(smartHousingAddress).createRefIDViaProxy(
+			depositor,
+			referrerId
+		);
+
+		// Update project funding
+		projects.fund(
+			usersProjectDeposit[projectId],
+			projectId,
+			depositor,
+			depositPayment
+		);
+
+		emit ProjectFunded(projectId, depositor, depositPayment);
 	}
 }
