@@ -5,6 +5,9 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 import "./User.sol";
+import "../lib/TokenPayments.sol";
+import "../modules/sht-module/SHT.sol";
+import "./distribution/Storage.sol";
 
 /// @title SmartHousing
 /// @notice SmartHousing leverages blockchain technology to revolutionize real estate investment and development by enabling the tokenization of properties.
@@ -15,8 +18,16 @@ import "./User.sol";
 /// This contract owns and deploys HousingProject contracts, which will represent the properties owned and managed by the SmartHousing project.
 /// The management of ecosystem users will also be done in this contract.
 contract SmartHousing is Ownable, UserModule {
+	using TokenPayments for ERC20TokenPayment;
+	using Distribution for Distribution.Storage;
+	using EpochsAndPeriods for EpochsAndPeriods.Storage;
+
 	address public projectFundingAddress;
 	address public coinbaseAddress;
+	address public shtTokenAddress;
+
+	Distribution.Storage public distributionStorage;
+	EpochsAndPeriods.Storage public epochsAndPeriodsStorage;
 
 	enum Permissions {
 		NONE,
@@ -28,6 +39,8 @@ contract SmartHousing is Ownable, UserModule {
 	constructor(address conibase, address projectFunding) {
 		coinbaseAddress = conibase;
 		projectFundingAddress = projectFunding;
+
+		epochsAndPeriodsStorage.initialize(24); // One epoch will span 24 hours
 	}
 
 	/// @notice Register a new user via proxy or get the referral ID if already registered.
@@ -39,6 +52,30 @@ contract SmartHousing is Ownable, UserModule {
 		uint256 referrerId
 	) external onlyProjectFunding returns (uint256) {
 		return _createOrGetUserId(userAddr, referrerId);
+	}
+
+	function setUpSHT(ERC20TokenPayment calldata payment) external {
+		require(
+			msg.sender == coinbaseAddress,
+			"Caller is not the coinbase address"
+		);
+
+		// Ensure that the SHT token has not been set already
+		require(shtTokenAddress == address(0), "SHT token already set");
+		shtTokenAddress = address(payment.token);
+
+		// Verify that the correct amount of SHT has been sent
+		require(
+			payment.amount == SHT.ECOSYSTEM_DISTRIBUTION_FUNDS,
+			"Must send all ecosystem funds"
+		);
+		payment.accept();
+
+		// Set the total funds in distribution storage
+		distributionStorage.setTotalFunds(
+			epochsAndPeriodsStorage,
+			payment.amount
+		);
 	}
 
 	/// @notice Adds a new project and sets its permissions.

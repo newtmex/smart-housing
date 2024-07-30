@@ -46,4 +46,24 @@ contract Coinbase is Ownable, SHTModule {
 			fundingDeadline
 		);
 	}
+
+	/**
+	 * @dev Dispatches ecosystem funds if not already dispatched to SmartHousing contract.
+	 * @param smartHousingAddr The address of the SmartHousing contract.
+	 */
+	function feedSmartHousing(address smartHousingAddr) external onlyOwner {
+		ERC20TokenPayment memory feedPayment = _makeSHTPayment(
+			SHT.ECOSYSTEM_DISTRIBUTION_FUNDS
+		);
+
+		// Ensure data integrity
+		require(
+			balanceOf(address(this)) >= feedPayment.amount,
+			"Already dispatched"
+		);
+
+		_approve(address(this), smartHousingAddr, feedPayment.amount);
+
+		SmartHousing(smartHousingAddr).setUpSHT(feedPayment);
+	}
 }

@@ -1,16 +1,14 @@
 import { expect } from "chai";
 import { ethers } from "hardhat";
 import { loadFixture } from "@nomicfoundation/hardhat-toolbox/network-helpers";
+import { token } from "../typechain-types/@openzeppelin/contracts";
 
 describe("Coinbase", function () {
   async function deployContractsFixture() {
     const [owner, addr1, addr2, ...addrs] = await ethers.getSigners();
 
-    const fundingToken = await ethers.deployContract("MintableERC20", ["FundingToken", "FTK"]);
-
-    // Deploy SmartHousing contract
-    const SmartHousing = await ethers.getContractFactory("SmartHousing");
-    const smartHousing = await SmartHousing.deploy(owner, addr1);
+    const FundingToken = await ethers.getContractFactory("MintableERC20");
+    const fundingToken = await FundingToken.deploy("FundingToken", "FTK");
 
     // Deploy Coinbase contract
     const Coinbase = await ethers.getContractFactory("Coinbase");
@@ -19,6 +17,10 @@ describe("Coinbase", function () {
     // Deploy ProjectFunding contract
     const ProjectFunding = await ethers.getContractFactory("ProjectFunding");
     const projectFunding = await ProjectFunding.deploy(coinbase);
+
+    // Deploy SmartHousing contract
+    const SmartHousing = await ethers.getContractFactory("SmartHousing");
+    const smartHousing = await SmartHousing.deploy(coinbase, projectFunding);
 
     const SHT = await ethers.deployContract("SHT");
 
@@ -63,6 +65,38 @@ describe("Coinbase", function () {
       await expect(
         coinbase.connect(addr1).startICO(projectFunding, smartHousing, fundingToken, fundingGoal, fundingDeadline),
       ).to.be.revertedWith("Ownable: caller is not the owner");
+    });
+  });
+
+  describe("feedSmartHousing", function () {
+    it("should dispatch ecosystem funds to SmartHousing contract correctly", async function () {
+      const { coinbase, smartHousing, SHT } = await loadFixture(deployContractsFixture);
+
+      const amountToDispatch = await SHT.ECOSYSTEM_DISTRIBUTION_FUNDS();
+
+      // Dispatch ecosystem funds
+      await coinbase.feedSmartHousing(smartHousing);
+
+      // Check if the SmartHousing contract has received the SHT
+      expect(await coinbase.balanceOf(smartHousing)).to.equal(amountToDispatch);
+    });
+
+    it("should revert if not called by the owner", async function () {
+      const { coinbase, smartHousing, addr1 } = await loadFixture(deployContractsFixture);
+
+      await expect(coinbase.connect(addr1).feedSmartHousing(smartHousing)).to.be.revertedWith(
+        "Ownable: caller is not the owner",
+      );
+    });
+
+    it("should revert if funds are already dispatched", async function () {
+      const { coinbase, smartHousing } = await loadFixture(deployContractsFixture);
+
+      // Dispatch the funds first time
+      await coinbase.feedSmartHousing(smartHousing);
+
+      // Try dispatching again
+      await expect(coinbase.feedSmartHousing(smartHousing)).to.be.revertedWith("Already dispatched");
     });
   });
 });
