@@ -8,7 +8,9 @@ describe("SmartHousing", function () {
     const [owner, projectFunder, coinbase, ...otherUsers] = await ethers.getSigners();
 
     const SmartHousing = await ethers.getContractFactory("SmartHousing");
-    const smartHousing = await SmartHousing.deploy(coinbase.address, projectFunder.address);
+    const smartHousing = await SmartHousing.deploy(coinbase, projectFunder);
+
+    const housingProject = await ethers.deployContract("HousingProject", [smartHousing]);
 
     return {
       smartHousing,
@@ -16,6 +18,7 @@ describe("SmartHousing", function () {
       projectFunder,
       coinbase,
       otherUsers,
+      housingProject,
       setUpSht: async () => {
         const SHT = await ethers.deployContract("SHT");
         const SmartToken = await ethers.getContractFactory("MintableERC20");
@@ -42,9 +45,9 @@ describe("SmartHousing", function () {
     it("Should set the right owner, project funder, and coinbase", async function () {
       const { smartHousing, owner, projectFunder, coinbase } = await loadFixture(deployFixtures);
 
-      expect(await smartHousing.owner()).to.equal(owner.address);
-      expect(await smartHousing.projectFundingAddress()).to.equal(projectFunder.address);
-      expect(await smartHousing.coinbaseAddress()).to.equal(coinbase.address);
+      expect(await smartHousing.owner()).to.equal(owner);
+      expect(await smartHousing.projectFundingAddress()).to.equal(projectFunder);
+      expect(await smartHousing.coinbaseAddress()).to.equal(coinbase);
     });
   });
 
@@ -53,13 +56,13 @@ describe("SmartHousing", function () {
       const { smartHousing, projectFunder, otherUsers } = await loadFixture(deployFixtures);
       const [user] = otherUsers;
 
-      const tx = await smartHousing.connect(projectFunder).createRefIDViaProxy(user.address, 0);
+      const tx = await smartHousing.connect(projectFunder).createRefIDViaProxy(user, 0);
       await tx.wait();
 
-      const userId = await smartHousing.getUserId(user.address);
+      const userId = await smartHousing.getUserId(user);
       expect(userId).to.equal(1);
 
-      const referrer = await smartHousing.getReferrer(user.address);
+      const referrer = await smartHousing.getReferrer(user);
       expect(referrer.referrerId).to.equal(0);
       expect(referrer.referrerAddress).to.equal(ZeroAddress);
     });
@@ -68,24 +71,24 @@ describe("SmartHousing", function () {
       const { smartHousing, projectFunder, otherUsers } = await loadFixture(deployFixtures);
       const [referrer, user] = otherUsers;
 
-      await smartHousing.connect(projectFunder).createRefIDViaProxy(referrer.address, 0);
+      await smartHousing.connect(projectFunder).createRefIDViaProxy(referrer, 0);
 
-      const referrerId = await smartHousing.getUserId(referrer.address);
-      await smartHousing.connect(projectFunder).createRefIDViaProxy(user.address, referrerId);
+      const referrerId = await smartHousing.getUserId(referrer);
+      await smartHousing.connect(projectFunder).createRefIDViaProxy(user, referrerId);
 
-      const userId = await smartHousing.getUserId(user.address);
+      const userId = await smartHousing.getUserId(user);
       expect(userId).to.equal(2);
 
-      const referrerInfo = await smartHousing.getReferrer(user.address);
+      const referrerInfo = await smartHousing.getReferrer(user);
       expect(referrerInfo.referrerId).to.equal(referrerId);
-      expect(referrerInfo.referrerAddress).to.equal(referrer.address);
+      expect(referrerInfo.referrerAddress).to.equal(referrer);
     });
 
-    it("Should not allow non-project funder to register user", async function () {
+    it("Should not allow non-project funder to register user via proxy", async function () {
       const { smartHousing, otherUsers } = await loadFixture(deployFixtures);
       const [user, nonFunder] = otherUsers;
 
-      await expect(smartHousing.connect(nonFunder).createRefIDViaProxy(user.address, 0)).to.be.revertedWith(
+      await expect(smartHousing.connect(nonFunder).createRefIDViaProxy(user, 0)).to.be.revertedWith(
         "Caller is not the project funder",
       );
     });
@@ -132,6 +135,60 @@ describe("SmartHousing", function () {
       await expect(
         smartHousing.connect(coinbase).setUpSHT({ token: coinbase, amount: parseEther("1500") }),
       ).to.be.revertedWith("Must send all ecosystem funds");
+    });
+  });
+
+  describe("Project Management", function () {
+    it("Should add a new project and set permissions", async function () {
+      const { smartHousing, projectFunder, otherUsers } = await loadFixture(deployFixtures);
+      const [project] = otherUsers;
+
+      await smartHousing.connect(projectFunder).addProject(project);
+
+      const permission = await smartHousing.permissions(project);
+      expect(permission).to.equal(1); // Permissions.HOUSING_PROJECT
+
+      const isProjectAdded = (await smartHousing.projectsToken()).includes(project.address);
+      expect(isProjectAdded).to.be.true;
+    });
+
+    it("Should not allow non-project funder to add a project", async function () {
+      const { smartHousing, otherUsers } = await loadFixture(deployFixtures);
+      const [project, nonFunder] = otherUsers;
+
+      await expect(smartHousing.connect(nonFunder).addProject(project)).to.be.revertedWith(
+        "Caller is not the project funder",
+      );
+    });
+  });
+
+  describe("Rent Management", function () {
+    // TODO we need way to make housingProject call addProjectRent
+    // it("Should add rent to a project and update distribution storage", async function () {
+    //   const { smartHousing, projectFunder, housingProject, setUpSht } = await loadFixture(deployFixtures);
+
+    //   // Add the project
+    //   await smartHousing.connect(projectFunder).addProject(housingProject);
+
+    //   // Set up SHT
+    //   await setUpSht();
+
+    //   // Add rent
+    //   const rentAmount = parseEther("100");
+    //   await smartHousing.connect(housingProject).addProjectRent(rentAmount);
+
+    //   // Verify rent addition
+    //   const projectData = await smartHousing.projectDets(project);
+    //   expect(projectData.receivedRents).to.equal(rentAmount);
+    // });
+
+    it("Should revert if a non-HousingProject tries to add rent", async function () {
+      const { smartHousing, otherUsers } = await loadFixture(deployFixtures);
+      const [nonProject] = otherUsers;
+
+      await expect(smartHousing.connect(nonProject).addProjectRent(parseEther("100"))).to.be.revertedWith(
+        "Caller is not an accepted housing project",
+      );
     });
   });
 });

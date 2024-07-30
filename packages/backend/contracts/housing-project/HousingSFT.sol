@@ -70,4 +70,8 @@ abstract contract HousingSFT is ERC1155, Ownable {
 
 		return housingAttributes[owner];
 	}
+
+	function getMaxSupply() public pure returns (uint256) {
+		return MAX_SUPPLY;
+	}
 }

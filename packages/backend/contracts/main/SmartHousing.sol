@@ -3,6 +3,7 @@ pragma solidity ^0.8.26;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 
 import "./User.sol";
 import "../lib/TokenPayments.sol";
@@ -21,6 +22,7 @@ contract SmartHousing is Ownable, UserModule {
 	using TokenPayments for ERC20TokenPayment;
 	using Distribution for Distribution.Storage;
 	using EpochsAndPeriods for EpochsAndPeriods.Storage;
+	using EnumerableSet for EnumerableSet.AddressSet;
 
 	address public projectFundingAddress;
 	address public coinbaseAddress;
@@ -31,10 +33,11 @@ contract SmartHousing is Ownable, UserModule {
 
 	enum Permissions {
 		NONE,
-		X_PROJECT
+		HOUSING_PROJECT
 	}
 
 	mapping(address => Permissions) public permissions;
+	EnumerableSet.AddressSet private _projectsToken; // Enumerable list of project addresses
 
 	constructor(address conibase, address projectFunding) {
 		coinbaseAddress = conibase;
@@ -81,7 +84,26 @@ contract SmartHousing is Ownable, UserModule {
 	/// @notice Adds a new project and sets its permissions.
 	/// @param projectAddress The address of the new project.
 	function addProject(address projectAddress) external onlyProjectFunding {
-		_setPermissions(projectAddress, Permissions.X_PROJECT);
+		_setPermissions(projectAddress, Permissions.HOUSING_PROJECT);
+		_projectsToken.add(projectAddress); // Register the project address
+	}
+
+	/// @notice Adds rent to a project and updates the distribution storage.
+	/// @dev projectAddress is the msg.msg.sender which must be a recognised HousingProject contract
+	/// @param amount The amount of rent received.
+	function addProjectRent(uint256 amount) external onlyHousingProject {
+		address projectAddress = msg.sender;
+		distributionStorage.addProjectRent(projectAddress, amount);
+	}
+
+	function projectDets(
+		address project
+	) public view returns (Distribution.ProjectDistributionData memory) {
+		return distributionStorage.projectDets[project];
+	}
+
+	function projectsToken() public view returns (address[] memory) {
+		return _projectsToken.values();
 	}
 
 	/// @notice Sets the permissions for a given address.
@@ -91,11 +113,18 @@ contract SmartHousing is Ownable, UserModule {
 		permissions[addr] = perm;
 	}
 
-	/// @notice Modifier to restrict access to housing project functions.
 	modifier onlyProjectFunding() {
 		require(
 			msg.sender == projectFundingAddress,
 			"Caller is not the project funder"
+		);
+		_;
+	}
+
+	modifier onlyHousingProject() {
+		require(
+			permissions[msg.sender] == Permissions.HOUSING_PROJECT,
+			"Caller is not an accepted housing project"
 		);
 		_;
 	}

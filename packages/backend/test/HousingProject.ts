@@ -10,12 +10,13 @@ describe("HousingProject", function () {
   const uri = "https://awesome.address.money/api/tokens/{projectName}/{tokenId}.json";
 
   async function deployFixtures() {
-    const [owner, ...otherUsers] = await ethers.getSigners();
+    const [owner, projectFunding, ...otherUsers] = await ethers.getSigners();
     const sht = await ethers.deployContract("MintableERC20", ["SmartHousingToken", "SHT"]);
-    const smartHousing = await ethers.deployContract("SmartHousing", [ZeroAddress, ZeroAddress]);
+    const smartHousing = await ethers.deployContract("SmartHousing", [ZeroAddress, projectFunding]);
 
     const housingProject = await ethers.deployContract("HousingProject", [smartHousing]);
     await housingProject.setTokenDetails(name, uri, amountRaised, sht);
+    await smartHousing.connect(projectFunding).addProject(housingProject);
 
     return {
       housingProject,

@@ -9,9 +9,7 @@ import "./RentsModule.sol";
 contract HousingProject is RentsModule {
 	/// @notice Initializes the HousingProject contract.
 	/// @param smartHousingAddr The address of the main SmartHousing contract.
-	constructor(
-		address smartHousingAddr
-	) CallsSmartHousing(smartHousingAddr) RentsModule() HousingSFT() {}
+	constructor(address smartHousingAddr) CallsSmartHousing(smartHousingAddr) {}
 
 	event TokenIssued(address tokenAddress, string name, uint256 amountRaised);
 

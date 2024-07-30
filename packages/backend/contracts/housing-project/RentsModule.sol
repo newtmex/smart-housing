@@ -48,7 +48,7 @@ abstract contract RentsModule is HousingSFT, CallsSmartHousing {
 		facilityManagementFunds += facilityReward;
 
 		housingToken.burn(ecosystemReward);
-		// TODO add Project rent (`rentPayment.amount`) to SmartHousing contract for other processing
+		SmartHousing(smartHousingAddr).addProjectRent(rentPayment.amount);
 	}
 
 	/// @notice Claims rent rewards for a given token.
