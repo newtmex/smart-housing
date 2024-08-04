@@ -10,6 +10,8 @@ import "../lib/TokenPayments.sol";
 import "../modules/sht-module/SHT.sol";
 import "./distribution/Storage.sol";
 
+import "./Interface.sol";
+
 /// @title SmartHousing
 /// @notice SmartHousing leverages blockchain technology to revolutionize real estate investment and development by enabling the tokenization of properties.
 /// @dev This contract allows for fractional ownership and ease of investment.
@@ -18,7 +20,7 @@ import "./distribution/Storage.sol";
 /// The SmartHousing Contract is the main contract for the SmartHousing ecosystem.
 /// This contract owns and deploys HousingProject contracts, which will represent the properties owned and managed by the SmartHousing project.
 /// The management of ecosystem users will also be done in this contract.
-contract SmartHousing is Ownable, UserModule {
+contract SmartHousing is ISmartHousing, Ownable, UserModule {
 	using TokenPayments for ERC20TokenPayment;
 	using Distribution for Distribution.Storage;
 	using EpochsAndPeriods for EpochsAndPeriods.Storage;

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: SEE LICENSE IN LICENSE
 pragma solidity 0.8.26;
 
-import "../main/SmartHousing.sol";
+import "../main/Interface.sol";
 
 abstract contract CallsSmartHousing {
 	/// @notice The address of the main SmartHousing contract.
@@ -17,6 +17,6 @@ abstract contract CallsSmartHousing {
 	function getReferrer(
 		address userAddr
 	) internal view returns (uint, address) {
-		return SmartHousing(smartHousingAddr).getReferrer(userAddr);
+		return IUserModule(smartHousingAddr).getReferrer(userAddr);
 	}
 }

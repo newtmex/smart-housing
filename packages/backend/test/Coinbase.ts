@@ -15,8 +15,10 @@ describe("Coinbase", function () {
     const coinbase = await Coinbase.deploy();
 
     // Deploy ProjectFunding contract
-    const ProjectFunding = await ethers.getContractFactory("ProjectFunding");
-    const projectFunding = await ProjectFunding.deploy(coinbase);
+    const newLkSHTlib = await ethers.deployContract("NewLkSHT");
+    const projectFunding = await ethers.deployContract("ProjectFunding", [coinbase], {
+      libraries: { NewLkSHT: await newLkSHTlib.getAddress() },
+    });
 
     // Deploy SmartHousing contract
     const SmartHousing = await ethers.getContractFactory("SmartHousing");

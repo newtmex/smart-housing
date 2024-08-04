@@ -28,12 +28,14 @@ describe("HousingProject", function () {
         expectedMintedAmt,
         user,
         expectedRPS,
+        nonce,
       }: {
         expectedMintedAmt: bigint;
         user: HardhatEthersSigner;
         expectedRPS: bigint;
+        nonce: bigint;
       }) => {
-        const { rewardsPerShare, tokenWeight, originalOwner } = await housingProject.getUserSFT(user);
+        const { rewardsPerShare, tokenWeight, originalOwner } = await housingProject.getUserSFT(user, nonce);
         expect(rewardsPerShare).to.equal(expectedRPS);
         expect(tokenWeight).to.equal(expectedMintedAmt);
         expect(originalOwner).to.equal(user.address);
@@ -72,6 +74,7 @@ describe("HousingProject", function () {
         user: someUser,
         expectedMintedAmt,
         expectedRPS: 0n,
+        nonce: 1n,
       });
 
       // Minting more than allowed should throw an error
@@ -104,9 +107,10 @@ describe("HousingProject", function () {
         user: investor,
         expectedMintedAmt: 10n,
         expectedRPS: 0n,
+        nonce: 1n,
       });
 
-      await housingProject.connect(investor).claimRentReward();
+      await housingProject.connect(investor).claimRentReward(1n);
 
       // Investor receives rent shares
       expect(await sht.balanceOf(investor)).to.equal(140010000000000);
@@ -115,20 +119,22 @@ describe("HousingProject", function () {
         user: investor,
         expectedMintedAmt: 10n,
         expectedRPS: 15000000000000000000000000000000n,
+        nonce: 1n,
       });
 
       // Claiming again without new rent does nothing
-      await housingProject.connect(investor).claimRentReward();
+      await housingProject.connect(investor).claimRentReward(1n);
       await checkHousingTokenAttr({
         user: investor,
         expectedMintedAmt: 10n,
         expectedRPS: 15000000000000000000000000000000n,
+        nonce: 1n,
       });
 
       // Claiming again with new rent
       await payRent(parseEther("0.005"));
 
-      await housingProject.connect(investor).claimRentReward();
+      await housingProject.connect(investor).claimRentReward(1n);
       // Investor receives rent shares
       expect(await sht.balanceOf(investor)).to.equal(140045002500000);
       // Investor's token RPS increasses, gets 10 units of project
@@ -136,6 +142,7 @@ describe("HousingProject", function () {
         user: investor,
         expectedMintedAmt: 10n,
         expectedRPS: 15003750000000000000000000000000n,
+        nonce: 1n,
       });
     });
   });

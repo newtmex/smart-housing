@@ -17,7 +17,7 @@ import "../modules/LockedSmartHousingToken.sol";
  * @dev This contract is used for initializing and deploying housing projects.
  * It allows the deployment of a new housing project and manages project data.
  */
-contract ProjectFunding is Ownable, LockedSmartHousingToken {
+contract ProjectFunding is Ownable {
 	using SafeMath for uint256;
 	using ProjectStorage for mapping(uint256 => ProjectStorage.Data);
 	using ProjectStorage for ProjectStorage.Data;
@@ -33,6 +33,7 @@ contract ProjectFunding is Ownable, LockedSmartHousingToken {
 	mapping(uint256 => mapping(address => uint256)) public usersProjectDeposit;
 
 	IERC20 public housingToken; // Token used for funding projects
+	LkSHT public lkSht; // The locked version
 
 	/**
 	 * @dev Emitted when a new project is deployed.
@@ -55,7 +56,7 @@ contract ProjectFunding is Ownable, LockedSmartHousingToken {
 	 */
 	constructor(address _coinbase) {
 		coinbase = _coinbase;
-		startTimestamp = block.timestamp;
+		lkSht = NewLkSHT.create();
 	}
 
 	/**
@@ -194,24 +195,31 @@ contract ProjectFunding is Ownable, LockedSmartHousingToken {
 
 		// Mint LkSHT tokens if the project ID is 1
 		if (project.id == 1) {
-			uint256 shtAmount = depositAmount.mul(10000).div(
+			uint256 shtAmount = depositAmount.mul(SHT.ICO_FUNDS).div(
 				project.collectedFunds
-			); // TODO Adjust based on actual SHT ICO funds
+			);
 
-			_mint(shtAmount, depositor);
+			lkSht.mint(shtAmount, depositor);
 		}
 
 		emit ProjectTokensClaimed(depositor, projectId, depositAmount);
 	}
 
-	function unlockSHT() external {
+	function unlockSHT(uint256 nonce) external {
 		address caller = msg.sender;
-		
-		uint256 lkShtBal = balanceOf(caller, LOCKED_SHT_ID);
+
+		uint256 lkShtBal = lkSht.balanceOf(caller, nonce);
 		require(lkShtBal > 0, "ProjectFunding: Nothing to unlock");
 
-		LkSHTAttributes.Attributes storage attr = tokenAttributes[caller];
-		uint256 totalUnlockedAmount = attr.unlockMatured();
+		LkSHTAttributes.Attributes memory attr = abi.decode(
+			lkSht.getRawTokenAttributes(nonce),
+			(LkSHTAttributes.Attributes)
+		);
+		(
+			uint256 totalUnlockedAmount,
+			LkSHTAttributes.Attributes memory newAttr
+		) = attr.unlockMatured();
+		lkSht.setTokenAttributes(nonce, abi.encode(newAttr));
 
 		// Transfer the total unlocked SHT tokens to the user's address
 		if (totalUnlockedAmount > 0) {

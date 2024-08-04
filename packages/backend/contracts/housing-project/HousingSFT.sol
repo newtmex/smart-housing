@@ -1,8 +1,10 @@
 // SPDX-License-Identifier: SEE LICENSE IN LICENSE
 pragma solidity 0.8.26;
 
-import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
+
+import "../modules/SFT.sol";
 
 struct HousingAttributes {
 	uint256 rewardsPerShare;
@@ -13,8 +15,9 @@ struct HousingAttributes {
 /// @title Housing SFT
 /// @notice This contract represents a semi-fungible token (SFT) for housing projects.
 /// @dev This abstract contract will be inherited by the HousingProject contract.
-abstract contract HousingSFT is ERC1155, Ownable {
-	uint256 public constant HOUSING_PROJECT = 1;
+abstract contract HousingSFT is Ownable, SFT {
+	using EnumerableSet for EnumerableSet.UintSet;
+
 	// FIXME this value should be unique to each contract, should depend on
 	// the total amount expected to raise as it determines the amount of SFTs to
 	// be minted for investors
@@ -29,17 +32,13 @@ abstract contract HousingSFT is ERC1155, Ownable {
 	/// @notice The current amount out of the `MAX_SUPPLY` of tokens minted.
 	uint256 public totalSupply;
 
-	/// @notice Mapping from address to housing attributes.
-	mapping(address => HousingAttributes) public housingAttributes;
-
-	/// @notice Initializes the HousingSFT contract.
-	/// @dev Token URI will be set later
-	constructor() ERC1155("") {}
-
 	/// @notice Mints SFT tokens for a depositor based on the amount of deposit.
 	/// @param depositAmt The amount of fungible token deposited.
 	/// @param depositor The address of the depositor.
-	function mintSFT(uint256 depositAmt, address depositor) external onlyOwner {
+	function mintSFT(
+		uint256 depositAmt,
+		address depositor
+	) external onlyOwner returns (uint256) {
 		uint256 totalDeposits = amountRaised;
 		uint256 maxShares = MAX_SUPPLY;
 
@@ -51,24 +50,30 @@ abstract contract HousingSFT is ERC1155, Ownable {
 		totalSupply += mintShare;
 		require(totalSupply <= MAX_SUPPLY, "HousingSFT: Max supply exceeded");
 
-		_mint(depositor, HOUSING_PROJECT, mintShare, bytes(name));
-		housingAttributes[depositor] = HousingAttributes({
-			rewardsPerShare: 0, // Should be 0 since they have never claimed any rent rewards
-			originalOwner: depositor,
-			tokenWeight: mintShare
-		});
+		bytes memory attributes = abi.encode(
+			HousingAttributes({
+				rewardsPerShare: 0, // Should be 0 since they have never claimed any rent rewards
+				originalOwner: depositor,
+				tokenWeight: mintShare
+			})
+		);
+
+		return _mint(depositor, mintShare, attributes, "");
 	}
 
 	/// @notice Checks if an address owns this HousingSFT and returns the attributes.
 	/// @param owner The address to check the balance of.
 	/// @return `HousingAttributes` if the owner has a positive balance of the token, panics otherwise.
 	function getUserSFT(
-		address owner
+		address owner,
+		uint256 nonce
 	) public view returns (HousingAttributes memory) {
-		uint256 balance = balanceOf(owner, HOUSING_PROJECT);
-		require(balance > 0, "HouisingSFT: No tokens found for user");
+		require(
+			hasSFT(owner, nonce),
+			"HouisingSFT: No tokens found for user at nonce"
+		);
 
-		return housingAttributes[owner];
+		return abi.decode(getRawTokenAttributes(nonce), (HousingAttributes));
 	}
 
 	function getMaxSupply() public pure returns (uint256) {

@@ -48,16 +48,18 @@ abstract contract RentsModule is HousingSFT, CallsSmartHousing {
 		facilityManagementFunds += facilityReward;
 
 		housingToken.burn(ecosystemReward);
-		SmartHousing(smartHousingAddr).addProjectRent(rentPayment.amount);
+		ISmartHousing(smartHousingAddr).addProjectRent(rentPayment.amount);
 	}
 
 	/// @notice Claims rent rewards for a given token.
 	/// @return The updated HousingAttributes.
-	function claimRentReward() external returns (HousingAttributes memory) {
+	function claimRentReward(
+		uint256 nonce
+	) external returns (HousingAttributes memory) {
 		address caller = msg.sender;
 		uint256 currentRPS = rewardPerShare;
 
-		HousingAttributes memory attr = getUserSFT(caller);
+		HousingAttributes memory attr = getUserSFT(caller, nonce);
 		rewardshares memory rewardShares = computeRewardShares(attr);
 		uint256 totalReward = rewardShares.total();
 
@@ -81,7 +83,7 @@ abstract contract RentsModule is HousingSFT, CallsSmartHousing {
 		}
 
 		attr.rewardsPerShare = currentRPS;
-		housingAttributes[caller] = attr;
+		_setTokenAttributes(nonce, abi.encode(attr));
 
 		housingToken.transfer(caller, rewardShares.userValue); // Send to user
 

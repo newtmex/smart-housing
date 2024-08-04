@@ -10,9 +10,12 @@ describe("ProjectFunding", function () {
   async function deployFixtures() {
     const [owner, coinbase, otherUser] = await ethers.getSigners();
     const fundingToken = await ethers.deployContract("MintableERC20", ["FundingToken", "FTK"]);
-    const projectFunding = await ethers.deployContract("ProjectFunding", [coinbase]);
+    const newLkSHTlib = await ethers.deployContract("NewLkSHT");
+    const projectFunding = await ethers.deployContract("ProjectFunding", [coinbase], {
+      libraries: { NewLkSHT: await newLkSHTlib.getAddress() },
+    });
     const smartHousing = await ethers.deployContract("SmartHousing", [coinbase, projectFunding]);
-
+    const LkSHT = await ethers.getContractAt("LkSHT", await projectFunding.lkSht());
     return {
       projectFunding,
       fundingToken,
@@ -22,6 +25,7 @@ describe("ProjectFunding", function () {
       fundingGoal,
       fundingDeadline,
       smartHousing,
+      LkSHT,
       initFirstProject: async () => {
         await fundingToken.mint(coinbase, parseEther("1000")); // Mint tokens to the coinbase contract
         await fundingToken.connect(coinbase).approve(projectFunding, parseEther("1000")); // Approve tokens
@@ -178,7 +182,8 @@ describe("ProjectFunding", function () {
 
   describe("claimProjectTokens", function () {
     it("allows users to claim tokens from successful projects", async () => {
-      const { projectFunding, fundingToken, initFirstProject, otherUser, owner } = await loadFixture(deployFixtures);
+      const { projectFunding, fundingToken, initFirstProject, LkSHT, otherUser, owner } =
+        await loadFixture(deployFixtures);
 
       await initFirstProject();
 
@@ -215,7 +220,7 @@ describe("ProjectFunding", function () {
         "ProjectTokensClaimed",
       );
 
-      const balance = await projectFunding.balanceOf(otherUser, await projectFunding.LOCKED_SHT_ID());
+      const balance = await LkSHT.balanceOf(otherUser, 1n);
       expect(balance).to.be.gt(0); // Expect some LkSHT balance
     });
 

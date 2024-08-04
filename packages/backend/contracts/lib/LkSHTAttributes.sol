@@ -45,12 +45,17 @@ library LkSHTAttributes {
 	 * @return unlockedAmount The amount of tokens unlocked.
 	 */
 	function unlockMatured(
-		Attributes storage self
-	) internal returns (uint256 unlockedAmount) {
+		Attributes memory self
+	)
+		internal
+		view
+		returns (uint256 unlockedAmount, Attributes memory newSelf)
+	{
 		uint256 elapsed = elapsedTime(self);
 		unlockedAmount = self.amount.mul(elapsed).div(LOCK_DURATION);
 
 		self.amount = self.amount.sub(unlockedAmount);
+		newSelf = self;
 	}
 
 	/**

@@ -1,7 +1,9 @@
 // SPDX-License-Identifier: SEE LICENSE IN LICENSE
 pragma solidity 0.8.26;
 
-abstract contract UserModule {
+import "./Interface.sol";
+
+abstract contract UserModule is IUserModule {
 	struct User {
 		uint256 id;
 		address addr;
