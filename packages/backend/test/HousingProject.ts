@@ -12,7 +12,10 @@ describe("HousingProject", function () {
   async function deployFixtures() {
     const [owner, projectFunding, ...otherUsers] = await ethers.getSigners();
     const sht = await ethers.deployContract("MintableERC20", ["SmartHousingToken", "SHT"]);
-    const smartHousing = await ethers.deployContract("SmartHousing", [ZeroAddress, projectFunding]);
+    const newHSTlib = await ethers.deployContract("NewHousingStakingToken");
+    const smartHousing = await ethers.deployContract("SmartHousing", [ZeroAddress, projectFunding], {
+      libraries: { NewHousingStakingToken: await newHSTlib.getAddress() },
+    });
 
     const housingProject = await ethers.deployContract("HousingProject", [smartHousing]);
     await housingProject.setTokenDetails(name, uri, amountRaised, sht);

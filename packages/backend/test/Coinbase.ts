@@ -21,8 +21,10 @@ describe("Coinbase", function () {
     });
 
     // Deploy SmartHousing contract
-    const SmartHousing = await ethers.getContractFactory("SmartHousing");
-    const smartHousing = await SmartHousing.deploy(coinbase, projectFunding);
+    const newHSTlib = await ethers.deployContract("NewHousingStakingToken");
+    const smartHousing = await ethers.deployContract("SmartHousing", [coinbase, projectFunding], {
+      libraries: { NewHousingStakingToken: await newHSTlib.getAddress() },
+    });
 
     const SHT = await ethers.deployContract("SHT");
 

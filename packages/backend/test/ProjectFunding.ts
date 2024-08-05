@@ -14,7 +14,12 @@ describe("ProjectFunding", function () {
     const projectFunding = await ethers.deployContract("ProjectFunding", [coinbase], {
       libraries: { NewLkSHT: await newLkSHTlib.getAddress() },
     });
-    const smartHousing = await ethers.deployContract("SmartHousing", [coinbase, projectFunding]);
+
+    const newHSTlib = await ethers.deployContract("NewHousingStakingToken");
+    const smartHousing = await ethers.deployContract("SmartHousing", [coinbase, projectFunding], {
+      libraries: { NewHousingStakingToken: await newHSTlib.getAddress() },
+    });
+
     const LkSHT = await ethers.getContractAt("LkSHT", await projectFunding.lkSht());
     return {
       projectFunding,

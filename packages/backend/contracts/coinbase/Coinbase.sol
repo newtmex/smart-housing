@@ -64,6 +64,6 @@ contract Coinbase is Ownable, SHTModule {
 
 		_approve(address(this), smartHousingAddr, feedPayment.amount);
 
-		SmartHousing(smartHousingAddr).setUpSHT(feedPayment);
+		ISmartHousing(smartHousingAddr).setUpSHT(feedPayment);
 	}
 }

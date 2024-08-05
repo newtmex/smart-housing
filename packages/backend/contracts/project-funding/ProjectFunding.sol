@@ -6,11 +6,14 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "@openzeppelin/contracts/token/ERC1155/IERC1155.sol";
 
-import "../housing-project/HousingProject.sol";
-import "../main/SmartHousing.sol";
 import "../lib/ProjectStorage.sol";
 import "../lib/LkSHTAttributes.sol";
+
+import "../main/Interface.sol";
+
+import "../housing-project/HousingProject.sol";
 import "../modules/LockedSmartHousingToken.sol";
+import "../modules/sht-module/SHT.sol";
 
 /**
  * @title ProjectFunding
@@ -140,7 +143,7 @@ contract ProjectFunding is Ownable {
 		address depositor = msg.sender;
 
 		// Register user with referrer (if needed)
-		SmartHousing(smartHousingAddress).createRefIDViaProxy(
+		ISmartHousing(smartHousingAddress).createRefIDViaProxy(
 			depositor,
 			referrerId
 		);
@@ -167,7 +170,7 @@ contract ProjectFunding is Ownable {
 			"Project Funding not yet successful"
 		);
 
-		SmartHousing(smartHousingAddress).addProject(project.projectAddress);
+		ISmartHousing(smartHousingAddress).addProject(project.projectAddress);
 
 		HousingProject(project.projectAddress).setTokenDetails(
 			name,

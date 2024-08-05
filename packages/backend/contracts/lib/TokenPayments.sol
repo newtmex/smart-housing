@@ -2,7 +2,7 @@
 pragma solidity 0.8.26;
 
 import "@openzeppelin/contracts/interfaces/IERC20.sol";
-import "../modules/SFT.sol";
+import { SFT } from "../modules/SFT.sol";
 
 struct ERC20TokenPayment {
 	IERC20 token;
@@ -32,10 +32,7 @@ library TokenPayments {
 	}
 
 	// Receives both SFTs and ERC20, ERC20 have nonce as 0
-	function receiveToken(
-		TokenPayment memory payment,
-		address from
-	) internal {
+	function receiveToken(TokenPayment memory payment, address from) internal {
 		if (payment.nonce == 0) {
 			IERC20(payment.token).transferFrom(
 				from,

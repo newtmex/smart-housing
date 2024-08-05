@@ -10,7 +10,7 @@ library Emission {
 	uint256 private constant DECAY_RATE = 9998e14; // 0.9998 with 18 decimals
 	uint256 private constant E0 = 2729727036845720116116; // Example initial emission
 
-	function emissionAtEpoch(uint256 epoch) internal pure returns (uint256) {
+	function atEpoch(uint256 epoch) internal pure returns (uint256) {
 		uint256 decayFactor = PRBMathUD60x18.pow(DECAY_RATE, epoch);
 		return E0.mul(decayFactor) / 1e18;
 	}
@@ -18,7 +18,7 @@ library Emission {
 	/// @notice Computes E0 * ​​(0.9998^epochStart − 0.9998^epochEnd​)
 	/// @param epochStart the starting epoch
 	/// @param epochEnd the end epoch
-	function totalEmissionThroughEpochRange(
+	function throughEpochRange(
 		uint256 epochStart,
 		uint256 epochEnd
 	) internal pure returns (uint256) {
@@ -99,5 +99,14 @@ library Entities {
 				.add(value.staking)
 				.add(value.projectsReserve)
 				.add(value.lpAndListing);
+	}
+
+	function add(Value storage self, Value memory rhs) internal {
+		self.team = self.team.add(rhs.team);
+		self.protocol = self.protocol.add(rhs.protocol);
+		self.growth = self.growth.add(rhs.growth);
+		self.staking = self.staking.add(rhs.staking);
+		self.projectsReserve = self.projectsReserve.add(rhs.projectsReserve);
+		self.lpAndListing = self.lpAndListing.add(rhs.lpAndListing);
 	}
 }

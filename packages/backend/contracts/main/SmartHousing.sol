@@ -5,12 +5,16 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 
-import "./User.sol";
 import "../lib/TokenPayments.sol";
 import "../modules/sht-module/SHT.sol";
-import "./distribution/Storage.sol";
+import "../project-funding/ProjectFunding.sol";
 
 import "./Interface.sol";
+import "./User.sol";
+
+import { Distribution } from "./distribution/Storage.sol";
+import { EpochsAndPeriods } from "../lib/EpochsAndPeriods.sol";
+import { HousingStakingToken, NewHousingStakingToken } from "./HST.sol";
 
 /// @title SmartHousing
 /// @notice SmartHousing leverages blockchain technology to revolutionize real estate investment and development by enabling the tokenization of properties.
@@ -20,15 +24,22 @@ import "./Interface.sol";
 /// The SmartHousing Contract is the main contract for the SmartHousing ecosystem.
 /// This contract owns and deploys HousingProject contracts, which will represent the properties owned and managed by the SmartHousing project.
 /// The management of ecosystem users will also be done in this contract.
-contract SmartHousing is ISmartHousing, Ownable, UserModule {
+contract SmartHousing is
+	ISmartHousing,
+	Ownable,
+	UserModule,
+	HousingStakingToken
+{
 	using TokenPayments for ERC20TokenPayment;
 	using Distribution for Distribution.Storage;
 	using EpochsAndPeriods for EpochsAndPeriods.Storage;
 	using EnumerableSet for EnumerableSet.AddressSet;
+	using TokenPayments for TokenPayment;
 
 	address public projectFundingAddress;
 	address public coinbaseAddress;
 	address public shtTokenAddress;
+	HousingStakingToken public hst;
 
 	Distribution.Storage public distributionStorage;
 	EpochsAndPeriods.Storage public epochsAndPeriodsStorage;
@@ -44,6 +55,7 @@ contract SmartHousing is ISmartHousing, Ownable, UserModule {
 	constructor(address conibase, address projectFunding) {
 		coinbaseAddress = conibase;
 		projectFundingAddress = projectFunding;
+		hst = NewHousingStakingToken.create();
 
 		epochsAndPeriodsStorage.initialize(24); // One epoch will span 24 hours
 	}
@@ -98,6 +110,36 @@ contract SmartHousing is ISmartHousing, Ownable, UserModule {
 		distributionStorage.addProjectRent(projectAddress, amount);
 	}
 
+	function stake(
+		TokenPayment[] calldata stakingTokens,
+		uint256 epochsLock,
+		uint256 referrerId
+	) external payable {
+		require(
+			epochsLock >= MIN_EPOCHS_LOCK && epochsLock <= MAX_EPOCHS_LOCK,
+			"Invalid epochs lock period"
+		);
+
+		address caller = msg.sender;
+
+		// Try create ID
+		_createOrGetUserId(caller, referrerId);
+
+		// Generate rewards before staking
+		distributionStorage.generateRewards(epochsAndPeriodsStorage);
+
+		HstAttributes memory newAttr = _mintHstToken(
+			stakingTokens,
+			distributionStorage.projectsStakingRewards.checkpoint,
+			distributionStorage.shtRewardPerShare,
+			epochsLock,
+			shtTokenAddress,
+			address(ProjectFunding(projectFundingAddress).lkSht())
+		);
+
+		distributionStorage.enterStaking(newAttr.stakeWeight);
+	}
+
 	function projectDets(
 		address project
 	) public view returns (Distribution.ProjectDistributionData memory) {
@@ -113,6 +155,58 @@ contract SmartHousing is ISmartHousing, Ownable, UserModule {
 	/// @param perm The permissions to set.
 	function _setPermissions(address addr, Permissions perm) internal {
 		permissions[addr] = perm;
+	}
+
+	function _mintHstToken(
+		TokenPayment[] calldata payments,
+		uint256 projectsShareCheckpoint,
+		uint256 shtRewardPerShare,
+		uint256 lkDuration,
+		address shtAddress,
+		address lkShtAddress
+	) internal returns (HstAttributes memory attr) {
+		address caller = msg.sender;
+
+		uint256 maxProjectTokens = 10;
+		TokenPayment[] memory projectTokens = new TokenPayment[](
+			maxProjectTokens
+		);
+		uint256 projectTokenCount = 0;
+		uint256 shtAmount = 0;
+		uint256 lkShtNonce = 0;
+
+		for (uint256 i = 0; i < payments.length; i++) {
+			TokenPayment memory payment = payments[i];
+
+			if (payment.token == shtAddress) {
+				shtAmount = payment.amount;
+			} else if (payment.token == lkShtAddress) {
+				lkShtNonce = payment.nonce;
+			} else if (_projectsToken.contains(payment.token)) {
+				// Validate that the payment is for an allowed project token
+				require(
+					projectTokens.length < maxProjectTokens,
+					"Max project tokens exceeded"
+				);
+
+				projectTokens[projectTokenCount] = payment;
+				projectTokenCount++;
+			} else {
+				revert("Invalid Sent Token");
+			}
+
+			payment.receiveToken(caller);
+		}
+
+		return
+			hst.mint(
+				projectTokens,
+				projectsShareCheckpoint,
+				shtRewardPerShare,
+				lkDuration,
+				shtAmount,
+				lkShtNonce
+			);
 	}
 
 	modifier onlyProjectFunding() {

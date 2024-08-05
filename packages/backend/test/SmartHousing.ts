@@ -7,8 +7,10 @@ describe("SmartHousing", function () {
   async function deployFixtures() {
     const [owner, projectFunder, coinbase, ...otherUsers] = await ethers.getSigners();
 
-    const SmartHousing = await ethers.getContractFactory("SmartHousing");
-    const smartHousing = await SmartHousing.deploy(coinbase, projectFunder);
+    const newHSTlib = await ethers.deployContract("NewHousingStakingToken");
+    const smartHousing = await ethers.deployContract("SmartHousing", [coinbase, projectFunder], {
+      libraries: { NewHousingStakingToken: await newHSTlib.getAddress() },
+    });
 
     const housingProject = await ethers.deployContract("HousingProject", [smartHousing]);
 
