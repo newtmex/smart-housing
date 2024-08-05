@@ -16,21 +16,21 @@ library NewHousingStakingToken {
 	}
 }
 
+struct HstAttributes {
+	TokenPayment[] projectTokens;
+	uint256 projectsShareCheckpoint;
+	uint256 shtRewardPerShare;
+	uint256 shtAmount;
+	uint256 stakeWeight;
+	uint256 lkDuration;
+	uint256 lkShtNonce;
+}
+
 contract HousingStakingToken is SFT, Ownable {
 	using SafeMath for uint256;
 
 	uint256 public constant MIN_EPOCHS_LOCK = 180;
 	uint256 public constant MAX_EPOCHS_LOCK = 1080;
-
-	struct HstAttributes {
-		TokenPayment[] projectTokens;
-		uint256 projectsShareCheckpoint;
-		uint256 shtRewardPerShare;
-		uint256 shtAmount;
-		uint256 stakeWeight;
-		uint256 lkDuration;
-		uint256 lkShtNonce;
-	}
 
 	event MintHstToken(
 		address indexed to,
@@ -76,5 +76,12 @@ contract HousingStakingToken is SFT, Ownable {
 		uint256 nonce = _mint(caller, 1, abi.encode(attr), "");
 
 		emit MintHstToken(caller, nonce, attr);
+	}
+
+	function setTokenAttributes(
+		uint256 nonce,
+		HstAttributes memory attr
+	) external onlyOwner {
+		_setTokenAttributes(nonce, abi.encode(attr));
 	}
 }

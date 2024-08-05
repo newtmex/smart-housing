@@ -7,6 +7,7 @@ import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "../../lib/EpochsAndPeriods.sol";
 import "../../housing-project/HousingProject.sol";
 import "../../modules/sht-module/Economics.sol";
+import { HstAttributes } from "../HST.sol";
 
 library ProjectStakingRewards {
 	using SafeMath for uint256;
@@ -149,6 +150,95 @@ library Distribution {
 		self.projectsStakingRewards.add(stakingRewards.sub(shtStakersShare));
 
 		self.lastFundsDispatchEpoch = currentEpoch;
+	}
+
+	/// @notice Claims rewards for a given attribute.
+	/// @param self The storage struct for the `Distribution` contract.
+	/// @param attr The attributes struct for which rewards are being claimed.
+	/// @return The total amount of rewards claimed.
+	function claimRewards(
+		Storage storage self,
+		HstAttributes memory attr
+	) internal returns (uint256, HstAttributes memory) {
+		uint256 shtClaimed = 0;
+
+		// Claim PT rewards
+		uint256 ptRewardCheckpoint = self.projectsStakingRewards.checkpoint;
+		if (ptRewardCheckpoint > 0) {
+			for (uint256 i = 0; i < attr.projectTokens.length; i++) {
+				shtClaimed = shtClaimed.add(
+					computeRewardForPT(
+						self,
+						attr.projectTokens[i],
+						attr.projectsShareCheckpoint,
+						ptRewardCheckpoint
+					)
+				);
+			}
+
+			if (self.projectsStakingRewards.toShare < shtClaimed) {
+				shtClaimed = self.projectsStakingRewards.toShare;
+			}
+			self.projectsStakingRewards.toShare = self
+				.projectsStakingRewards
+				.toShare
+				.sub(shtClaimed);
+		}
+
+		// Claim SHT rewards
+		uint256 shtRPS = self.shtRewardPerShare;
+		if (shtRPS > 0 && attr.shtRewardPerShare < shtRPS) {
+			uint256 shtReward = (shtRPS.sub(attr.shtRewardPerShare))
+				.mul(attr.stakeWeight)
+				.div(DIVISION_SAFETY_CONST);
+			if (self.shtStakingRewards < shtReward) {
+				shtClaimed = self.shtStakingRewards;
+			}
+			self.shtStakingRewards = self.shtStakingRewards.sub(shtReward);
+
+			shtClaimed = shtClaimed.add(shtReward);
+		}
+
+		// Update claim parameters
+		attr.shtRewardPerShare = shtRPS;
+		attr.projectsShareCheckpoint = ptRewardCheckpoint;
+
+		return (shtClaimed, attr);
+	}
+
+	/// @notice Computes the reward for a given PT (Housing Project Token).
+	/// @param self The storage struct for the `Distribution` contract.
+	/// @param tokenPayment The token payment of the housing project.
+	/// @param stakingCheckPoint The previous checkpoint value.
+	/// @param tokenCheckPoint The new checkpoint value.
+	/// @return reward The computed reward for the given PT.
+	function computeRewardForPT(
+		Storage storage self,
+		TokenPayment memory tokenPayment,
+		uint256 stakingCheckPoint,
+		uint256 tokenCheckPoint
+	) internal view returns (uint256 reward) {
+		if (stakingCheckPoint >= tokenCheckPoint) {
+			return 0;
+		}
+
+		ProjectDistributionData storage projectData = self.projectDets[
+			tokenPayment.token
+		];
+		require(
+			tokenPayment.amount <= projectData.maxShares,
+			"Project token amount too large"
+		);
+
+		uint256 shareIncrease = tokenCheckPoint.sub(stakingCheckPoint);
+		// Project's allocation is dynamic, as rents received chages
+		uint256 projectAllocation = shareIncrease
+			.mul(projectData.receivedRents)
+			.div(self.projectsTotalReceivedRents);
+
+		reward = projectAllocation.mul(tokenPayment.amount).div(
+			projectData.maxShares
+		);
 	}
 
 	/// @notice Enters staking for the given attributes.

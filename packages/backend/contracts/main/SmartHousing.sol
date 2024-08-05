@@ -4,6 +4,7 @@ pragma solidity ^0.8.26;
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
+import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol";
 
 import "../lib/TokenPayments.sol";
 import "../modules/sht-module/SHT.sol";
@@ -14,7 +15,10 @@ import "./User.sol";
 
 import { Distribution } from "./distribution/Storage.sol";
 import { EpochsAndPeriods } from "../lib/EpochsAndPeriods.sol";
-import { HousingStakingToken, NewHousingStakingToken } from "./HST.sol";
+import { HousingStakingToken, NewHousingStakingToken, HstAttributes } from "./HST.sol";
+
+import { HousingProject } from "../housing-project/HousingProject.sol";
+import { rewardshares } from "../housing-project/RewardSharing.sol";
 
 /// @title SmartHousing
 /// @notice SmartHousing leverages blockchain technology to revolutionize real estate investment and development by enabling the tokenization of properties.
@@ -35,6 +39,7 @@ contract SmartHousing is
 	using EpochsAndPeriods for EpochsAndPeriods.Storage;
 	using EnumerableSet for EnumerableSet.AddressSet;
 	using TokenPayments for TokenPayment;
+	using SafeMath for uint256;
 
 	address public projectFundingAddress;
 	address public coinbaseAddress;
@@ -138,6 +143,60 @@ contract SmartHousing is
 		);
 
 		distributionStorage.enterStaking(newAttr.stakeWeight);
+	}
+
+	function claimRewards(uint256 hstTokenId, uint256 referrerId) external {
+		address caller = msg.sender;
+		_createOrGetUserId(caller, referrerId);
+
+		require(
+			hst.balanceOf(caller, hstTokenId) > 0,
+			"Caller does not own the hst token"
+		);
+
+		distributionStorage.generateRewards(epochsAndPeriodsStorage);
+
+		(uint256 claimedSHT, HstAttributes memory hstAttr) = distributionStorage
+			.claimRewards(
+				abi.decode(getRawTokenAttributes(hstTokenId), (HstAttributes))
+			);
+		uint256 rentRewards = 0;
+
+		// Claim rent rewards from HousingProjects
+		for (uint256 i = 0; i < hstAttr.projectTokens.length; i++) {
+			TokenPayment memory projectToken = hstAttr.projectTokens[i];
+			require(
+				projectToken.token != address(0),
+				"Invalid project address"
+			);
+
+			// Call the external contract's claimRentReward function
+			(, rewardshares memory rewardShares) = HousingProject(
+				projectToken.token
+			).claimRentReward(projectToken.nonce);
+
+			rentRewards = rentRewards.add(rewardShares.userValue);
+		}
+
+		// Update the attributes in the hst token
+		hst.setTokenAttributes(hstTokenId, hstAttr);
+
+		ERC20Burnable shtToken = ERC20Burnable(shtTokenAddress);
+
+		if (claimedSHT > 0) {
+			uint256 referrerValue = claimedSHT.mul(25).div(1000);
+			claimedSHT = claimedSHT.sub(referrerValue);
+
+			// Do referrer operations
+			(, address referrerAddr) = getReferrer(caller);
+			if (referrerAddr != address(0)) {
+				shtToken.transfer(referrerAddr, referrerValue);
+			} else {
+				shtToken.burn(referrerValue);
+			}
+		}
+
+		shtToken.transfer(caller, claimedSHT.add(rentRewards));
 	}
 
 	function projectDets(

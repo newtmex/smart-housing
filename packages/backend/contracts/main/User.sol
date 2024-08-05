@@ -36,7 +36,7 @@ abstract contract UserModule is IUserModule {
 	/// @return referrerAddress The address of the referrer, address(0) if none.
 	function getReferrer(
 		address userAddress
-	) external view returns (uint256 referrerId, address referrerAddress) {
+	) public view returns (uint256 referrerId, address referrerAddress) {
 		User storage user = users[userAddress];
 		referrerId = user.referrerId;
 		referrerAddress = userIdToAddress[referrerId];

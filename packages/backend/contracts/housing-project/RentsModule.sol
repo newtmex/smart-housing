@@ -55,7 +55,7 @@ abstract contract RentsModule is HousingSFT, CallsSmartHousing {
 	/// @return The updated HousingAttributes.
 	function claimRentReward(
 		uint256 nonce
-	) external returns (HousingAttributes memory) {
+	) external returns (HousingAttributes memory, rewardshares memory) {
 		address caller = msg.sender;
 		uint256 currentRPS = rewardPerShare;
 
@@ -65,7 +65,7 @@ abstract contract RentsModule is HousingSFT, CallsSmartHousing {
 
 		if (totalReward == 0) {
 			// Fail silently
-			return attr;
+			return (attr, rewardShares);
 		}
 
 		require(rewardsReserve >= totalReward, "Computed rewards too large");
@@ -87,7 +87,7 @@ abstract contract RentsModule is HousingSFT, CallsSmartHousing {
 
 		housingToken.transfer(caller, rewardShares.userValue); // Send to user
 
-		return attr;
+		return (attr, rewardShares);
 	}
 
 	/// @notice Computes the amount of rent claimable for a given token.
