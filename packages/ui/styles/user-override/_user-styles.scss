@@ -1,0 +1,7 @@
+// Add styles here you want to override
+
+.content-panel {
+  @media (min-width: 750) {
+    z-index: 9999;
+  }
+}

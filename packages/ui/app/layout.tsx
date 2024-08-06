@@ -1,24 +1,55 @@
+"use client";
+
+import { useCallback } from "react";
+import "../styles/global.scss";
+import AppProvider from "./provider";
 import "@rainbow-me/rainbowkit/styles.css";
-import { ScaffoldEthAppWithProviders } from "~~/components/ScaffoldEthAppWithProviders";
-import { ThemeProvider } from "~~/components/ThemeProvider";
-import "~~/styles/globals.css";
-import { getMetadata } from "~~/utils/scaffold-eth/getMetadata";
+import MainMenu from "~~/components/MainMenu";
+import MobileMenu from "~~/components/MobileMenu";
+import TopBar from "~~/components/TopBar";
+import { useContentPanel } from "~~/hooks/useContentPanel";
+import { useWindowWidthChange } from "~~/hooks/useWindowResize";
 
-export const metadata = getMetadata({
-  title: "Scaffold-ETH 2 App",
-  description: "Built with 🏗 Scaffold-ETH 2",
-});
+export default function RootLayout({ children }: { children: React.ReactNode }) {
+  const { contentPanelActive, showContentPanel, hideContentPanel, toggleContentPanel } = useContentPanel();
 
-const ScaffoldEthApp = ({ children }: { children: React.ReactNode }) => {
+  useWindowWidthChange(
+    useCallback(() => {
+      !contentPanelActive && window.innerWidth >= 1150 && showContentPanel();
+      contentPanelActive && window.innerWidth < 1150 && hideContentPanel();
+    }, [contentPanelActive]),
+  );
+
   return (
-    <html suppressHydrationWarning>
-      <body>
-        <ThemeProvider enableSystem>
-          <ScaffoldEthAppWithProviders>{children}</ScaffoldEthAppWithProviders>
-        </ThemeProvider>
+    <html lang="en">
+      <body className="menu-position-side menu-side-left full-screen color-scheme-dark with-content-panel">
+        <AppProvider>
+          <div
+            className={`all-wrapper with-side-panel solid-bg-all${contentPanelActive ? " content-panel-active" : ""}`}
+          >
+            <div className="layout-w">
+              <MobileMenu />
+              <MainMenu />
+
+              <div className="content-w">
+                <TopBar />
+                <div onClick={toggleContentPanel} className="content-panel-toggler">
+                  <i className="os-icon os-icon-grid-squares-22"></i>
+                  <span>Sidebar</span>
+                </div>
+                <div className="content-i">
+                  <div className="content-box" style={{ minHeight: "95vh" }}>
+                    {children}
+                  </div>
+
+                  {/*TODO <Sidebar /> */}
+                </div>
+              </div>
+            </div>
+            <div className="display-type"></div>
+          </div>
+        </AppProvider>
       </body>
     </html>
   );
-};
-
-export default ScaffoldEthApp;
+}
