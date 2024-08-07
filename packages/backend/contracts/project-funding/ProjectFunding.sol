@@ -69,18 +69,25 @@ contract ProjectFunding is Ownable {
 	 * @param fundingDeadline The deadline for the project funding.
 	 */
 	function _deployProject(
+		string memory name,
+		string memory symbol,
 		address fundingToken,
 		uint256 fundingGoal,
 		uint256 fundingDeadline
 	) internal {
-		HousingProject newProject = new HousingProject(smartHousingAddress);
+		HousingProject newProject = new HousingProject(
+			name,
+			symbol,
+			smartHousingAddress
+		);
 		ProjectStorage.Data memory projectData = projects.createNew(
 			projectsId,
 			projectCount,
 			fundingGoal,
 			fundingDeadline,
 			fundingToken,
-			address(newProject)
+			address(newProject),
+			address(newProject.projectSFT())
 		);
 		projectCount = projectData.id;
 
@@ -99,6 +106,8 @@ contract ProjectFunding is Ownable {
 	 */
 	function initFirstProject(
 		ERC20TokenPayment calldata shtPayment,
+		string memory name,
+		string memory symbol,
 		address smartHousingAddress_,
 		address fundingToken,
 		uint256 fundingGoal,
@@ -112,7 +121,13 @@ contract ProjectFunding is Ownable {
 
 		smartHousingAddress = smartHousingAddress_;
 
-		_deployProject(fundingToken, fundingGoal, fundingDeadline);
+		_deployProject(
+			name,
+			symbol,
+			fundingToken,
+			fundingGoal,
+			fundingDeadline
+		);
 	}
 
 	/**
@@ -123,11 +138,19 @@ contract ProjectFunding is Ownable {
 	 * @param fundingDeadline The deadline for the project funding.
 	 */
 	function deployProject(
+		string memory name,
+		string memory symbol,
 		address fundingToken,
 		uint256 fundingGoal,
 		uint256 fundingDeadline
 	) public onlyOwner {
-		_deployProject(fundingToken, fundingGoal, fundingDeadline);
+		_deployProject(
+			name,
+			symbol,
+			fundingToken,
+			fundingGoal,
+			fundingDeadline
+		);
 	}
 
 	function fundProject(
@@ -159,11 +182,7 @@ contract ProjectFunding is Ownable {
 		emit ProjectFunded(projectId, depositor, depositPayment);
 	}
 
-	function setProjectToken(
-		uint256 projectId,
-		string memory name,
-		string memory uri
-	) external onlyOwner {
+	function setProjectToken(uint256 projectId) external onlyOwner {
 		ProjectStorage.Data storage project = projects[projectId];
 		require(
 			project.status() == ProjectStorage.Status.Successful,
@@ -172,12 +191,10 @@ contract ProjectFunding is Ownable {
 
 		ISmartHousing(smartHousingAddress).addProject(project.projectAddress);
 
-		HousingProject(project.projectAddress).setTokenDetails(
-			name,
-			uri,
-			project.collectedFunds,
-			smartHousingAddress
-		);
+		address tokenAddress = HousingProject(project.projectAddress)
+			.setTokenDetails(project.collectedFunds, smartHousingAddress);
+
+		project.tokenAddress = tokenAddress;
 	}
 
 	/**
@@ -191,9 +208,10 @@ contract ProjectFunding is Ownable {
 		(ProjectStorage.Data memory project, uint256 depositAmount) = projects
 			.takeDeposit(usersProjectDeposit[projectId], projectId, depositor);
 
-		HousingProject(project.projectAddress).mintSFT(
+		HousingSFT(project.tokenAddress).mintSFT(
 			depositAmount,
-			depositor
+			depositor,
+			project.collectedFunds
 		);
 
 		// Mint LkSHT tokens if the project ID is 1

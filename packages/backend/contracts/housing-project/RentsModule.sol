@@ -12,7 +12,7 @@ import "./CallsSmartHousing.sol";
 /// @title Rents Module
 /// @notice Handles rent payments, reward calculations, and distribution for Housing projects.
 /// @dev This abstract contract should be inherited by the HousingProject contract.
-abstract contract RentsModule is HousingSFT, CallsSmartHousing {
+abstract contract RentsModule is CallsSmartHousing {
 	using TokenPayments for ERC20TokenPayment;
 	using RewardShares for rewardshares;
 
@@ -21,6 +21,7 @@ abstract contract RentsModule is HousingSFT, CallsSmartHousing {
 	uint256 public facilityManagementFunds;
 
 	ERC20Burnable housingToken;
+	HousingSFT public projectSFT;
 
 	/// @notice Receives rent payments and distributes rewards.
 	/// @param rentPayment The details of the rent payment.
@@ -40,7 +41,7 @@ abstract contract RentsModule is HousingSFT, CallsSmartHousing {
 		uint256 ecosystemReward = (rentPayment.amount * 18) / 100;
 		uint256 facilityReward = (rentPayment.amount * 7) / 100;
 
-		uint256 allShares = MAX_SUPPLY;
+		uint256 allShares = projectSFT.getMaxSupply();
 		uint256 rpsIncrease = (rentReward * DIVISION_SAFETY_CONST) / allShares;
 
 		rewardPerShare += rpsIncrease;
@@ -59,7 +60,7 @@ abstract contract RentsModule is HousingSFT, CallsSmartHousing {
 		address caller = msg.sender;
 		uint256 currentRPS = rewardPerShare;
 
-		HousingAttributes memory attr = getUserSFT(caller, nonce);
+		HousingAttributes memory attr = projectSFT.getUserSFT(caller, nonce);
 		rewardshares memory rewardShares = computeRewardShares(attr);
 		uint256 totalReward = rewardShares.total();
 
@@ -83,7 +84,7 @@ abstract contract RentsModule is HousingSFT, CallsSmartHousing {
 		}
 
 		attr.rewardsPerShare = currentRPS;
-		_setTokenAttributes(nonce, abi.encode(attr));
+		projectSFT.setTokenAttributes(nonce, abi.encode(attr));
 
 		housingToken.transfer(caller, rewardShares.userValue); // Send to user
 

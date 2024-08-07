@@ -19,6 +19,7 @@ library ProjectStorage {
 
 	struct Data {
 		uint256 id; // Unique identifier for the project
+		address tokenAddress;
 		address projectAddress; // Address of the deployed HousingProject contract
 		uint256 fundingGoal; // Target funding amount for the project
 		uint256 fundingDeadline; // Deadline timestamp for the project funding
@@ -43,7 +44,8 @@ library ProjectStorage {
 		uint256 fundingGoal,
 		uint256 fundingDeadline,
 		address fundingToken,
-		address projectAddress
+		address projectAddress,
+		address tokenAddress
 	) internal returns (Data memory) {
 		require(fundingGoal > 0, "Funding goal must be more than 0");
 		require(
@@ -60,7 +62,8 @@ library ProjectStorage {
 			fundingGoal: fundingGoal,
 			fundingDeadline: fundingDeadline,
 			fundingToken: fundingToken,
-			collectedFunds: 0
+			collectedFunds: 0,
+			tokenAddress: tokenAddress 
 		});
 
 		projects[newId] = newProjectData;

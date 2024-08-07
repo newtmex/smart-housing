@@ -14,8 +14,8 @@ struct HousingAttributes {
 
 /// @title Housing SFT
 /// @notice This contract represents a semi-fungible token (SFT) for housing projects.
-/// @dev This abstract contract will be inherited by the HousingProject contract.
-abstract contract HousingSFT is Ownable, SFT {
+/// @dev This contract will be inherited by the HousingProject contract.
+contract HousingSFT is SFT {
 	using EnumerableSet for EnumerableSet.UintSet;
 
 	// FIXME this value should be unique to each contract, should depend on
@@ -23,22 +23,45 @@ abstract contract HousingSFT is Ownable, SFT {
 	// be minted for investors
 	uint256 public constant MAX_SUPPLY = 1_000_000;
 
-	/// @notice The name of this Housing Project SFT.
-	string public name;
-
 	/// @notice The amount of fungible tokens collected from investors to finance the development of this housing project.
 	uint256 public amountRaised;
 
 	/// @notice The current amount out of the `MAX_SUPPLY` of tokens minted.
 	uint256 public totalSupply;
 
+	constructor(
+		string memory name_,
+		string memory symbol_
+	) SFT(name_, symbol_) {}
+
+	function setAmountRaised(uint256 amountRaised_) external onlyOwner {
+		amountRaised = amountRaised_;
+	}
+
+	modifier canMint() {
+		address sftOwner = owner();
+
+		require(
+			Ownable(sftOwner).owner() == _msgSender(),
+			"not allowed to mint"
+		);
+
+		_;
+	}
+
 	/// @notice Mints SFT tokens for a depositor based on the amount of deposit.
 	/// @param depositAmt The amount of fungible token deposited.
 	/// @param depositor The address of the depositor.
 	function mintSFT(
 		uint256 depositAmt,
-		address depositor
-	) external onlyOwner returns (uint256) {
+		address depositor,
+		uint256 amount_raised
+	) external canMint returns (uint256) {
+		// TODO remove after demo due to not beign able to move blocks in public networks
+		{
+			amountRaised = amount_raised;
+		}
+
 		uint256 totalDeposits = amountRaised;
 		uint256 maxShares = MAX_SUPPLY;
 
@@ -78,5 +101,13 @@ abstract contract HousingSFT is Ownable, SFT {
 
 	function getMaxSupply() public pure returns (uint256) {
 		return MAX_SUPPLY;
+	}
+
+	function tokenDetails()
+		public
+		view
+		returns (string memory, string memory, uint256)
+	{
+		return (name(), symbol(), getMaxSupply());
 	}
 }

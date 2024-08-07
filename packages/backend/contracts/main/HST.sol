@@ -26,7 +26,7 @@ struct HstAttributes {
 	uint256 lkShtNonce;
 }
 
-contract HousingStakingToken is SFT, Ownable {
+contract HousingStakingToken is SFT {
 	using SafeMath for uint256;
 
 	uint256 public constant MIN_EPOCHS_LOCK = 180;
@@ -37,6 +37,8 @@ contract HousingStakingToken is SFT, Ownable {
 		uint256 nonce,
 		HstAttributes attributes
 	);
+
+	constructor() SFT("Housing Staking Token", "HST") {}
 
 	function mint(
 		TokenPayment[] calldata projectTokens,

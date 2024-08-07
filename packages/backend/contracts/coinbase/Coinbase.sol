@@ -28,6 +28,8 @@ contract Coinbase is Ownable, SHTModule {
 	 * @param fundingDeadline The deadline for the project funding.
 	 */
 	function startICO(
+		string memory name,
+		string memory symbol,
 		address projectFundingAddr,
 		address smartHousingAddress,
 		address fundingToken,
@@ -40,6 +42,8 @@ contract Coinbase is Ownable, SHTModule {
 
 		ProjectFunding(projectFundingAddr).initFirstProject(
 			icoPayment,
+			name,
+			symbol,
 			smartHousingAddress,
 			fundingToken,
 			fundingGoal,
