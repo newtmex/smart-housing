@@ -4,9 +4,12 @@ import { useCallback } from "react";
 import Link from "next/link";
 import { erc20Abi } from "viem";
 import { useWriteContract } from "wagmi";
+import { useReferralInfo } from "~~/components/ReferralCard/hooks";
 import { useAccountTokens } from "~~/hooks";
 import { ProjectsValue, useProjects } from "~~/hooks/housingProject";
 import useRawCallsInfo from "~~/hooks/useRawCallsInfo";
+import { getItem } from "~~/storage/session";
+import { RefIdData } from "~~/utils";
 import { prettyFormatAmount } from "~~/utils/prettyFormatAmount";
 import { RoutePath } from "~~/utils/routes";
 
@@ -24,12 +27,17 @@ export default function Properties() {
     console.log("rent");
   }, []);
 
+  const { refIdData, refresh: refreshUserRefInfo } = useReferralInfo();
+
   const onBuyPropertyUnits = useCallback(
     async ({ data }: Pick<ProjectsValue["projectData"], "data">) => {
       if (!projectFunding) {
         throw new Error("projectFunding not loaded");
       }
       if (!data.isTokensClaimable) {
+        const referrerLink = getItem("userRefBy");
+        const referrerId = referrerLink ? BigInt(RefIdData.getID(referrerLink)) : 0n;
+
         // TODO set user configured values
         const payment = { amount: data.fundingGoal, token: data.fundingToken };
         await writeContractAsync({
@@ -44,11 +52,13 @@ export default function Properties() {
           address: projectFunding.address,
           functionName: "fundProject",
           // TODO set user configured values
-          args: [payment, data.id, 0n],
+          args: [payment, data.id, referrerId],
         });
+
+        await refreshUserRefInfo();
       }
       if (data.isTokensClaimable) {
-        writeContractAsync({
+        await writeContractAsync({
           abi: projectFunding.abi,
           address: projectFunding.address,
           functionName: "claimProjectTokens",
@@ -57,7 +67,7 @@ export default function Properties() {
         });
       }
     },
-    [projectFunding],
+    [projectFunding, refIdData],
   );
 
   return (
