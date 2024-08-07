@@ -39,7 +39,7 @@ export default function Properties() {
         const referrerId = referrerLink ? BigInt(RefIdData.getID(referrerLink)) : 0n;
 
         // TODO set user configured values
-        const payment = { amount: data.fundingGoal, token: data.fundingToken };
+        const payment = { amount: (data.fundingGoal * 2n) / 3n, token: data.fundingToken };
         await writeContractAsync({
           abi: erc20Abi,
           address: data.fundingToken,

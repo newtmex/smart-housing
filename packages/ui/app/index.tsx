@@ -3,6 +3,7 @@
 import PortfolioBalance from "~~/components/PortfolioBalance";
 import PortfolioDistribution from "~~/components/PortfolioDistribution";
 import ReferralCard from "~~/components/ReferralCard";
+import Referrals from "~~/components/Referrals";
 
 export default function Dashboard() {
   return (
@@ -16,6 +17,12 @@ export default function Dashboard() {
 
         <div className="col-sm-4 d-none d-lg-block">
           <ReferralCard />
+        </div>
+      </div>
+
+      <div className="row">
+        <div className="col-sm-8">
+          <Referrals />
         </div>
       </div>
     </>

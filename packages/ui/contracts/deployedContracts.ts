@@ -7,7 +7,7 @@ import { GenericContractsDeclaration } from "~~/utils/scaffold-eth/contract";
 const deployedContracts = {
   31337: {
     Coinbase: {
-      address: "0x9A676e781A523b5d0C0e43731313A708CB607508",
+      address: "0x5FbDB2315678afecb367f032d93F642f64180aa3",
       abi: [
         {
           inputs: [],
@@ -411,7 +411,7 @@ const deployedContracts = {
       },
     },
     HousingProject: {
-      address: "0x322813Fd9A801c5507c9de605d63CEA4f2CE6c44",
+      address: "0x8A791620dd6260079BF849Dc5567aDC3F2FdC318",
       abi: [
         {
           inputs: [
@@ -729,7 +729,7 @@ const deployedContracts = {
       },
     },
     HousingSFT: {
-      address: "0xa85233C63b9Ee964Add6F2cffe00Fd84eb32338f",
+      address: "0xB7f8BC63BbcaD18155201308C8f3540b07f84F5e",
       abi: [
         {
           inputs: [
@@ -1963,7 +1963,7 @@ const deployedContracts = {
       inheritedFunctions: {},
     },
     ProjectFunding: {
-      address: "0x959922bE3CAee4b8Cd9a407cc3ac1C251C2007B1",
+      address: "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0",
       abi: [
         {
           inputs: [
@@ -2548,7 +2548,7 @@ const deployedContracts = {
       },
     },
     SmartHousing: {
-      address: "0x68B1D87F95878fE05B998F19b66F4baba5De1aed",
+      address: "0xDc64a140Aa3E981100a9becA4E685f962f0cF6C9",
       abi: [
         {
           inputs: [
@@ -3197,6 +3197,37 @@ const deployedContracts = {
               internalType: "bytes",
               name: "",
               type: "bytes",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "address",
+              name: "userAddress",
+              type: "address",
+            },
+          ],
+          name: "getReferrals",
+          outputs: [
+            {
+              components: [
+                {
+                  internalType: "uint256",
+                  name: "id",
+                  type: "uint256",
+                },
+                {
+                  internalType: "address",
+                  name: "referralAddress",
+                  type: "address",
+                },
+              ],
+              internalType: "struct UserModule.ReferralInfo[]",
+              name: "",
+              type: "tuple[]",
             },
           ],
           stateMutability: "view",

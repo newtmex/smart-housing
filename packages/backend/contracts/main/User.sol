@@ -4,6 +4,11 @@ pragma solidity 0.8.26;
 import "./Interface.sol";
 
 abstract contract UserModule is IUserModule {
+	struct ReferralInfo {
+		uint256 id;
+		address referralAddress;
+	}
+
 	struct User {
 		uint256 id;
 		address addr;
@@ -48,6 +53,23 @@ abstract contract UserModule is IUserModule {
 		return users[userAddress].id;
 	}
 
+	function getReferrals(
+		address userAddress
+	) external view returns (ReferralInfo[] memory) {
+		uint256[] memory referralIds = users[userAddress].referrals;
+		ReferralInfo[] memory referrals = new ReferralInfo[](
+			referralIds.length
+		);
+
+		for (uint256 i = 0; i < referralIds.length; i++) {
+			uint256 id = referralIds[i];
+			address refAddr = userIdToAddress[id];
+			referrals[i] = ReferralInfo({ id: id, referralAddress: refAddr });
+		}
+
+		return referrals;
+	}
+
 	/// @notice Internal function to create or get the user ID.
 	/// @param userAddr The address of the user.
 	/// @param referrerId The ID of the referrer.
@@ -65,11 +87,15 @@ abstract contract UserModule is IUserModule {
 			id: userCount,
 			addr: userAddr,
 			referrerId: referrerId,
-			referrals: new uint256[](1)
+			referrals: new uint256[](0)
 		});
 		userIdToAddress[userCount] = userAddr;
 
-		if (referrerId != 0 && userIdToAddress[referrerId] != address(0)) {
+		if (
+			referrerId != 0 &&
+			referrerId != userCount &&
+			userIdToAddress[referrerId] != address(0)
+		) {
 			users[userIdToAddress[referrerId]].referrals.push(userCount);
 			emit ReferralAdded(referrerId, userCount);
 		}
