@@ -1,7 +1,7 @@
 import { ReactNode, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import BigNumber from "bignumber.js";
-import { useAccountTokens, useTokenPrices } from "~~/hooks";
+import { useAccountTokens } from "~~/hooks";
 import { useProjects } from "~~/hooks/housingProject";
 import { useWindowWidthChange } from "~~/hooks/useWindowResize";
 import { prettyFormatAmount } from "~~/utils/prettyFormatAmount";
@@ -55,31 +55,21 @@ function TabTable<T = any>({ data, renderTableData }: TableProps<T>) {
 }
 
 export default function PortfolioBalance() {
-  const prices = useTokenPrices();
-  const { sht, lkSht, projectsToken } = useAccountTokens();
   const projectsTokenDetail = useProjects().map(v => ({
     symbol: v.projectData.sftDetails.symbol,
     name: v.projectData.sftDetails.name,
   }));
 
+  const { prices, ownedAssets } = useAccountTokens();
+
   const portfolioValue = useMemo(() => {
-    let value = new BigNumber(0);
-
-    for (const token of [sht, lkSht, ...(projectsToken || [])]) {
-      if (token) {
-        const price = prices["projectData" in token ? token.projectData.sftDetails.symbol : token.symbol];
-
-        value = value
-          .plus(new BigNumber(token.balance.toString()).multipliedBy(price.toFixed(2)))
-          .dividedBy(10 ** ("projectData" in token ? 0 : token.decimals));
-      }
-    }
+    const value = ownedAssets.reduce((acc, cur) => acc.plus(cur.value), BigNumber(0));
 
     return prettyFormatAmount({ value: value.toFixed(0), decimals: 2 });
-  }, [sht, lkSht, projectsToken, prices]);
+  }, [ownedAssets]);
 
   return (
-    <div className="col-sm-12 col-lg-8 col-xxl-6">
+    <div className="col-sm-12 col-lg-6">
       <div className="element-balances justify-content-between mobile-full-width">
         <div className="balance balance-v2">
           <div className="balance-title">Your Portfolio Balance</div>
@@ -89,17 +79,19 @@ export default function PortfolioBalance() {
           </div>
         </div>
         <div className="balance-table pl-sm-2">
-          <TabTable
-            data={projectsTokenDetail}
-            renderTableData={token => (
-              <td key={token.symbol}>
-                <strong>${prices[token.symbol].toFixed(2)}</strong>
-                <div className="balance-label smaller lighter text-nowrap">
-                  {token.name} {token.symbol}
-                </div>
-              </td>
-            )}
-          />
+          {prices && (
+            <TabTable
+              data={projectsTokenDetail}
+              renderTableData={token => (
+                <td key={token.symbol}>
+                  <strong>${prices[token.symbol]?.toFixed(2) || "0"}</strong>
+                  <div className="balance-label smaller lighter text-nowrap">
+                    {token.name} {token.symbol}
+                  </div>
+                </td>
+              )}
+            />
+          )}
         </div>
       </div>
       <div className="element-wrapper pb-4 mb-4 border-bottom">
