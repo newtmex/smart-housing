@@ -57,6 +57,7 @@ export const useProjectsInfo = () => {
             }),
           ),
         ),
+    { keepPreviousData: true },
   );
 };
 

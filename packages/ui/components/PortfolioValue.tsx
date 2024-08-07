@@ -49,7 +49,7 @@ export default function PortfolioValue() {
           </div>
           <div className="fs-sub">
             <span>Balance:</span>
-            <strong>{prettyFormatAmount({ value: sht?.toString() || "0" })}</strong>
+            <strong>{prettyFormatAmount({ value: sht?.balance || "0" })}</strong>
           </div>
         </div>
         <div onClick={viewToggler} className="fs-selector-trigger">
