@@ -3,19 +3,23 @@
 import { useCallback, useEffect, useRef } from "react";
 
 export const useWindowWidthChange = (cb: () => void) => {
-  const windowWidthRef = useRef(window.innerWidth);
+  const windowWidthRef = useRef(typeof window !== "undefined" ? window.innerWidth : 0);
   const run = useCallback(() => {
-    if (window.innerWidth != windowWidthRef.current) {
-      windowWidthRef.current == window.innerWidth;
-      cb();
+    if (typeof window !== "undefined") {
+      if (window.innerWidth != windowWidthRef.current) {
+        windowWidthRef.current == window.innerWidth;
+        cb();
+      }
     }
   }, [cb]);
 
   useEffect(() => {
-    window.addEventListener("resize", run);
+    if (typeof window !== "undefined") {
+      window.addEventListener("resize", run);
 
-    return () => {
-      window.removeEventListener("resize", run);
-    };
+      return () => {
+        window.removeEventListener("resize", run);
+      };
+    }
   }, [run]);
 };

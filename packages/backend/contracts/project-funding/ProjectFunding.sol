@@ -11,11 +11,12 @@ import "../lib/LkSHTAttributes.sol";
 
 import "../main/Interface.sol";
 
-import "../housing-project/HousingProject.sol";
 import "../modules/LockedSmartHousingToken.sol";
 import "../modules/sht-module/SHT.sol";
 
+import { HousingSFT } from "../housing-project/HousingSFT.sol";
 import { TokenPayment } from "../lib/TokenPayments.sol";
+import { NewHousingProject, HousingProject } from "../housing-project/NewHousingProjectLib.sol";
 
 /**
  * @title ProjectFunding
@@ -77,7 +78,7 @@ contract ProjectFunding is Ownable {
 		uint256 fundingGoal,
 		uint256 fundingDeadline
 	) internal {
-		HousingProject newProject = new HousingProject(
+		HousingProject newProject = NewHousingProject.create(
 			name,
 			symbol,
 			smartHousingAddress

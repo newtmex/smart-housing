@@ -12,9 +12,10 @@ task("deployProject", "Deploys new Housing Project")
     const { deployer } = await hre.getNamedAccounts();
     const projectFunding = await hre.ethers.getContract<ProjectFunding>("ProjectFunding", deployer);
 
-    const currentTimestamp = await time.latest();
+    const currentBlock = await hre.ethers.provider.getBlockNumber();
+    const currentTimestamp = (await hre.ethers.provider.getBlock(currentBlock))!.timestamp;
 
-    await projectFunding.deployProject(name, symbol, ZeroAddress, parseEther(fundingGoal), currentTimestamp + 100_000);
+    await projectFunding.deployProject(name, symbol, ZeroAddress, parseEther(fundingGoal), currentTimestamp + 10_000_000);
     const projectId = await projectFunding.projectCount();
 
     // TODO idealy, this is to be done after successful funding, but it will be teadious

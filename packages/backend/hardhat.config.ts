@@ -48,28 +48,27 @@ const config: HardhatUserConfig = {
         enabled: process.env.MAINNET_FORKING_ENABLED === "true",
       },
     },
-    opBNB: {
+    opbnb: {
+      chainId: 5611,
       url: `https://opbnb-testnet-rpc.bnbchain.org/`,
       accounts: [deployerPrivateKey],
     },
   },
   // configuration for harhdat-verify plugin
   etherscan: {
-    apiKey: `${etherscanApiKey}`,
+    apiKey: { opbnb: `${etherscanApiKey}` },
     customChains: [
       {
-        chainId: 5611,
-        network: "opBNB",
-        urls: { apiURL: "https://opbnb-testnet-rpc.bnbchain.org/api", browserURL: "https://testnet.opbnbscan.com" },
+        network: "opbnb",
+        chainId: 5611, // Replace with the correct chainId for the "opbnb" network
+        urls: {
+          apiURL: `https://open-platform.nodereal.io/${etherscanApiKey}/op-bnb-testnet/contract/`,
+          browserURL: "https://testnet.opbnbscan.com/",
+        },
       },
     ],
   },
-  // configuration for etherscan-verify from hardhat-deploy plugin
-  verify: {
-    etherscan: {
-      apiKey: `${etherscanApiKey}`,
-    },
-  },
+
   sourcify: {
     enabled: false,
   },

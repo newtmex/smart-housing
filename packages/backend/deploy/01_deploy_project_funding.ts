@@ -8,12 +8,16 @@ const deployProjectFundingContract: DeployFunction = async function (hre: Hardha
 
   const coinbaseAddress = await (await ethers.getContract("Coinbase", deployer)).getAddress();
   const newLkSHTlib = await ethers.deployContract("NewLkSHT");
+  const newHousingProjectLib = await ethers.deployContract("NewHousingProject");
 
   await deploy("ProjectFunding", {
     from: deployer,
     args: [coinbaseAddress],
 
-    libraries: { NewLkSHT: await newLkSHTlib.getAddress() },
+    libraries: {
+      NewLkSHT: await newLkSHTlib.getAddress(),
+      NewHousingProject: await newHousingProjectLib.getAddress(),
+    },
   });
 };
 
