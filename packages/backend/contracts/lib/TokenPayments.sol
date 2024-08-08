@@ -31,9 +31,26 @@ library TokenPayments {
 		payment.token.transferFrom(from, address(this), payment.amount);
 	}
 
-	// Receives both SFTs and ERC20, ERC20 have nonce as 0
+	// Receives both Native, SFTs and ERC20; ERC20 have nonce as 0, Native coins have address 0 as token value
+	function receiveToken(TokenPayment memory payment) internal {
+		receiveToken(payment, msg.sender);
+	}
+
 	function receiveToken(TokenPayment memory payment, address from) internal {
-		if (payment.nonce == 0) {
+		if (payment.token == address(0)) {
+			// Native payment
+
+			require(
+				payment.amount == msg.value,
+				"expected payment amount must equal sent amount"
+			);
+			require(
+				from == msg.sender,
+				"can receive native payment only from caller"
+			);
+			
+			// Nothing to do again since the VM will handle balance movements
+		} else if (payment.nonce == 0) {
 			IERC20(payment.token).transferFrom(
 				from,
 				address(this),

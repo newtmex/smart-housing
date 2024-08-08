@@ -8,7 +8,7 @@ import "./TokenPayments.sol";
 
 library ProjectStorage {
 	using SafeMath for uint256;
-	using TokenPayments for ERC20TokenPayment;
+	using TokenPayments for TokenPayment;
 	using ProjectStorage for Data;
 
 	enum Status {
@@ -52,7 +52,6 @@ library ProjectStorage {
 			fundingDeadline > block.timestamp,
 			"Deadline can't be in the past"
 		);
-		require(fundingToken != address(0), "Invalid token provided");
 
 		uint256 newId = projectCount.add(1);
 
@@ -63,7 +62,7 @@ library ProjectStorage {
 			fundingDeadline: fundingDeadline,
 			fundingToken: fundingToken,
 			collectedFunds: 0,
-			tokenAddress: tokenAddress 
+			tokenAddress: tokenAddress
 		});
 
 		projects[newId] = newProjectData;
@@ -77,7 +76,7 @@ library ProjectStorage {
 		mapping(address => uint256) storage usersDeposit,
 		uint256 projectId,
 		address depositor,
-		ERC20TokenPayment calldata payment
+		TokenPayment calldata payment
 	) internal {
 		require(payment.amount > 0, "Invalid funding amount");
 
@@ -91,7 +90,7 @@ library ProjectStorage {
 			address(payment.token) == project.fundingToken,
 			"Wrong token payment"
 		);
-		payment.accept();
+		payment.receiveToken();
 
 		project.collectedFunds = project.collectedFunds.add(payment.amount);
 		usersDeposit[depositor] = usersDeposit[depositor].add(payment.amount);

@@ -30,40 +30,49 @@ export default function Properties() {
   const { refIdData, refresh: refreshUserRefInfo } = useReferralInfo();
 
   const onBuyPropertyUnits = useCallback(
-    async ({ data }: Pick<ProjectsValue["projectData"], "data">) => {
+    async ({
+      data: { fundingGoal, id: projectId, isTokensClaimable },
+      fundingToken,
+    }: Pick<ProjectsValue["projectData"], "data" | "fundingToken">) => {
       if (!projectFunding) {
         throw new Error("projectFunding not loaded");
       }
-      if (!data.isTokensClaimable) {
+      if (!isTokensClaimable) {
         const referrerLink = getItem("userRefBy");
         const referrerId = referrerLink ? BigInt(RefIdData.getID(referrerLink)) : 0n;
 
-        // TODO set user configured values
-        const payment = { amount: (data.fundingGoal * 2n) / 3n, token: data.fundingToken };
-        await writeContractAsync({
-          abi: erc20Abi,
-          address: data.fundingToken,
-          functionName: "approve",
-          args: [projectFunding.address, payment.amount],
-        });
+        const payment = {
+          // TODO set user configured amount
+          amount: (fundingGoal * 2n) / 3n,
+          token: fundingToken.tokenAddress,
+          nonce: 0n,
+        };
+
+        if (!fundingToken.isNative) {
+          await writeContractAsync({
+            abi: erc20Abi,
+            address: fundingToken.tokenAddress,
+            functionName: "approve",
+            args: [projectFunding.address, payment.amount],
+          });
+        }
 
         await writeContractAsync({
           abi: projectFunding.abi,
           address: projectFunding.address,
           functionName: "fundProject",
-          // TODO set user configured values
-          args: [payment, data.id, referrerId],
+          args: [payment, projectId, referrerId],
+          value: fundingToken.isNative ? payment.amount : undefined,
         });
 
         await refreshUserRefInfo();
       }
-      if (data.isTokensClaimable) {
+      if (isTokensClaimable) {
         await writeContractAsync({
           abi: projectFunding.abi,
           address: projectFunding.address,
           functionName: "claimProjectTokens",
-          // TODO set user configured values
-          args: [data.id],
+          args: [projectId],
         });
       }
     },
@@ -134,7 +143,7 @@ export default function Properties() {
                               <div className="item-buttons col-4">
                                 <button
                                   className={`btn btn-${data.isTokensClaimable ? "success" : "warning"}`}
-                                  onClick={() => onBuyPropertyUnits({ data })}
+                                  onClick={() => onBuyPropertyUnits({ data, fundingToken })}
                                 >
                                   {!data.isTokensClaimable ? "Buy" : "Claim Tokens"}
                                 </button>

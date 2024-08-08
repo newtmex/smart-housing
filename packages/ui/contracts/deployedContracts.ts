@@ -7,7 +7,7 @@ import { GenericContractsDeclaration } from "~~/utils/scaffold-eth/contract";
 const deployedContracts = {
   31337: {
     Coinbase: {
-      address: "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+      address: "0x0B306BF915C4d645ff596e518fAf3F9669b97016",
       abi: [
         {
           inputs: [],
@@ -1963,7 +1963,7 @@ const deployedContracts = {
       inheritedFunctions: {},
     },
     ProjectFunding: {
-      address: "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0",
+      address: "0x9A9f2CCfdE556A7E9Ff0848998Aa4a0CFD8863AE",
       abi: [
         {
           inputs: [
@@ -2026,7 +2026,7 @@ const deployedContracts = {
             {
               components: [
                 {
-                  internalType: "contract IERC20",
+                  internalType: "address",
                   name: "token",
                   type: "address",
                 },
@@ -2035,9 +2035,14 @@ const deployedContracts = {
                   name: "amount",
                   type: "uint256",
                 },
+                {
+                  internalType: "uint256",
+                  name: "nonce",
+                  type: "uint256",
+                },
               ],
               indexed: false,
-              internalType: "struct ERC20TokenPayment",
+              internalType: "struct TokenPayment",
               name: "payment",
               type: "tuple",
             },
@@ -2184,7 +2189,7 @@ const deployedContracts = {
             {
               components: [
                 {
-                  internalType: "contract IERC20",
+                  internalType: "address",
                   name: "token",
                   type: "address",
                 },
@@ -2193,8 +2198,13 @@ const deployedContracts = {
                   name: "amount",
                   type: "uint256",
                 },
+                {
+                  internalType: "uint256",
+                  name: "nonce",
+                  type: "uint256",
+                },
               ],
-              internalType: "struct ERC20TokenPayment",
+              internalType: "struct TokenPayment",
               name: "depositPayment",
               type: "tuple",
             },
@@ -2548,7 +2558,7 @@ const deployedContracts = {
       },
     },
     SmartHousing: {
-      address: "0xDc64a140Aa3E981100a9becA4E685f962f0cF6C9",
+      address: "0x3Aa5ebB10DC797CAC828524e59A333d0A371443c",
       abi: [
         {
           inputs: [

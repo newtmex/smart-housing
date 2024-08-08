@@ -1,6 +1,7 @@
 import { numberToPaddedHex } from "@multiversx/sdk-core/out/utils.codec";
 
 export * from "./sdkDappUtils";
+export * from "./fundingTokenInfo";
 
 export const APP_NAME = "Smart Housing";
 

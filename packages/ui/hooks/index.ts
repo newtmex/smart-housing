@@ -66,6 +66,7 @@ export const useAccountTokens = () => {
         typeof projectsToken,
       ];
     },
+    { keepPreviousData: true },
   );
 
   const ownedAssets = useMemo(() => {
@@ -112,7 +113,7 @@ export const useAccountTokens = () => {
     }
 
     return assets;
-  }, [data]);
+  }, [data, prices]);
 
   if (!data) {
     return {

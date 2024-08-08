@@ -17,6 +17,7 @@
     "format": "yarn next:format && yarn hardhat:format",
     "generate": "yarn workspace @smart-housing/backend generate",
     "hardhat-verify": "yarn workspace @smart-housing/backend hardhat-verify",
+    "hardhat": "yarn workspace @smart-housing/backend hardhat",
     "hardhat:format": "yarn workspace @smart-housing/backend format",
     "hardhat:coverage": "yarn workspace @smart-housing/backend coverage",
     "hardhat:lint": "yarn workspace @smart-housing/backend lint",

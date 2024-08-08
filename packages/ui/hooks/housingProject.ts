@@ -1,6 +1,6 @@
 import useRawCallsInfo from "./useRawCallsInfo";
 import useSwr from "swr";
-import { erc20Abi } from "viem";
+import getFundingTokenInfo from "~~/utils/fundingTokenInfo";
 
 export const useProjectsInfo = () => {
   const { client, projectFunding, housingSFTAbi } = useRawCallsInfo();
@@ -15,29 +15,13 @@ export const useProjectsInfo = () => {
           // Merge with maxSupply
           Promise.all(
             projectsData.map(async data => {
-              const [[name, symbol, maxSupply], ...fundingToken] = await Promise.all([
+              const [[name, symbol, maxSupply], fundingToken] = await Promise.all([
                 client.readContract({
                   abi: housingSFTAbi,
                   address: data.tokenAddress,
                   functionName: "tokenDetails",
                 }),
-                ...(await Promise.all([
-                  client.readContract({
-                    abi: erc20Abi,
-                    address: data.fundingToken,
-                    functionName: "symbol",
-                  }),
-                  client.readContract({
-                    abi: erc20Abi,
-                    address: data.fundingToken,
-                    functionName: "name",
-                  }),
-                  client.readContract({
-                    abi: erc20Abi,
-                    address: data.fundingToken,
-                    functionName: "decimals",
-                  }),
-                ])),
+                getFundingTokenInfo({ tokenAddress: data.fundingToken, client }),
               ]);
 
               return {
@@ -52,7 +36,7 @@ export const useProjectsInfo = () => {
                   name,
                   symbol,
                 },
-                fundingToken: { name: fundingToken[1], symbol: fundingToken[0], decimals: fundingToken[2] },
+                fundingToken,
               };
             }),
           ),

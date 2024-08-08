@@ -15,6 +15,8 @@ import "../housing-project/HousingProject.sol";
 import "../modules/LockedSmartHousingToken.sol";
 import "../modules/sht-module/SHT.sol";
 
+import { TokenPayment } from "../lib/TokenPayments.sol";
+
 /**
  * @title ProjectFunding
  * @dev This contract is used for initializing and deploying housing projects.
@@ -46,7 +48,7 @@ contract ProjectFunding is Ownable {
 	event ProjectFunded(
 		uint256 indexed projectId,
 		address indexed depositor,
-		ERC20TokenPayment payment
+		TokenPayment payment
 	);
 	event ProjectTokensClaimed(
 		address indexed depositor,
@@ -154,7 +156,7 @@ contract ProjectFunding is Ownable {
 	}
 
 	function fundProject(
-		ERC20TokenPayment calldata depositPayment,
+		TokenPayment calldata depositPayment,
 		uint256 projectId,
 		uint256 referrerId
 	) external payable {
