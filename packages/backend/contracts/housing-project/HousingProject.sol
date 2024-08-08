@@ -23,8 +23,7 @@ contract HousingProject is RentsModule, Ownable {
 	function setTokenDetails(
 		uint256 amountRaised,
 		address housingTokenAddr
-	) external onlyOwner returns (address tokenAddress) {
-		require(address(projectSFT) == address(0), "Token details set already");
+	) external onlyOwner {
 		require(amountRaised == 0, "Token details set already");
 
 		housingToken = ERC20Burnable(housingTokenAddr);
@@ -32,9 +31,7 @@ contract HousingProject is RentsModule, Ownable {
 		projectSFT.setAmountRaised(amountRaised);
 		string memory name = projectSFT.name();
 
-		tokenAddress = address(projectSFT);
-
-		emit TokenIssued(tokenAddress, name, amountRaised);
+		emit TokenIssued(address(projectSFT), name, amountRaised);
 	}
 
 	function getMaxSupply() public view returns (uint256) {

@@ -7,7 +7,7 @@ import { GenericContractsDeclaration } from "~~/utils/scaffold-eth/contract";
 const deployedContracts = {
   31337: {
     Coinbase: {
-      address: "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+      address: "0x1429859428C0aBc9C2C47C8Ee9FBaf82cFA0F20f",
       abi: [
         {
           inputs: [],
@@ -148,6 +148,37 @@ const deployedContracts = {
             },
           ],
           stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "uint256",
+              name: "amount",
+              type: "uint256",
+            },
+          ],
+          name: "burn",
+          outputs: [],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "address",
+              name: "account",
+              type: "address",
+            },
+            {
+              internalType: "uint256",
+              name: "amount",
+              type: "uint256",
+            },
+          ],
+          name: "burnFrom",
+          outputs: [],
+          stateMutability: "nonpayable",
           type: "function",
         },
         {
@@ -400,6 +431,8 @@ const deployedContracts = {
         allowance: "contracts/modules/sht-module/SHTModule.sol",
         approve: "contracts/modules/sht-module/SHTModule.sol",
         balanceOf: "contracts/modules/sht-module/SHTModule.sol",
+        burn: "contracts/modules/sht-module/SHTModule.sol",
+        burnFrom: "contracts/modules/sht-module/SHTModule.sol",
         decimals: "contracts/modules/sht-module/SHTModule.sol",
         decreaseAllowance: "contracts/modules/sht-module/SHTModule.sol",
         increaseAllowance: "contracts/modules/sht-module/SHTModule.sol",
@@ -411,7 +444,7 @@ const deployedContracts = {
       },
     },
     HousingProject: {
-      address: "0x8A791620dd6260079BF849Dc5567aDC3F2FdC318",
+      address: "0x82e01223d51Eb87e16A03E24687EDF0F294da6f1",
       abi: [
         {
           inputs: [
@@ -691,13 +724,7 @@ const deployedContracts = {
             },
           ],
           name: "setTokenDetails",
-          outputs: [
-            {
-              internalType: "address",
-              name: "tokenAddress",
-              type: "address",
-            },
-          ],
+          outputs: [],
           stateMutability: "nonpayable",
           type: "function",
         },
@@ -1479,7 +1506,7 @@ const deployedContracts = {
       },
     },
     LkSHT: {
-      address: "0x610178dA211FEF7D417bC0e6FeD39F05609AD788",
+      address: "0xf5059a5D33d5853360D16C683c16e67980206f36",
       abi: [
         {
           inputs: [
@@ -2094,7 +2121,7 @@ const deployedContracts = {
       inheritedFunctions: {},
     },
     ProjectFunding: {
-      address: "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0",
+      address: "0x162A433068F51e18b7d13932F27e66a3f99E6890",
       abi: [
         {
           inputs: [
@@ -2689,7 +2716,7 @@ const deployedContracts = {
       },
     },
     SmartHousing: {
-      address: "0xDc64a140Aa3E981100a9becA4E685f962f0cF6C9",
+      address: "0x5081a39b8A5f0E35a8D959395a630b68B74Dd30f",
       abi: [
         {
           inputs: [

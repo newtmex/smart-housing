@@ -2,12 +2,12 @@
 
 import { useCallback } from "react";
 import Link from "next/link";
-import { erc20Abi } from "viem";
 import { useAccount, useWriteContract } from "wagmi";
 import { useReferralInfo } from "~~/components/ReferralCard/hooks";
 import { useAccountTokens } from "~~/hooks";
 import { ProjectsValue, useProjects } from "~~/hooks/housingProject";
 import useRawCallsInfo from "~~/hooks/useRawCallsInfo";
+import { useSpendERC20 } from "~~/hooks/useSpendERC20";
 import { getItem } from "~~/storage/session";
 import { RefIdData } from "~~/utils";
 import { prettyFormatAmount } from "~~/utils/prettyFormatAmount";
@@ -17,17 +17,39 @@ import { isZeroAddress } from "~~/utils/scaffold-eth/common";
 export default function Properties() {
   const properties = useProjects();
 
-  const { projectsToken: _projectsToken } = useAccountTokens();
+  const { projectsToken: _projectsToken, sht } = useAccountTokens();
 
   const projectsToken = _projectsToken?.map(token => token.projectData.sftDetails.symbol);
 
   const { writeContractAsync } = useWriteContract();
-  const { projectFunding } = useRawCallsInfo();
+  const { projectFunding, housingProjectAbi } = useRawCallsInfo();
   const { address } = useAccount();
 
-  const onRentProperty = useCallback(async () => {
-    console.log("rent");
-  }, []);
+  const { checkApproval } = useSpendERC20();
+
+  const onRentProperty = useCallback(
+    async ({ data: { projectAddress } }: Pick<ProjectsValue["projectData"], "data">) => {
+      if (!housingProjectAbi) {
+        throw new Error("Housing Project ABI not loaded");
+      }
+
+      if (!sht || sht.balance < 1_000_000n) {
+        throw new Error("Not enough rent payment balance");
+      }
+
+      const payment = { amount: sht.balance / 100n, token: sht.address };
+
+      await checkApproval({ payment, spender: projectAddress });
+
+      await writeContractAsync({
+        abi: housingProjectAbi,
+        address: projectAddress,
+        functionName: "receiveRent",
+        args: [payment],
+      });
+    },
+    [housingProjectAbi, sht],
+  );
 
   const { refIdData, refresh: refreshUserRefInfo } = useReferralInfo();
 
@@ -49,19 +71,14 @@ export default function Properties() {
 
         const payment = {
           // TODO set user configured amount
-          amount: (fundingGoal * 2n) / 3n,
+          amount: fundingGoal,
+          // amount: (fundingGoal * 2n) / 3n,
           token: fundingToken.tokenAddress,
           nonce: 0n,
         };
 
         if (!fundingToken.isNative) {
-          await writeContractAsync({
-            abi: erc20Abi,
-            address: fundingToken.tokenAddress,
-            functionName: "approve",
-            args: [projectFunding.address, payment.amount],
-            account: address,
-          });
+          await checkApproval({ payment, spender: projectFunding.address });
         }
 
         await writeContractAsync({
@@ -127,7 +144,7 @@ export default function Properties() {
                                 <span>/per year</span>
                               </div>
                               <div className="item-buttons col-4">
-                                <button onClick={() => onRentProperty()} className="btn btn-primary">
+                                <button onClick={() => onRentProperty({ data })} className="btn btn-primary">
                                   Rent
                                 </button>
                               </div>

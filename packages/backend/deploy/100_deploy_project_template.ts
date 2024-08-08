@@ -33,6 +33,9 @@ const deployHousingProject: DeployFunction = async function (hre: HardhatRuntime
     parseEther("20"),
     currentTimestamp * 3,
   );
+  // TODO idealy, this is to be done after successful funding, but it will be teadious
+  // to simulate this in demo, hence we do this here with contract modificatino also
+  await projectFunding.setProjectToken(1n);
 
   // Done to have the abi in front end
   await hre.deployments.deploy("HousingProject", {

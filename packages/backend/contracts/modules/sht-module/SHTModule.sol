@@ -2,6 +2,7 @@
 pragma solidity ^0.8.26;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol";
 
 import "../../lib/TokenPayments.sol";
 import "./SHT.sol";
@@ -11,7 +12,7 @@ import "./SHT.sol";
  * @dev This contract manages the Smart Housing Token (SHT) within the platform.
  * It includes functionalities for making payments in SHT and querying the SHT token ID.
  */
-abstract contract SHTModule is ERC20 {
+abstract contract SHTModule is ERC20, ERC20Burnable {
 	function decimals() public pure override returns (uint8) {
 		return uint8(SHT.DECIMALS);
 	}

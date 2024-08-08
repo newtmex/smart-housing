@@ -15,4 +15,9 @@ task("deployProject", "Deploys new Housing Project")
     const currentTimestamp = await time.latest();
 
     await projectFunding.deployProject(name, symbol, ZeroAddress, parseEther(fundingGoal), currentTimestamp + 100_000);
+    const projectId = await projectFunding.projectCount();
+
+    // TODO idealy, this is to be done after successful funding, but it will be teadious
+    // to simulate this in demo, hence we do this here with contract modificatino also
+    await projectFunding.setProjectToken(projectId);
   });

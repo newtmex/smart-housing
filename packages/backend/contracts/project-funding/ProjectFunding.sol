@@ -28,7 +28,7 @@ contract ProjectFunding is Ownable {
 	using ProjectStorage for ProjectStorage.Data;
 	using LkSHTAttributes for LkSHTAttributes.Attributes;
 
-	address public coinbase; // Address authorized to initialize the first project
+	address public coinbase; // Address authorized to initialize the first project, also the housingToken
 	address public smartHousingAddress; // Address of the SmartHousing contract
 
 	mapping(uint256 => ProjectStorage.Data) public projects; // Mapping of project ID to ProjectData
@@ -186,17 +186,19 @@ contract ProjectFunding is Ownable {
 
 	function setProjectToken(uint256 projectId) external onlyOwner {
 		ProjectStorage.Data storage project = projects[projectId];
-		require(
-			project.status() == ProjectStorage.Status.Successful,
-			"Project Funding not yet successful"
-		);
+
+		// TODO Add this after demo
+		// require(
+		// 	project.status() == ProjectStorage.Status.Successful,
+		// 	"Project Funding not yet successful"
+		// );
 
 		ISmartHousing(smartHousingAddress).addProject(project.projectAddress);
 
-		address tokenAddress = HousingProject(project.projectAddress)
-			.setTokenDetails(project.collectedFunds, smartHousingAddress);
-
-		project.tokenAddress = tokenAddress;
+		HousingProject(project.projectAddress).setTokenDetails(
+			project.collectedFunds,
+			coinbase
+		);
 	}
 
 	/**
