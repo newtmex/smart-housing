@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.26;
+pragma solidity 0.8.24;
 
 library SHT {
 	uint256 public constant DECIMALS = 18;
