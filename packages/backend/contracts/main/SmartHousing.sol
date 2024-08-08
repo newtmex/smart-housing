@@ -62,7 +62,8 @@ contract SmartHousing is
 		projectFundingAddress = projectFunding;
 		hst = NewHousingStakingToken.create();
 
-		epochsAndPeriodsStorage.initialize(24); // One epoch will span 24 hours
+		// TODO use this for mainnet epochsAndPeriodsStorage.initialize(24); // One epoch will span 24 hours
+		epochsAndPeriodsStorage.initialize(1); // One epoch will span 1 hour
 	}
 
 	/// @notice Register a new user via proxy or get the referral ID if already registered.
@@ -149,10 +150,9 @@ contract SmartHousing is
 		address caller = msg.sender;
 		_createOrGetUserId(caller, referrerId);
 
-		require(
-			hst.balanceOf(caller, hstTokenId) > 0,
-			"Caller does not own the hst token"
-		);
+		uint256 callerHstBal = hst.balanceOf(caller, hstTokenId);
+
+		require(callerHstBal > 0, "Caller does not own the hst token");
 
 		distributionStorage.generateRewards(epochsAndPeriodsStorage);
 
@@ -179,7 +179,7 @@ contract SmartHousing is
 		}
 
 		// Update the attributes in the hst token
-		hst.setTokenAttributes(hstTokenId, hstAttr);
+		hst.update(caller, hstTokenId, callerHstBal, abi.encode(hstAttr));
 
 		ERC20Burnable shtToken = ERC20Burnable(shtTokenAddress);
 

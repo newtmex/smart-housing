@@ -242,7 +242,13 @@ contract ProjectFunding is Ownable {
 			uint256 totalUnlockedAmount,
 			LkSHTAttributes.Attributes memory newAttr
 		) = attr.unlockMatured();
-		lkSht.setTokenAttributes(nonce, abi.encode(newAttr));
+
+		lkSht.update(
+			caller,
+			nonce,
+			lkShtBal.sub(totalUnlockedAmount),
+			abi.encode(newAttr)
+		);
 
 		// Transfer the total unlocked SHT tokens to the user's address
 		if (totalUnlockedAmount > 0) {

@@ -6,9 +6,16 @@ import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
+// TODO I think we should create a standard of this
 abstract contract SFT is ERC1155, Ownable {
 	using Counters for Counters.Counter;
 	using EnumerableSet for EnumerableSet.UintSet;
+
+	struct SftBalance {
+		uint256 nonce;
+		uint256 amount;
+		bytes attributes;
+	}
 
 	Counters.Counter private _nonceCounter;
 	string private _name;
@@ -75,15 +82,36 @@ abstract contract SFT is ERC1155, Ownable {
 		return _addressToNonces[owner].contains(nonce);
 	}
 
-	function _setTokenAttributes(uint256 nonce, bytes memory attr) internal {
-		_tokenAttributes[nonce] = attr;
+	/// Burns all the NFT balance of user at nonce, creates new with balance and attributes
+	function update(
+		address user,
+		uint256 nonce,
+		uint256 amount,
+		bytes memory attr
+	) external onlyOwner {
+		_burn(user, nonce, amount);
+		_mint(user, amount, attr, "");
 	}
 
-	function setTokenAttributes(
-		uint256 nonce,
-		bytes memory newAttr
-	) external onlyOwner {
-		_setTokenAttributes(nonce, newAttr);
+	function _sftBalance(
+		address user
+	) internal view returns (SftBalance[] memory) {
+		uint256[] memory nonces = getNonces(user);
+		SftBalance[] memory balance = new SftBalance[](nonces.length);
+
+		for (uint256 i; i < nonces.length; i++) {
+			uint256 nonce = nonces[i];
+			bytes memory attributes = _tokenAttributes[nonce];
+			uint256 amount = balanceOf(user, nonce);
+
+			balance[i] = SftBalance({
+				nonce: nonce,
+				amount: amount,
+				attributes: attributes
+			});
+		}
+
+		return balance;
 	}
 
 	// Override _beforeTokenTransfer to handle address-to-nonce mapping
@@ -97,16 +125,12 @@ abstract contract SFT is ERC1155, Ownable {
 	) internal virtual override {
 		super._beforeTokenTransfer(operator, from, to, ids, amounts, data);
 
-		if (from != address(0)) {
-			for (uint256 i = 0; i < ids.length; i++) {
-				_addressToNonces[from].remove(ids[i]);
-			}
+		for (uint256 i = 0; i < ids.length; i++) {
+			_addressToNonces[from].remove(ids[i]);
 		}
 
-		if (to != address(0)) {
-			for (uint256 i = 0; i < ids.length; i++) {
-				_addressToNonces[to].add(ids[i]);
-			}
+		for (uint256 i = 0; i < ids.length; i++) {
+			_addressToNonces[to].add(ids[i]);
 		}
 	}
 }

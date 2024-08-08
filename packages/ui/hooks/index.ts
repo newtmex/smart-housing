@@ -36,16 +36,16 @@ export const useAccountTokens = () => {
           .readContract({
             abi: lkSHT.abi,
             address: lkSHT.address,
-            functionName: "balanceOf",
-            args: [userAddress, 1n],
+            functionName: "sftBalance",
+            args: [userAddress],
           })
-          .then(balance => {
+          .then(balances => {
             const { abi, ...params } = lkSHT;
             abi;
 
             return {
               ...params,
-              balance,
+              balances,
               decimals: shtData.decimals,
             };
           }),
@@ -54,13 +54,13 @@ export const useAccountTokens = () => {
             .readContract({
               abi: housingSFTAbi,
               address: project.projectData.data.tokenAddress,
-              functionName: "balanceOf",
-              args: [userAddress, 1n],
+              functionName: "sftBalance",
+              args: [userAddress],
             })
-            .then(balance => ({ ...project, balance })),
+            .then(balances => ({ ...project, balances })),
         ),
       ]);
-      return [userSht, userLkSht, projectsToken.filter(({ balance }) => balance > 0n)] as [
+      return [userSht, userLkSht, projectsToken.filter(({ balances }) => balances.length > 0)] as [
         typeof userSht,
         typeof userLkSht,
         typeof projectsToken,
@@ -86,7 +86,7 @@ export const useAccountTokens = () => {
     const [sht, lkSht, projectsToken] = data;
 
     for (const token of [sht, lkSht, ...projectsToken]) {
-      if (!prices || token.balance <= 0) {
+      if (!prices || ("balance" in token ? token.balance <= 0 : token.balances.length <= 0)) {
         continue;
       }
 
@@ -99,13 +99,16 @@ export const useAccountTokens = () => {
             }
           : { symbol: token.symbol, tokenAddress: token.address, decimals: token.decimals };
 
+      const tokenBalance =
+        "balance" in token ? token.balance : token.balances.reduce((acc, cur) => acc + cur.amount, 0n);
+
       assets.push({
         symbol,
         tokenAddress,
         backgroundColor: getColor(tokenAddress, 5),
-        qty: token.balance,
+        qty: tokenBalance,
         decimals,
-        value: BigNumber(token.balance.toString())
+        value: BigNumber(tokenBalance.toString())
           .multipliedBy(prices[symbol].toFixed(2))
           .dividedBy(10 ** decimals)
           .toFixed(0),

@@ -11,7 +11,8 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 library LkSHTAttributes {
 	using SafeMath for uint256;
 
-	uint256 constant LOCK_DURATION = 3 * 365 days; // 3 years
+	// TODO use this for mainnet uint256 constant LOCK_DURATION = 3 * 365 days; // 3 years
+	uint256 constant LOCK_DURATION = 5 hours;
 
 	struct Attributes {
 		uint256 initialAmount;

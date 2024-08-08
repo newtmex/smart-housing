@@ -79,11 +79,4 @@ contract HousingStakingToken is SFT {
 
 		emit MintHstToken(caller, nonce, attr);
 	}
-
-	function setTokenAttributes(
-		uint256 nonce,
-		HstAttributes memory attr
-	) external onlyOwner {
-		_setTokenAttributes(nonce, abi.encode(attr));
-	}
 }

@@ -7,7 +7,7 @@ import { GenericContractsDeclaration } from "~~/utils/scaffold-eth/contract";
 const deployedContracts = {
   31337: {
     Coinbase: {
-      address: "0x0B306BF915C4d645ff596e518fAf3F9669b97016",
+      address: "0x5FbDB2315678afecb367f032d93F642f64180aa3",
       abi: [
         {
           inputs: [],
@@ -1260,19 +1260,54 @@ const deployedContracts = {
         {
           inputs: [
             {
-              internalType: "uint256",
-              name: "nonce",
-              type: "uint256",
-            },
-            {
-              internalType: "bytes",
-              name: "newAttr",
-              type: "bytes",
+              internalType: "address",
+              name: "user",
+              type: "address",
             },
           ],
-          name: "setTokenAttributes",
-          outputs: [],
-          stateMutability: "nonpayable",
+          name: "sftBalance",
+          outputs: [
+            {
+              components: [
+                {
+                  internalType: "uint256",
+                  name: "nonce",
+                  type: "uint256",
+                },
+                {
+                  internalType: "uint256",
+                  name: "amount",
+                  type: "uint256",
+                },
+                {
+                  components: [
+                    {
+                      internalType: "uint256",
+                      name: "rewardsPerShare",
+                      type: "uint256",
+                    },
+                    {
+                      internalType: "address",
+                      name: "originalOwner",
+                      type: "address",
+                    },
+                    {
+                      internalType: "uint256",
+                      name: "tokenWeight",
+                      type: "uint256",
+                    },
+                  ],
+                  internalType: "struct HousingAttributes",
+                  name: "attributes",
+                  type: "tuple",
+                },
+              ],
+              internalType: "struct HousingSFT.HousingSFTBalance[]",
+              name: "",
+              type: "tuple[]",
+            },
+          ],
+          stateMutability: "view",
           type: "function",
         },
         {
@@ -1377,6 +1412,34 @@ const deployedContracts = {
         {
           inputs: [
             {
+              internalType: "address",
+              name: "user",
+              type: "address",
+            },
+            {
+              internalType: "uint256",
+              name: "nonce",
+              type: "uint256",
+            },
+            {
+              internalType: "uint256",
+              name: "amount",
+              type: "uint256",
+            },
+            {
+              internalType: "bytes",
+              name: "attr",
+              type: "bytes",
+            },
+          ],
+          name: "update",
+          outputs: [],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
               internalType: "uint256",
               name: "",
               type: "uint256",
@@ -1407,11 +1470,11 @@ const deployedContracts = {
         safeBatchTransferFrom: "contracts/modules/SFT.sol",
         safeTransferFrom: "contracts/modules/SFT.sol",
         setApprovalForAll: "contracts/modules/SFT.sol",
-        setTokenAttributes: "contracts/modules/SFT.sol",
         supportsInterface: "contracts/modules/SFT.sol",
         symbol: "contracts/modules/SFT.sol",
         tokenInfo: "contracts/modules/SFT.sol",
         transferOwnership: "contracts/modules/SFT.sol",
+        update: "contracts/modules/SFT.sol",
         uri: "contracts/modules/SFT.sol",
       },
     },
@@ -1862,19 +1925,59 @@ const deployedContracts = {
         {
           inputs: [
             {
-              internalType: "uint256",
-              name: "nonce",
-              type: "uint256",
-            },
-            {
-              internalType: "bytes",
-              name: "newAttr",
-              type: "bytes",
+              internalType: "address",
+              name: "user",
+              type: "address",
             },
           ],
-          name: "setTokenAttributes",
-          outputs: [],
-          stateMutability: "nonpayable",
+          name: "sftBalance",
+          outputs: [
+            {
+              components: [
+                {
+                  internalType: "uint256",
+                  name: "nonce",
+                  type: "uint256",
+                },
+                {
+                  internalType: "uint256",
+                  name: "amount",
+                  type: "uint256",
+                },
+                {
+                  components: [
+                    {
+                      internalType: "uint256",
+                      name: "initialAmount",
+                      type: "uint256",
+                    },
+                    {
+                      internalType: "uint256",
+                      name: "amount",
+                      type: "uint256",
+                    },
+                    {
+                      internalType: "uint256",
+                      name: "startTimestamp",
+                      type: "uint256",
+                    },
+                    {
+                      internalType: "uint256",
+                      name: "endTimestamp",
+                      type: "uint256",
+                    },
+                  ],
+                  internalType: "struct LkSHTAttributes.Attributes",
+                  name: "attributes",
+                  type: "tuple",
+                },
+              ],
+              internalType: "struct LkSHT.LkSHTBalance[]",
+              name: "",
+              type: "tuple[]",
+            },
+          ],
+          stateMutability: "view",
           type: "function",
         },
         {
@@ -1943,6 +2046,34 @@ const deployedContracts = {
         {
           inputs: [
             {
+              internalType: "address",
+              name: "user",
+              type: "address",
+            },
+            {
+              internalType: "uint256",
+              name: "nonce",
+              type: "uint256",
+            },
+            {
+              internalType: "uint256",
+              name: "amount",
+              type: "uint256",
+            },
+            {
+              internalType: "bytes",
+              name: "attr",
+              type: "bytes",
+            },
+          ],
+          name: "update",
+          outputs: [],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
               internalType: "uint256",
               name: "",
               type: "uint256",
@@ -1963,7 +2094,7 @@ const deployedContracts = {
       inheritedFunctions: {},
     },
     ProjectFunding: {
-      address: "0x9A9f2CCfdE556A7E9Ff0848998Aa4a0CFD8863AE",
+      address: "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0",
       abi: [
         {
           inputs: [
@@ -2558,7 +2689,7 @@ const deployedContracts = {
       },
     },
     SmartHousing: {
-      address: "0x3Aa5ebB10DC797CAC828524e59A333d0A371443c",
+      address: "0xDc64a140Aa3E981100a9becA4E685f962f0cF6C9",
       abi: [
         {
           inputs: [
@@ -3658,96 +3789,6 @@ const deployedContracts = {
         {
           inputs: [
             {
-              internalType: "uint256",
-              name: "nonce",
-              type: "uint256",
-            },
-            {
-              components: [
-                {
-                  components: [
-                    {
-                      internalType: "address",
-                      name: "token",
-                      type: "address",
-                    },
-                    {
-                      internalType: "uint256",
-                      name: "amount",
-                      type: "uint256",
-                    },
-                    {
-                      internalType: "uint256",
-                      name: "nonce",
-                      type: "uint256",
-                    },
-                  ],
-                  internalType: "struct TokenPayment[]",
-                  name: "projectTokens",
-                  type: "tuple[]",
-                },
-                {
-                  internalType: "uint256",
-                  name: "projectsShareCheckpoint",
-                  type: "uint256",
-                },
-                {
-                  internalType: "uint256",
-                  name: "shtRewardPerShare",
-                  type: "uint256",
-                },
-                {
-                  internalType: "uint256",
-                  name: "shtAmount",
-                  type: "uint256",
-                },
-                {
-                  internalType: "uint256",
-                  name: "stakeWeight",
-                  type: "uint256",
-                },
-                {
-                  internalType: "uint256",
-                  name: "lkDuration",
-                  type: "uint256",
-                },
-                {
-                  internalType: "uint256",
-                  name: "lkShtNonce",
-                  type: "uint256",
-                },
-              ],
-              internalType: "struct HstAttributes",
-              name: "attr",
-              type: "tuple",
-            },
-          ],
-          name: "setTokenAttributes",
-          outputs: [],
-          stateMutability: "nonpayable",
-          type: "function",
-        },
-        {
-          inputs: [
-            {
-              internalType: "uint256",
-              name: "nonce",
-              type: "uint256",
-            },
-            {
-              internalType: "bytes",
-              name: "newAttr",
-              type: "bytes",
-            },
-          ],
-          name: "setTokenAttributes",
-          outputs: [],
-          stateMutability: "nonpayable",
-          type: "function",
-        },
-        {
-          inputs: [
-            {
               components: [
                 {
                   internalType: "contract IERC20",
@@ -3882,6 +3923,34 @@ const deployedContracts = {
             },
           ],
           name: "transferOwnership",
+          outputs: [],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "address",
+              name: "user",
+              type: "address",
+            },
+            {
+              internalType: "uint256",
+              name: "nonce",
+              type: "uint256",
+            },
+            {
+              internalType: "uint256",
+              name: "amount",
+              type: "uint256",
+            },
+            {
+              internalType: "bytes",
+              name: "attr",
+              type: "bytes",
+            },
+          ],
+          name: "update",
           outputs: [],
           stateMutability: "nonpayable",
           type: "function",

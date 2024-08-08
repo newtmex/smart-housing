@@ -3,9 +3,11 @@
 import { useCallback, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useAccount } from "wagmi";
+import { useWriteContract } from "wagmi";
 import { useAccountTokens } from "~~/hooks";
 import { useOnPathChange } from "~~/hooks/useContentPanel";
+import useRawCallsInfo from "~~/hooks/useRawCallsInfo";
+import nonceToRandString from "~~/utils/nonceToRandom";
 import { prettyFormatAmount } from "~~/utils/prettyFormatAmount";
 import { RoutePath } from "~~/utils/routes";
 
@@ -28,20 +30,32 @@ export default function PortfolioValue() {
   const { sht, lkSht, projectsToken } = useAccountTokens();
   const pathname = usePathname();
 
-  const { address } = useAccount();
+  const { writeContractAsync } = useWriteContract();
+  const { projectFunding } = useRawCallsInfo();
 
-  const onUnlockLockedSHT = useCallback(async () => {
-    if (!lkSht) {
-      return;
-    }
-  }, [lkSht, address]);
+  const onUnlockLockedSHT = useCallback(
+    async ({ tokenNonce }: { tokenNonce: bigint }) => {
+      try {
+        if (!projectFunding) {
+          throw new Error("ProjectFunding info not loaded");
+        }
+
+        await writeContractAsync({
+          abi: projectFunding.abi,
+          address: projectFunding.address,
+          functionName: "unlockSHT",
+          args: [tokenNonce],
+        });
+      } catch (error) {
+        console.log({ error });
+      }
+    },
+    [projectFunding],
+  );
 
   return (
     <div className={`fancy-selector-w ${opened ? "opened" : ""}`}>
       <div className="fancy-selector-current">
-        <div className="fs-img">
-          <img alt="" src="img/card4.png" />
-        </div>
         <div className="fs-main-info">
           <div className="fs-name">
             <span>Housing Portfolio</span>
@@ -57,50 +71,61 @@ export default function PortfolioValue() {
         </div>
       </div>
       <div className="fancy-selector-options">
-        {lkSht && (
-          <div className="fancy-selector-option">
-            <div className="fs-img">
-              <img alt="" src="img/card2.png" />
-            </div>
-            <div className="fs-main-info">
-              <div className="fs-name">
-                <span>{lkSht.name} Portfolio</span>
-                <strong>{lkSht.symbol}</strong>
-              </div>
-              <div className="fs-sub">
-                <span>Balance:</span>
-                <strong>{prettyFormatAmount({ value: lkSht.balance })}</strong>
-              </div>
-            </div>
-            <button onClick={() => onUnlockLockedSHT()} className="btn btn-primary" style={{ fontSize: "0.75em" }}>
-              Unlock
-            </button>
-          </div>
-        )}
+        {lkSht &&
+          lkSht.balances.map(({ nonce, amount }) => {
+            const collection = lkSht.symbol + "-" + nonceToRandString(nonce, lkSht.address);
 
-        {projectsToken && <>Properties</>}
-        {projectsToken?.map((token, index) => {
-          return (
-            <div key={index} className="fancy-selector-option">
-              <div className="fs-img">{/* <img alt='' src='img/card2.png' /> */}</div>
-              <div className="fs-main-info">
-                <div className="fs-name">
-                  <span>{token.projectData.sftDetails.name} Portfolio</span>
-                  <strong>{token.projectData.sftDetails.symbol}</strong>
+            return (
+              <div key={collection} className="fancy-selector-option">
+                <div className="fs-main-info">
+                  <div className="fs-name">
+                    <span>{lkSht.symbol} Portfolio</span>
+                    <strong>{collection}</strong>
+                  </div>
+                  <div className="fs-sub">
+                    <span>Balance:</span>
+                    <strong>{prettyFormatAmount({ value: amount })}</strong>
+                  </div>
                 </div>
-                <div className="fs-sub">
-                  <span>Units:</span>
-                  <strong>
-                    {prettyFormatAmount({
-                      value: token.balance,
-                      decimals: 0,
-                    })}
-                  </strong>
+                <button
+                  onClick={() => onUnlockLockedSHT({ tokenNonce: nonce })}
+                  className="btn btn-primary"
+                  style={{ fontSize: "0.75em" }}
+                >
+                  Unlock
+                </button>
+              </div>
+            );
+          })}
+
+        {!!projectsToken?.length && <>Properties</>}
+        {projectsToken?.map((token, index) =>
+          token.balances.map(({ nonce, amount }) => {
+            return (
+              <div key={index} className="fancy-selector-option">
+                <div className="fs-main-info">
+                  <div className="fs-name">
+                    <span>{token.projectData.sftDetails.name} Portfolio</span>
+                    <strong>
+                      {token.projectData.sftDetails.symbol +
+                        "-" +
+                        nonceToRandString(nonce, token.projectData.data.tokenAddress)}
+                    </strong>
+                  </div>
+                  <div className="fs-sub">
+                    <span>Units:</span>
+                    <strong>
+                      {prettyFormatAmount({
+                        value: amount,
+                        decimals: 0,
+                      })}
+                    </strong>
+                  </div>
                 </div>
               </div>
-            </div>
-          );
-        })}
+            );
+          }),
+        )}
 
         {!pathname.includes(RoutePath.Properties) && (
           <div className="fancy-selector-actions text-right">

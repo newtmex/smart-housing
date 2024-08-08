@@ -84,7 +84,13 @@ abstract contract RentsModule is CallsSmartHousing {
 		}
 
 		attr.rewardsPerShare = currentRPS;
-		projectSFT.setTokenAttributes(nonce, abi.encode(attr));
+
+		projectSFT.update(
+			caller,
+			nonce,
+			projectSFT.balanceOf(caller, nonce),
+			abi.encode(attr)
+		);
 
 		housingToken.transfer(caller, rewardShares.userValue); // Send to user
 

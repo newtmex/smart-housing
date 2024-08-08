@@ -18,6 +18,12 @@ struct HousingAttributes {
 contract HousingSFT is SFT {
 	using EnumerableSet for EnumerableSet.UintSet;
 
+	struct HousingSFTBalance {
+		uint256 nonce;
+		uint256 amount;
+		HousingAttributes attributes;
+	}
+
 	// FIXME this value should be unique to each contract, should depend on
 	// the total amount expected to raise as it determines the amount of SFTs to
 	// be minted for investors
@@ -101,6 +107,27 @@ contract HousingSFT is SFT {
 
 	function getMaxSupply() public pure returns (uint256) {
 		return MAX_SUPPLY;
+	}
+
+	function sftBalance(
+		address user
+	) public view returns (HousingSFTBalance[] memory) {
+		SftBalance[] memory _sftBals = _sftBalance(user);
+		HousingSFTBalance[] memory balance = new HousingSFTBalance[](
+			_sftBals.length
+		);
+
+		for (uint256 i; i < _sftBals.length; i++) {
+			SftBalance memory _sftBal = _sftBals[i];
+
+			balance[i] = HousingSFTBalance({
+				nonce: _sftBal.nonce,
+				amount: _sftBal.amount,
+				attributes: abi.decode(_sftBal.attributes, (HousingAttributes))
+			});
+		}
+
+		return balance;
 	}
 
 	function tokenDetails()

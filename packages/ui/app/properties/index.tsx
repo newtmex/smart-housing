@@ -3,7 +3,7 @@
 import { useCallback } from "react";
 import Link from "next/link";
 import { erc20Abi } from "viem";
-import { useWriteContract } from "wagmi";
+import { useAccount, useWriteContract } from "wagmi";
 import { useReferralInfo } from "~~/components/ReferralCard/hooks";
 import { useAccountTokens } from "~~/hooks";
 import { ProjectsValue, useProjects } from "~~/hooks/housingProject";
@@ -12,6 +12,7 @@ import { getItem } from "~~/storage/session";
 import { RefIdData } from "~~/utils";
 import { prettyFormatAmount } from "~~/utils/prettyFormatAmount";
 import { RoutePath } from "~~/utils/routes";
+import { isZeroAddress } from "~~/utils/scaffold-eth/common";
 
 export default function Properties() {
   const properties = useProjects();
@@ -22,6 +23,7 @@ export default function Properties() {
 
   const { writeContractAsync } = useWriteContract();
   const { projectFunding } = useRawCallsInfo();
+  const { address } = useAccount();
 
   const onRentProperty = useCallback(async () => {
     console.log("rent");
@@ -37,6 +39,10 @@ export default function Properties() {
       if (!projectFunding) {
         throw new Error("projectFunding not loaded");
       }
+      if (!address || isZeroAddress(address)) {
+        throw new Error("address not loaded");
+      }
+
       if (!isTokensClaimable) {
         const referrerLink = getItem("userRefBy");
         const referrerId = referrerLink ? BigInt(RefIdData.getID(referrerLink)) : 0n;
@@ -54,6 +60,7 @@ export default function Properties() {
             address: fundingToken.tokenAddress,
             functionName: "approve",
             args: [projectFunding.address, payment.amount],
+            account: address,
           });
         }
 
@@ -63,6 +70,7 @@ export default function Properties() {
           functionName: "fundProject",
           args: [payment, projectId, referrerId],
           value: fundingToken.isNative ? payment.amount : undefined,
+          account: address,
         });
 
         await refreshUserRefInfo();
@@ -73,10 +81,11 @@ export default function Properties() {
           address: projectFunding.address,
           functionName: "claimProjectTokens",
           args: [projectId],
+          account: address,
         });
       }
     },
-    [projectFunding, refIdData],
+    [projectFunding, refIdData, address],
   );
 
   return (
