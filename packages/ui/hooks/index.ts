@@ -1,4 +1,3 @@
-import { useMemo } from "react";
 import { useSht } from "./coinbase";
 import { useProjects } from "./housingProject";
 import { useLkSht } from "./projectFunding";
@@ -15,15 +14,15 @@ export const useAccountTokens = () => {
   const projects = useProjects();
   const { address: userAddress } = useAccount();
   const { client, coinbase, housingSFTAbi } = useRawCallsInfo();
-  const lkSHT = useLkSht();
+  const lkSHTdata = useLkSht();
   const shtData = useSht();
 
   const { data } = useSWR(
-    shtData && lkSHT && userAddress && client && coinbase && housingSFTAbi
-      ? { client, userAddress, lkSHT, coinbase, housingSFTAbi, shtData }
+    prices && shtData && lkSHTdata && userAddress && client && coinbase && housingSFTAbi
+      ? { client, userAddress, lkSHTdata, coinbase, housingSFTAbi, shtData, prices }
       : null,
-    async ({ userAddress, client, coinbase, lkSHT, housingSFTAbi, shtData }) => {
-      const [userSht, userLkSht, ...projectsToken] = await Promise.all([
+    async ({ userAddress, client, coinbase, lkSHTdata, housingSFTAbi, shtData, prices }) => {
+      const [sht, lkSht, ..._projectsToken] = await Promise.all([
         client
           .readContract({
             abi: coinbase.abi,
@@ -34,13 +33,13 @@ export const useAccountTokens = () => {
           .then(balance => ({ balance, ...shtData, address: coinbase.address })),
         client
           .readContract({
-            abi: lkSHT.abi,
-            address: lkSHT.address,
+            abi: lkSHTdata.abi,
+            address: lkSHTdata.address,
             functionName: "sftBalance",
             args: [userAddress],
           })
           .then(balances => {
-            const { abi, ...params } = lkSHT;
+            const { abi, ...params } = lkSHTdata;
             abi;
 
             return {
@@ -60,77 +59,63 @@ export const useAccountTokens = () => {
             .then(balances => ({ ...project, balances })),
         ),
       ]);
-      return [userSht, userLkSht, projectsToken.filter(({ balances }) => balances.length > 0)] as [
-        typeof userSht,
-        typeof userLkSht,
-        typeof projectsToken,
-      ];
+      const projectsToken = _projectsToken.filter(({ balances }) => balances.length > 0);
+
+      // Compute ownedAssets
+      const assets: {
+        symbol: string;
+        tokenAddress: string;
+        backgroundColor: string;
+        value: string;
+        qty: bigint;
+        decimals: number;
+      }[] = [];
+      for (const token of [sht, lkSht, ...projectsToken]) {
+        if (!prices || ("balance" in token ? token.balance <= 0 : token.balances.length <= 0)) {
+          continue;
+        }
+
+        const { symbol, tokenAddress, decimals } =
+          "projectData" in token
+            ? {
+                symbol: token.projectData.sftDetails.symbol,
+                tokenAddress: token.projectData.data.tokenAddress,
+                decimals: 0,
+              }
+            : { symbol: token.symbol, tokenAddress: token.address, decimals: token.decimals };
+
+        const tokenBalance =
+          "balance" in token ? token.balance : token.balances.reduce((acc, cur) => acc + cur.amount, 0n);
+
+        assets.push({
+          symbol,
+          tokenAddress,
+          backgroundColor: getColor(tokenAddress, 5),
+          qty: tokenBalance,
+          decimals,
+          value: BigNumber(tokenBalance.toString())
+            .multipliedBy(prices[symbol].toFixed(2))
+            .dividedBy(10 ** decimals)
+            .toFixed(0),
+        });
+      }
+
+      return { sht, lkSht, projectsToken, ownedAssets: assets };
     },
     { keepPreviousData: true },
   );
-
-  const ownedAssets = useMemo(() => {
-    const assets: {
-      symbol: string;
-      tokenAddress: string;
-      backgroundColor: string;
-      value: string;
-      qty: bigint;
-      decimals: number;
-    }[] = [];
-
-    if (!data) {
-      return assets;
-    }
-
-    const [sht, lkSht, projectsToken] = data;
-
-    for (const token of [sht, lkSht, ...projectsToken]) {
-      if (!prices || ("balance" in token ? token.balance <= 0 : token.balances.length <= 0)) {
-        continue;
-      }
-
-      const { symbol, tokenAddress, decimals } =
-        "projectData" in token
-          ? {
-              symbol: token.projectData.sftDetails.symbol,
-              tokenAddress: token.projectData.data.tokenAddress,
-              decimals: 0,
-            }
-          : { symbol: token.symbol, tokenAddress: token.address, decimals: token.decimals };
-
-      const tokenBalance =
-        "balance" in token ? token.balance : token.balances.reduce((acc, cur) => acc + cur.amount, 0n);
-
-      assets.push({
-        symbol,
-        tokenAddress,
-        backgroundColor: getColor(tokenAddress, 5),
-        qty: tokenBalance,
-        decimals,
-        value: BigNumber(tokenBalance.toString())
-          .multipliedBy(prices[symbol].toFixed(2))
-          .dividedBy(10 ** decimals)
-          .toFixed(0),
-      });
-    }
-
-    return assets;
-  }, [data, prices]);
 
   if (!data) {
     return {
       sht: null,
       lkSht: null,
       projectsToken: null,
-      ownedAssets,
+      ownedAssets: [],
       prices,
     };
   }
 
-  const [sht, lkSht, projectsToken] = data;
-
-  return { sht, lkSht, projectsToken, ownedAssets, prices };
+  return { ...data, prices };
 };
 
 // TODO get real values
