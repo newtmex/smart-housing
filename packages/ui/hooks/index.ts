@@ -144,11 +144,13 @@ export const useTokenPrices = () => {
     ({ lkSht: { symbol: lkShtID }, sht: { symbol: shtID }, projects }) => {
       const prices: { [key: string]: number } = {};
 
+      const shtPrice = Math.random() * 10;
+
       if (shtID) {
-        prices[shtID] = Math.random() * 10;
+        prices[shtID] = shtPrice;
       }
       if (lkShtID) {
-        prices[lkShtID] = Math.random() * 10;
+        prices[lkShtID] = shtPrice;
       }
 
       projects.forEach(
