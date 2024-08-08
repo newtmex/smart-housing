@@ -5,6 +5,7 @@ import PortfolioBalance from "~~/components/PortfolioBalance";
 import PortfolioDistribution from "~~/components/PortfolioDistribution";
 import ReferralCard from "~~/components/ReferralCard";
 import Referrals from "~~/components/Referrals";
+import RentDividends from "~~/components/RentDividends";
 import UserEcosystemTransactions from "~~/components/UserEcosystemTransactions";
 
 export default function Dashboard() {
@@ -21,6 +22,8 @@ export default function Dashboard() {
           <ReferralCard />
         </div>
       </div>
+
+      <RentDividends />
 
       <div className="row">
         <div className="col-sm-8">
