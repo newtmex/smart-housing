@@ -6,6 +6,7 @@ import AppProvider from "./provider";
 import "@rainbow-me/rainbowkit/styles.css";
 import MainMenu from "~~/components/MainMenu";
 import MobileMenu from "~~/components/MobileMenu";
+import Sidebar from "~~/components/Sidebar";
 import TopBar from "~~/components/TopBar";
 import { useContentPanel } from "~~/hooks/useContentPanel";
 import { useWindowWidthChange } from "~~/hooks/useWindowResize";
@@ -42,7 +43,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                     {children}
                   </div>
 
-                  {/*TODO <Sidebar /> */}
+                  <Sidebar />
                 </div>
               </div>
             </div>
