@@ -2,6 +2,7 @@
 
 import { useCallback } from "react";
 import Link from "next/link";
+import useSWR from "swr";
 import { useAccount, useWriteContract } from "wagmi";
 import { useReferralInfo } from "~~/components/ReferralCard/hooks";
 import TxButton from "~~/components/TxButton";
@@ -18,13 +19,35 @@ import { isZeroAddress } from "~~/utils/scaffold-eth/common";
 export default function Properties() {
   const properties = useProjects();
 
-  const { projectsToken: _projectsToken, sht } = useAccountTokens();
-
-  const projectsToken = _projectsToken?.map(token => token.projectData.sftDetails.symbol);
+  const { sht } = useAccountTokens();
 
   const { writeContractAsync } = useWriteContract();
-  const { projectFunding, housingProjectAbi } = useRawCallsInfo();
+  const { projectFunding, housingProjectAbi, client } = useRawCallsInfo();
   const { address } = useAccount();
+
+  const { data: projectsClaimable } = useSWR(
+    properties && projectFunding && client && address
+      ? { key: "canClaimProject token", projectFunding, client, user: address, properties }
+      : null,
+    ({ client, projectFunding, user, properties }) =>
+      Promise.all(
+        properties.map(
+          ({
+            projectData: {
+              data: { id: projectId, isTokensClaimable },
+            },
+          }) =>
+            isTokensClaimable
+              ? Promise.resolve(0n)
+              : client.readContract({
+                  abi: projectFunding.abi,
+                  address: projectFunding.address,
+                  functionName: "usersProjectDeposit",
+                  args: [projectId, user],
+                }),
+        ),
+      ),
+  );
 
   const { checkApproval } = useSpendERC20();
 
@@ -56,7 +79,7 @@ export default function Properties() {
 
   const onBuyPropertyUnits = useCallback(
     async ({
-      data: { fundingGoal, id: projectId, isTokensClaimable },
+      data: { fundingGoal, id: projectId },
       fundingToken,
     }: Pick<ProjectsValue["projectData"], "data" | "fundingToken">) => {
       if (!projectFunding) {
@@ -66,39 +89,55 @@ export default function Properties() {
         throw new Error("address not loaded");
       }
 
-      if (!isTokensClaimable) {
-        const referrerLink = getItem("userRefBy");
-        const referrerId = referrerLink ? BigInt(RefIdData.getID(referrerLink)) : 0n;
+      const referrerLink = getItem("userRefBy");
+      const referrerId = referrerLink ? BigInt(RefIdData.getID(referrerLink)) : 0n;
 
-        const payment = {
-          // TODO set user configured amount
-          amount: fundingGoal,
-          // amount: (fundingGoal * 2n) / 3n,
-          token: fundingToken.tokenAddress,
-          nonce: 0n,
-        };
+      const payment = {
+        // TODO set user configured amount
+        amount: fundingGoal,
+        // amount: (fundingGoal * 2n) / 3n,
+        token: fundingToken.tokenAddress,
+        nonce: 0n,
+      };
 
-        if (!fundingToken.isNative) {
-          await checkApproval({ payment, spender: projectFunding.address });
-        }
-
-        return writeContractAsync({
-          abi: projectFunding.abi,
-          address: projectFunding.address,
-          functionName: "fundProject",
-          args: [payment, projectId, referrerId],
-          value: fundingToken.isNative ? payment.amount : undefined,
-          account: address,
-        });
-      } else {
-        return writeContractAsync({
-          abi: projectFunding.abi,
-          address: projectFunding.address,
-          functionName: "claimProjectTokens",
-          args: [projectId],
-          account: address,
-        });
+      if (!fundingToken.isNative) {
+        await checkApproval({ payment, spender: projectFunding.address });
       }
+
+      return writeContractAsync({
+        abi: projectFunding.abi,
+        address: projectFunding.address,
+        functionName: "fundProject",
+        args: [payment, projectId, referrerId],
+        value: fundingToken.isNative ? payment.amount : undefined,
+        account: address,
+      });
+    },
+    [projectFunding, refIdData, address],
+  );
+
+  const onClaimProperty = useCallback(
+    async ({
+      data: { id: projectId, isTokensClaimable },
+    }: Pick<ProjectsValue["projectData"], "data" | "fundingToken">) => {
+      if (!projectFunding) {
+        throw new Error("projectFunding not loaded");
+      }
+      if (!address || isZeroAddress(address)) {
+        throw new Error("address not loaded");
+      }
+
+      if (!isTokensClaimable) {
+        throw new Error("Property can not be claimed at this time or units have are not available");
+      }
+
+      return writeContractAsync({
+        abi: projectFunding.abi,
+        address: projectFunding.address,
+        functionName: "claimProjectTokens",
+        args: [projectId],
+        account: address,
+      });
     },
     [projectFunding, refIdData, address],
   );
@@ -112,8 +151,9 @@ export default function Properties() {
               <div style={{ height: "100%", fontSize: "10rem" }}>No Listed Properties</div>
             ) : (
               properties.map(
-                ({ projectData: { data, sftDetails, fundingToken }, features, rentPrice, unitPrice, image }) => {
+                ({ projectData: { data, sftDetails, fundingToken }, features, rentPrice, unitPrice, image }, index) => {
                   const href = `${RoutePath.Properties}`;
+                  const hasClaimable = !!projectsClaimable?.at(index);
 
                   return (
                     <div className="property-item" key={`property-${data.projectAddress}`}>
@@ -165,15 +205,28 @@ export default function Properties() {
                               </div>
                             )}
 
-                            {!projectsToken?.includes(sftDetails.symbol) && (
+                            {data.collectedFunds < data.fundingGoal && (
                               <div className="item-buttons col-4">
                                 <TxButton
-                                  btnName={!data.isTokensClaimable ? "Buy" : "Claim Tokens"}
+                                  btnName="Buy"
                                   onClick={() => onBuyPropertyUnits({ data, fundingToken })}
                                   onComplete={async () => {
                                     await refreshUserRefInfo();
                                   }}
-                                  className={`btn btn-${data.isTokensClaimable ? "success" : "warning"}`}
+                                  className="btn btn-warning"
+                                />
+                              </div>
+                            )}
+
+                            {hasClaimable && (
+                              <div className="item-buttons col-4">
+                                <TxButton
+                                  btnName="Claim Property Units"
+                                  onClick={() => onClaimProperty({ data, fundingToken })}
+                                  onComplete={async () => {
+                                    await refreshUserRefInfo();
+                                  }}
+                                  className="btn btn-success"
                                 />
                               </div>
                             )}
