@@ -4,13 +4,20 @@ import TransactionWaitingIcon, { IconReqState, TxErrorModal } from "./Transactio
 import { useWriteContract } from "wagmi";
 import { useTransactor } from "~~/hooks/scaffold-eth";
 
-const TxButton: React.FC<{
+export default function TxButton({
+  onComplete,
+  icon,
+  btnName,
+  onClick,
+  className,
+  ...props
+}: {
   icon?: React.ReactNode;
-  btnName: string;
+  btnName: React.ReactNode;
   onClick: () => ReturnType<ReturnType<typeof useWriteContract>["writeContractAsync"]>;
-  onComplete: () => Promise<any>;
+  onComplete?: () => Promise<any>;
   className?: string;
-}> = ({ onComplete, icon, btnName, onClick, className }) => {
+}) {
   const [status, setStatus] = useState<IconReqState>();
   const [err, setErr] = useState<string>();
 
@@ -38,7 +45,7 @@ const TxButton: React.FC<{
       await waitTx(() => onClick());
 
       setStatus("idle");
-      await onComplete();
+      onComplete && (await onComplete());
     } catch (error: any) {
       setStatus("error");
       setErr(error.toString());
@@ -46,12 +53,10 @@ const TxButton: React.FC<{
   }, [onClick, err, onComplete]);
 
   return (
-    <button onClick={handleClick} disabled={status == "pending"} className={className}>
+    <button onClick={handleClick} disabled={status == "pending"} className={className} {...props}>
       {icon}
-      <span>{btnName}</span>
+      {typeof btnName == "string" ? <span>{btnName}</span> : btnName}
       {status && <TransactionWaitingIcon iconReqState={status} />}
     </button>
   );
-};
-
-export default TxButton;
+}

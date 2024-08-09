@@ -42,7 +42,7 @@ export default function Properties() {
 
       await checkApproval({ payment, spender: projectAddress });
 
-      await writeContractAsync({
+      return writeContractAsync({
         abi: housingProjectAbi,
         address: projectAddress,
         functionName: "receiveRent",
@@ -142,9 +142,11 @@ export default function Properties() {
                                 <span>/per year</span>
                               </div>
                               <div className="item-buttons col-4">
-                                <button onClick={() => onRentProperty({ data })} className="btn btn-primary">
-                                  Rent
-                                </button>
+                                <TxButton
+                                  btnName="Rent"
+                                  onClick={() => onRentProperty({ data })}
+                                  className="btn btn-primary"
+                                />
                               </div>
                             </div>
                           )}

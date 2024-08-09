@@ -3,6 +3,7 @@
 import { useCallback, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import TxButton from "./TxButton";
 import { useWriteContract } from "wagmi";
 import { useAccountTokens } from "~~/hooks";
 import { useOnPathChange } from "~~/hooks/useContentPanel";
@@ -35,20 +36,16 @@ export default function PortfolioValue() {
 
   const onUnlockLockedSHT = useCallback(
     async ({ tokenNonce }: { tokenNonce: bigint }) => {
-      try {
-        if (!projectFunding) {
-          throw new Error("ProjectFunding info not loaded");
-        }
-
-        await writeContractAsync({
-          abi: projectFunding.abi,
-          address: projectFunding.address,
-          functionName: "unlockSHT",
-          args: [tokenNonce],
-        });
-      } catch (error) {
-        console.log({ error });
+      if (!projectFunding) {
+        throw new Error("ProjectFunding info not loaded");
       }
+
+      return writeContractAsync({
+        abi: projectFunding.abi,
+        address: projectFunding.address,
+        functionName: "unlockSHT",
+        args: [tokenNonce],
+      });
     },
     [projectFunding],
   );
@@ -87,13 +84,13 @@ export default function PortfolioValue() {
                     <strong>{prettyFormatAmount({ value: amount })}</strong>
                   </div>
                 </div>
-                <button
+                <TxButton
+                  btnName="Unlock"
                   onClick={() => onUnlockLockedSHT({ tokenNonce: nonce })}
                   className="btn btn-primary"
+                  // @ts-ignore
                   style={{ fontSize: "0.75em" }}
-                >
-                  Unlock
-                </button>
+                />
               </div>
             );
           })}

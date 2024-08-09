@@ -1,4 +1,5 @@
 import { useCallback } from "react";
+import TxButton from "./TxButton";
 import useSWR from "swr";
 import { useWriteContract } from "wagmi";
 import { useAccountTokens } from "~~/hooks";
@@ -51,7 +52,7 @@ export default function RentDividends() {
         throw new Error("Data not laoded");
       }
 
-      await writeContractAsync({
+      return writeContractAsync({
         abi: housingProjectAbi,
         address: projectAddress,
         functionName: "claimRentReward",
@@ -70,22 +71,20 @@ export default function RentDividends() {
 
         return (
           <div key={collection} className="col-6 col-sm-3 col-xxl-2">
-            <a
-              onClick={e => {
-                e.preventDefault();
-
-                onClaimRentReward(token);
-              }}
+            <TxButton
               className="element-box el-tablo centered trend-in-corner smaller"
-              href="#"
-            >
-              <div className="label">{name} Rent Reward</div>
-              <div className="value">{prettyFormatAmount({ value: claimable, length: 4 })}</div>
-              <div className="trending trending-up">
-                <span>{collection}</span>
-                <i className="os-icon os-icon-arrow-up6"></i>
-              </div>
-            </a>
+              onClick={() => onClaimRentReward(token)}
+              btnName={
+                <>
+                  <div className="label">{name} Rent Reward</div>
+                  <div className="value">{prettyFormatAmount({ value: claimable, length: 4 })}</div>
+                  <div className="trending trending-up">
+                    <span>{collection}</span>
+                    <i className="os-icon os-icon-arrow-up6"></i>
+                  </div>
+                </>
+              }
+            />
           </div>
         );
       })}
