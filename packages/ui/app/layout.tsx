@@ -6,6 +6,7 @@ import AppProvider from "./provider";
 import "@rainbow-me/rainbowkit/styles.css";
 import MainMenu from "~~/components/MainMenu";
 import MobileMenu from "~~/components/MobileMenu";
+import Modals from "~~/components/Modals";
 import Sidebar from "~~/components/Sidebar";
 import TopBar from "~~/components/TopBar";
 import { useContentPanel } from "~~/hooks/useContentPanel";
@@ -49,6 +50,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             </div>
             <div className="display-type"></div>
           </div>
+          <Modals />
         </AppProvider>
       </body>
     </html>

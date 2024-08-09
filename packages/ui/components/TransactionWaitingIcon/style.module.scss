@@ -1,0 +1,10 @@
+.rotate {
+  transform: rotate(180deg);
+  transition: all 0.3s ease-in;
+  transform-origin: 0.4195em 0.489em 0;
+}
+
+.error {
+  font-size: 0.9rem;
+  color: #ae3f3f;
+}

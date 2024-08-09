@@ -4,6 +4,7 @@ import { useCallback } from "react";
 import Link from "next/link";
 import { useAccount, useWriteContract } from "wagmi";
 import { useReferralInfo } from "~~/components/ReferralCard/hooks";
+import TxButton from "~~/components/TxButton";
 import { useAccountTokens } from "~~/hooks";
 import { ProjectsValue, useProjects } from "~~/hooks/housingProject";
 import useRawCallsInfo from "~~/hooks/useRawCallsInfo";
@@ -81,7 +82,7 @@ export default function Properties() {
           await checkApproval({ payment, spender: projectFunding.address });
         }
 
-        await writeContractAsync({
+        return writeContractAsync({
           abi: projectFunding.abi,
           address: projectFunding.address,
           functionName: "fundProject",
@@ -89,11 +90,8 @@ export default function Properties() {
           value: fundingToken.isNative ? payment.amount : undefined,
           account: address,
         });
-
-        await refreshUserRefInfo();
-      }
-      if (isTokensClaimable) {
-        await writeContractAsync({
+      } else {
+        return writeContractAsync({
           abi: projectFunding.abi,
           address: projectFunding.address,
           functionName: "claimProjectTokens",
@@ -167,12 +165,14 @@ export default function Properties() {
 
                             {!projectsToken?.includes(sftDetails.symbol) && (
                               <div className="item-buttons col-4">
-                                <button
-                                  className={`btn btn-${data.isTokensClaimable ? "success" : "warning"}`}
+                                <TxButton
+                                  btnName={!data.isTokensClaimable ? "Buy" : "Claim Tokens"}
                                   onClick={() => onBuyPropertyUnits({ data, fundingToken })}
-                                >
-                                  {!data.isTokensClaimable ? "Buy" : "Claim Tokens"}
-                                </button>
+                                  onComplete={async () => {
+                                    await refreshUserRefInfo();
+                                  }}
+                                  className={`btn btn-${data.isTokensClaimable ? "success" : "warning"}`}
+                                />
                               </div>
                             )}
                           </div>

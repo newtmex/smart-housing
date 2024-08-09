@@ -1,0 +1,1 @@
+export const ICON_TRANSITION_DELAY = 650;
