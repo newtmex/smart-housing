@@ -10,6 +10,7 @@ export default function TxButton({
   btnName,
   onClick,
   className,
+  disabled,
   ...props
 }: {
   icon?: React.ReactNode;
@@ -17,6 +18,7 @@ export default function TxButton({
   onClick: () => ReturnType<ReturnType<typeof useWriteContract>["writeContractAsync"]>;
   onComplete?: () => Promise<any>;
   className?: string;
+  disabled?: boolean;
 }) {
   const [status, setStatus] = useState<IconReqState>();
   const [err, setErr] = useState<string>();
@@ -53,7 +55,7 @@ export default function TxButton({
   }, [onClick, err, onComplete]);
 
   return (
-    <button onClick={handleClick} disabled={status == "pending"} className={className} {...props}>
+    <button onClick={handleClick} disabled={disabled || status == "pending"} className={className} {...props}>
       {icon}
       {typeof btnName == "string" ? <span>{btnName}</span> : btnName}
       {status && <TransactionWaitingIcon iconReqState={status} />}

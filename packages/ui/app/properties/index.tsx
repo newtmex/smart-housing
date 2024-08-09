@@ -2,16 +2,16 @@
 
 import { useCallback } from "react";
 import Link from "next/link";
+import BuyPropertyModal from "./BuyPropertyModal";
 import useSWR from "swr";
 import { useAccount, useWriteContract } from "wagmi";
+import { useModalToShow } from "~~/components/Modals";
 import { useReferralInfo } from "~~/components/ReferralCard/hooks";
 import TxButton from "~~/components/TxButton";
 import { useAccountTokens } from "~~/hooks";
 import { ProjectsValue, useProjects } from "~~/hooks/housingProject";
 import useRawCallsInfo from "~~/hooks/useRawCallsInfo";
 import { useSpendERC20 } from "~~/hooks/useSpendERC20";
-import { getItem } from "~~/storage/session";
-import { RefIdData } from "~~/utils";
 import { prettyFormatAmount } from "~~/utils/prettyFormatAmount";
 import { RoutePath } from "~~/utils/routes";
 import { isZeroAddress } from "~~/utils/scaffold-eth/common";
@@ -77,44 +77,7 @@ export default function Properties() {
 
   const { refIdData, refresh: refreshUserRefInfo } = useReferralInfo();
 
-  const onBuyPropertyUnits = useCallback(
-    async ({
-      data: { fundingGoal, id: projectId },
-      fundingToken,
-    }: Pick<ProjectsValue["projectData"], "data" | "fundingToken">) => {
-      if (!projectFunding) {
-        throw new Error("projectFunding not loaded");
-      }
-      if (!address || isZeroAddress(address)) {
-        throw new Error("address not loaded");
-      }
-
-      const referrerLink = getItem("userRefBy");
-      const referrerId = referrerLink ? BigInt(RefIdData.getID(referrerLink)) : 0n;
-
-      const payment = {
-        // TODO set user configured amount
-        amount: fundingGoal,
-        // amount: (fundingGoal * 2n) / 3n,
-        token: fundingToken.tokenAddress,
-        nonce: 0n,
-      };
-
-      if (!fundingToken.isNative) {
-        await checkApproval({ payment, spender: projectFunding.address });
-      }
-
-      return writeContractAsync({
-        abi: projectFunding.abi,
-        address: projectFunding.address,
-        functionName: "fundProject",
-        args: [payment, projectId, referrerId],
-        value: fundingToken.isNative ? payment.amount : undefined,
-        account: address,
-      });
-    },
-    [projectFunding, refIdData, address],
-  );
+  const { openModal } = useModalToShow();
 
   const onClaimProperty = useCallback(
     async ({
@@ -153,7 +116,8 @@ export default function Properties() {
               properties.map(
                 ({ projectData: { data, sftDetails, fundingToken }, features, rentPrice, unitPrice, image }, index) => {
                   const href = `${RoutePath.Properties}`;
-                  const hasClaimable = !!projectsClaimable?.at(index);
+                  const purchased = projectsClaimable?.at(index);
+                  const hasClaimable = !!purchased;
 
                   return (
                     <div className="property-item" key={`property-${data.projectAddress}`}>
@@ -207,18 +171,26 @@ export default function Properties() {
 
                             {data.collectedFunds < data.fundingGoal && (
                               <div className="item-buttons col-4">
-                                <TxButton
-                                  btnName="Buy"
-                                  onClick={() => onBuyPropertyUnits({ data, fundingToken })}
-                                  onComplete={async () => {
-                                    await refreshUserRefInfo();
-                                  }}
+                                <button
                                   className="btn btn-warning"
-                                />
+                                  onClick={() =>
+                                    openModal(
+                                      <BuyPropertyModal
+                                        data={data}
+                                        fundingToken={fundingToken}
+                                        sftDetails={sftDetails}
+                                        purchased={purchased}
+                                        unitPrice={unitPrice}
+                                      />,
+                                    )
+                                  }
+                                >
+                                  Buy {hasClaimable && "More"}
+                                </button>
                               </div>
                             )}
 
-                            {hasClaimable && (
+                            {hasClaimable && data.collectedFunds >= data.fundingGoal && (
                               <div className="item-buttons col-4">
                                 <TxButton
                                   btnName="Claim Property Units"
