@@ -1,9 +1,7 @@
-import ReferralCard from "./ReferralCard";
-
 export default function BlogSummary() {
   return (
     <div className="row">
-      <div className="col-12 col-xxl-8">
+      <div className="col-12">
         <div className="element-wrapper compact pt-4">
           <h6 className="element-header">Real Estate News</h6>
           <div className="element-box-tp">
@@ -52,9 +50,6 @@ export default function BlogSummary() {
             </a>
           </div>
         </div>
-      </div>
-      <div className="col-12 d-sm-none d-xxl-block col-xxl-4">
-        <ReferralCard />
       </div>
     </div>
   );

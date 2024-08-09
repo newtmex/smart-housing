@@ -37,7 +37,7 @@ export default function Properties() {
               data: { id: projectId, isTokensClaimable },
             },
           }) =>
-            isTokensClaimable
+            !isTokensClaimable
               ? Promise.resolve(0n)
               : client.readContract({
                   abi: projectFunding.abi,

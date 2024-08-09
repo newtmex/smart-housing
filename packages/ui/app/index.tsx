@@ -18,8 +18,8 @@ export default function Dashboard() {
           <PortfolioDistribution />
         </div>
 
-        <div className="col-sm-4 d-none d-lg-block">
-          <ReferralCard />
+        <div className="col-sm-4 d-lg-block">
+          <UserEcosystemTransactions />
         </div>
       </div>
 
@@ -31,7 +31,7 @@ export default function Dashboard() {
           <BlogSummary />
         </div>
         <div className="col-sm-4">
-          <UserEcosystemTransactions />
+          <ReferralCard />
         </div>
       </div>
     </>

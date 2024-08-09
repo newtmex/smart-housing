@@ -5,25 +5,22 @@ import getFundingTokenInfo from "~~/utils/fundingTokenInfo";
 export const useProjectsInfo = () => {
   const { client, projectFunding, housingSFTAbi } = useRawCallsInfo();
   return useSwr(
-    client && projectFunding && housingSFTAbi
-      ? { key: "useProjects-data", client, projectFunding, housingSFTAbi }
-      : null,
-    ({ client, projectFunding, housingSFTAbi }) =>
-      client
-        .readContract({ abi: projectFunding.abi, address: projectFunding.address, functionName: "allProjects" })
+    client && projectFunding && housingSFTAbi ? { key: "useProjects-data" } : null,
+    () =>
+      client!
+        .readContract({ abi: projectFunding!.abi, address: projectFunding!.address, functionName: "allProjects" })
         .then(projectsData =>
           // Merge with maxSupply
           Promise.all(
             projectsData.map(async data => {
               const [[name, symbol, maxSupply], fundingToken] = await Promise.all([
-                client.readContract({
-                  abi: housingSFTAbi,
+                client!.readContract({
+                  abi: housingSFTAbi!,
                   address: data.tokenAddress,
                   functionName: "tokenDetails",
                 }),
                 getFundingTokenInfo({ tokenAddress: data.fundingToken, client }),
               ]);
-
               return {
                 data: {
                   ...data,

@@ -1,4 +1,5 @@
 import { useCallback } from "react";
+import BigNumber from "bignumber.js";
 import { useFormik } from "formik";
 import { parseUnits } from "viem";
 import { useWriteContract } from "wagmi";
@@ -15,9 +16,10 @@ import { RefIdData } from "~~/utils";
 
 type Props = ProjectsValue["projectData"] & { purchased?: bigint; unitPrice: bigint };
 export default function BuyPropertyModal({ unitPrice, data, fundingToken, sftDetails, purchased }: Props) {
-  const unitsLeft = Math.ceil(
-    +((sftDetails.maxSupply * (data.fundingGoal - data.collectedFunds)) / data.fundingGoal).toString(),
-  );
+  const unitsLeft = +BigNumber(sftDetails.maxSupply.toString())
+    .multipliedBy((data.fundingGoal - data.collectedFunds).toString())
+    .dividedBy(data.fundingGoal.toString())
+    .decimalPlaces(0, BigNumber.ROUND_CEIL);
 
   const { closeModal } = useModalToShow();
   const { projectFunding } = useRawCallsInfo();
