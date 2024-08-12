@@ -5,3 +5,135 @@
     z-index: 9999;
   }
 }
+
+// Add styles here you want to override
+body {
+  overflow-x: unset;
+  min-width: 272px;
+}
+.normal-logged-user-role {
+  display: block;
+  letter-spacing: 1px;
+}
+
+.modal {
+  word-break: break-word;
+  form {
+    padding: 0;
+  }
+}
+
+.fancy-selector-w {
+  .fancy-selector-current,
+  .fancy-selector-option {
+    background-color: transparent;
+    .fs-selector-trigger {
+      &:hover {
+        background-color: #96880d;
+      }
+    }
+  }
+}
+
+.content-panel-toggler {
+  &:hover {
+    background-color: #f6db77;
+  }
+}
+
+.color-style-bright .normal-logged-user-role {
+  color: inherit;
+}
+
+.menu-w .selected {
+  background-color: rgba(0, 0, 0, 0.15);
+}
+
+.full-screen {
+  min-height: 100vh;
+}
+
+.table {
+  color: unset;
+}
+
+@mixin max-width-available {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  max-width: max-content;
+  overflow-x: scroll;
+}
+
+.balance-table {
+  @media (max-width: 768px) {
+    display: flex;
+    justify-content: center;
+  }
+  @media (min-width: 768px) {
+    @include max-width-available();
+  }
+}
+
+#RefCard {
+  .badge {
+    @include max-width-available();
+    margin: auto;
+    > * {
+      display: block;
+    }
+  }
+}
+
+.fpl-progress-w {
+  .rental-threshold-progress {
+    height: 20px;
+    background-color: #28ef58;
+    background-image: linear-gradient(-270deg, #ef3528 0%, #49ef33 98%);
+    border-radius: 20px;
+  }
+}
+
+input {
+  width: 100%;
+  padding: 15px;
+  font-size: 12px;
+  line-height: 1;
+  border-radius: 6px !important;
+  outline: none;
+  &[type="number"] {
+    appearance: textfield;
+  }
+}
+
+.max {
+  position: absolute;
+  display: flex;
+  justify-content: center;
+  line-height: 1;
+  border-radius: 6px !important;
+  align-items: center;
+  right: 3px;
+  top: 0px;
+  text-decoration: none !important;
+  padding: 10px;
+  z-index: 10;
+
+  &--disabled {
+    pointer-events: none;
+    opacity: 0.35;
+  }
+}
+
+/* Chrome, Safari, Edge, Opera */
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Firefox */
+input[type="number"] {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}

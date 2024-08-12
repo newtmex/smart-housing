@@ -12,7 +12,6 @@ import { useAccountTokens } from "~~/hooks";
 import { useHousingStakingToken } from "~~/hooks/smartHousing";
 import useRawCallsInfo from "~~/hooks/useRawCallsInfo";
 import { useSpendERC20 } from "~~/hooks/useSpendERC20";
-import { getItem } from "~~/storage/session";
 import { RefIdData } from "~~/utils";
 import nonceToRandString from "~~/utils/nonceToRandom";
 import { prettyFormatAmount } from "~~/utils/prettyFormatAmount";
@@ -79,8 +78,7 @@ export default function StakingModal() {
 
     const epochsLock = parseUnits(values.epochsLock.toString(), 0);
 
-    const referrerLink = getItem("userRefBy");
-    const referrerId = referrerLink ? BigInt(RefIdData.getID(referrerLink)) : 0n;
+    const referrerId = RefIdData.getReferrerId();
 
     const shtPayment = values.shtAmount && {
       amount: parseUnits(values.shtAmount.toString(), sht.decimals), // TODO this can caboom if string is returned as scientific notation

@@ -11,7 +11,6 @@ import TxButton from "~~/components/TxButton";
 import { ProjectsValue } from "~~/hooks/housingProject";
 import useRawCallsInfo from "~~/hooks/useRawCallsInfo";
 import { useSpendERC20 } from "~~/hooks/useSpendERC20";
-import { getItem } from "~~/storage/session";
 import { RefIdData } from "~~/utils";
 
 type Props = ProjectsValue["projectData"] & { purchased?: bigint; unitPrice: bigint };
@@ -28,7 +27,7 @@ export default function BuyPropertyModal({ unitPrice, data, fundingToken, sftDet
   const { checkApproval } = useSpendERC20();
   const { refIdData, refresh: refreshUserRefInfo } = useReferralInfo();
 
-  const { handleChange, values, errors, isValid } = useFormik({
+  const { handleChange, values, errors, isValid, setFieldValue } = useFormik({
     initialValues: { units: 0 },
     validationSchema: yupObj().shape({
       units: yupNumber().max(unitsLeft).min(1).required(),
@@ -37,6 +36,10 @@ export default function BuyPropertyModal({ unitPrice, data, fundingToken, sftDet
       console.log("Submiting");
     },
   });
+
+  const onMax = useCallback(() => {
+    setFieldValue("units", unitsLeft);
+  }, [unitsLeft]);
 
   const onBuyPropertyUnits = useCallback(async () => {
     const { id: projectId } = data;
@@ -47,8 +50,7 @@ export default function BuyPropertyModal({ unitPrice, data, fundingToken, sftDet
       throw new Error("Invalid input");
     }
 
-    const referrerLink = getItem("userRefBy");
-    const referrerId = referrerLink ? BigInt(RefIdData.getID(referrerLink)) : 0n;
+    const referrerId = RefIdData.getReferrerId();
 
     const payment = {
       amount: parseUnits(values.units.toString(), 0) * unitPrice,
@@ -101,18 +103,27 @@ export default function BuyPropertyModal({ unitPrice, data, fundingToken, sftDet
                   <div className="col-sm-6">
                     <div className="form-group">
                       <label>Number of Units</label>
-                      <input
-                        placeholder="Enter units amount"
-                        type="number"
-                        className={`form-control ${errors.units ? "is-invalid" : ""}`}
-                        id="units"
-                        name="units"
-                        onChange={handleChange}
-                        value={values.units}
-                        step={"any"}
-                        min={1}
-                      />
-                      <FormErrorMessage message={errors.units} />
+                      <div className="input-group">
+                        <input
+                          placeholder="Enter units amount"
+                          type="number"
+                          className={`form-control ${errors.units ? "is-invalid" : ""}`}
+                          id="units"
+                          name="units"
+                          onChange={handleChange}
+                          value={values.units}
+                          step={"any"}
+                          min={1}
+                        />
+                        {!(unitsLeft === values.units) && (
+                          <div className="input-group-append">
+                            <div onClick={onMax} className="input-group-text max btn">
+                              Max
+                            </div>
+                          </div>
+                        )}
+                        <FormErrorMessage message={errors.units} />
+                      </div>
                     </div>
                   </div>
                 </div>

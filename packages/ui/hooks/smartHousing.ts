@@ -22,7 +22,7 @@ export const useHousingStakingToken = () => {
         client.readContract({ abi, address, functionName: "name" }),
       ]);
 
-      return { name, symbol };
+      return { name, symbol, address };
     },
   );
 
@@ -32,7 +32,8 @@ export const useHousingStakingToken = () => {
       : null,
     async ({ userAddress, client, abi, address }) =>
       client.readContract({ abi, address, functionName: "sftBalance", args: [userAddress] }),
+    { keepPreviousData: true },
   );
 
-  return { name: nameNSymbol?.name, symbol: nameNSymbol?.symbol, sftBalance, refreshBalance };
+  return { name: nameNSymbol?.name, symbol: nameNSymbol?.symbol, hstInfo: nameNSymbol, sftBalance, refreshBalance };
 };

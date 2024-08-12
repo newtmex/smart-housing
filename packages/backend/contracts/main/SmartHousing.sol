@@ -149,6 +149,42 @@ contract SmartHousing is ISmartHousing, Ownable, UserModule, ERC1155Holder {
 		distributionStorage.enterStaking(newAttr.stakeWeight);
 	}
 
+	function currentEpoch() public view returns (uint256) {
+		return epochsAndPeriodsStorage.currentEpoch();
+	}
+
+	function currentPeriod() internal view returns (uint256) {
+		return epochsAndPeriodsStorage.currentPeriod();
+	}
+
+	function userCanClaim(
+		address user,
+		uint256 tokenNonce
+	) public view returns (bool) {
+		bool hasSft = hst.hasSFT(user, tokenNonce);
+		if (!hasSft) {
+			// User can't claim reward of token they don't own
+			return false;
+		}
+
+		// hstAttr.shtRewardPerShare and distributionStorage.shtRewardPerShare could be equal
+		// becasue of recent rewards genrated, so we check if rewards can be generated,
+		// if yes, then user can potential claim rewards
+		bool rewardsCanBeGenerated = distributionStorage
+			.lastFundsDispatchEpoch < currentEpoch();
+		if (rewardsCanBeGenerated) {
+			return true;
+		}
+
+		HstAttributes memory hstAttr = abi.decode(
+			hst.getRawTokenAttributes(tokenNonce),
+			(HstAttributes)
+		);
+
+		return
+			hstAttr.shtRewardPerShare < distributionStorage.shtRewardPerShare;
+	}
+
 	function claimRewards(uint256 hstTokenId, uint256 referrerId) external {
 		address caller = msg.sender;
 		_createOrGetUserId(caller, referrerId);

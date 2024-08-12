@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import ClaimStakingRewards from "./ClaimStakingRewards";
 import LoadingState from "./LoadingState";
 import { useModalToShow } from "./Modals";
 import StakingModal from "./StakingModal";
@@ -45,7 +46,7 @@ export default function StakingAndGovernace() {
   return (
     <div className="element-wrapper compact pt-4">
       <h6 className="element-header">Staking and Governance</h6>
-      <div className="col-sm-12 col-lg-8 col-xxl-6">
+      <div className="col-12">
         <div className="element-balances justify-content-between mobile-full-width">
           <div className="balance balance-v2">
             <div className="balance-title">Your Staking Balance</div>
@@ -56,8 +57,8 @@ export default function StakingAndGovernace() {
           </div>
         </div>
         <div className="element-wrapper pb-4 mb-4 border-bottom">
-          {ownedAssets.length > 1 && (
-            <div className="element-box-tp">
+          <div className="element-box-tp">
+            {ownedAssets.length > 1 && (
               <a
                 className="btn btn-primary"
                 onClick={e => {
@@ -68,8 +69,10 @@ export default function StakingAndGovernace() {
                 <i className="os-icon os-icon-refresh-ccw"></i>
                 <span>Stake Assets</span>
               </a>
-            </div>
-          )}
+            )}
+
+            <ClaimStakingRewards />
+          </div>
         </div>
       </div>
     </div>

@@ -1,4 +1,5 @@
 import { numberToPaddedHex } from "@multiversx/sdk-core/out/utils.codec";
+import { getItem } from "~~/storage/session";
 
 export * from "./sdkDappUtils";
 export * from "./fundingTokenInfo";
@@ -49,6 +50,12 @@ export class RefIdData {
     const idHex = refID.split(new RegExp(`(?<=[0-9a-f])${RefIdData.spliter}`))[0];
 
     return hexToNumber(idHex);
+  }
+
+  static getReferrerId(): bigint {
+    const referrerLink = getItem("userRefBy");
+
+    return referrerLink ? BigInt(RefIdData.getID(referrerLink)) : 0n;
   }
 }
 
