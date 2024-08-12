@@ -20,81 +20,86 @@ abstract contract RentsModule is CallsSmartHousing {
 	uint256 public rewardsReserve;
 	uint256 public facilityManagementFunds;
 
-	ERC20Burnable housingToken;
+	ERC20Burnable public housingToken;
 	HousingSFT public projectSFT;
+
+	uint256 private constant REWARD_PERCENT = 75;
+	uint256 private constant ECOSYSTEM_PERCENT = 18;
+	uint256 private constant FACILITY_PERCENT = 7;
 
 	/// @notice Receives rent payments and distributes rewards.
 	/// @param rentPayment The details of the rent payment.
 	function receiveRent(ERC20TokenPayment calldata rentPayment) external {
-		// TODO set the appropriate rent per Project
-		require(
-			rentPayment.amount > 0,
-			"RentsModule: Insufficient rent amount"
-		);
+		uint256 rentAmount = rentPayment.amount;
+		require(rentAmount > 0, "RentsModule: Insufficient rent amount");
 		require(
 			rentPayment.token == housingToken,
 			"RentsModule: Invalid rent payment token"
 		);
+
 		rentPayment.receiveERC20();
 
-		uint256 rentReward = (rentPayment.amount * 75) / 100;
-		uint256 ecosystemReward = (rentPayment.amount * 18) / 100;
-		uint256 facilityReward = (rentPayment.amount * 7) / 100;
+		uint256 rentReward = (rentAmount * REWARD_PERCENT) / 100;
+		uint256 ecosystemReward = (rentAmount * ECOSYSTEM_PERCENT) / 100;
+		uint256 facilityReward = (rentAmount * FACILITY_PERCENT) / 100;
 
-		uint256 allShares = projectSFT.getMaxSupply();
-		uint256 rpsIncrease = (rentReward * DIVISION_SAFETY_CONST) / allShares;
-
-		rewardPerShare += rpsIncrease;
+		rewardPerShare +=
+			(rentReward * DIVISION_SAFETY_CONST) /
+			projectSFT.getMaxSupply();
 		rewardsReserve += rentReward;
 		facilityManagementFunds += facilityReward;
 
 		housingToken.burn(ecosystemReward);
-		ISmartHousing(smartHousingAddr).addProjectRent(rentPayment.amount);
+		ISmartHousing(smartHousingAddr).addProjectRent(rentAmount);
 	}
 
 	/// @notice Claims rent rewards for a given token.
-	/// @return The updated HousingAttributes.
+	/// @return attr The updated HousingAttributes.
 	function claimRentReward(
 		uint256 nonce
-	) external returns (HousingAttributes memory, rewardshares memory) {
+	)
+		external
+		returns (
+			HousingAttributes memory attr,
+			rewardshares memory rewardShares,
+			uint256 newNonce
+		)
+	{
 		address caller = msg.sender;
 		uint256 currentRPS = rewardPerShare;
 
-		HousingAttributes memory attr = projectSFT.getUserSFT(caller, nonce);
-		rewardshares memory rewardShares = computeRewardShares(attr);
-		uint256 totalReward = rewardShares.total();
+		attr = projectSFT.getUserSFT(caller, nonce);
+		rewardShares = computeRewardShares(attr);
 
+		uint256 totalReward = rewardShares.total();
 		if (totalReward == 0) {
-			// Fail silently
-			return (attr, rewardShares);
+			return (attr, rewardShares, nonce);
 		}
 
 		require(rewardsReserve >= totalReward, "Computed rewards too large");
-
 		rewardsReserve -= totalReward;
 
-		// We use original owner since we are certain they are registered
 		(, address referrer) = getReferrer(attr.originalOwner);
 		if (rewardShares.referrerValue > 0) {
 			if (referrer != address(0)) {
-				housingToken.transfer(referrer, rewardShares.referrerValue); // Send to referrer
+				housingToken.transfer(referrer, rewardShares.referrerValue);
 			} else {
-				housingToken.burn(rewardShares.referrerValue); // Burn to add to ecosystem reward
+				housingToken.burn(rewardShares.referrerValue);
 			}
 		}
 
 		attr.rewardsPerShare = currentRPS;
 
-		projectSFT.update(
+		newNonce = projectSFT.update(
 			caller,
 			nonce,
 			projectSFT.balanceOf(caller, nonce),
 			abi.encode(attr)
 		);
 
-		housingToken.transfer(caller, rewardShares.userValue); // Send to user
+		housingToken.transfer(caller, rewardShares.userValue);
 
-		return (attr, rewardShares);
+		return (attr, rewardShares, newNonce);
 	}
 
 	/// @notice Computes the amount of rent claimable for a given token.
@@ -113,13 +118,11 @@ abstract contract RentsModule is CallsSmartHousing {
 		HousingAttributes memory attr
 	) internal view returns (rewardshares memory) {
 		uint256 currentRPS = rewardPerShare;
-
 		if (currentRPS == 0 || attr.rewardsPerShare >= currentRPS) {
 			return rewardshares({ userValue: 0, referrerValue: 0 });
 		}
 
 		uint256 reward = computeReward(attr, currentRPS);
-
 		return splitReward(reward);
 	}
 }

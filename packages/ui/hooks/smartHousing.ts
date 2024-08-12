@@ -6,7 +6,6 @@ import { useAccount } from "wagmi";
 export const useHousingStakingToken = () => {
   const { client, smartHousing, housingStakingSFTAbi } = useRawCallsInfo();
   const { address: userAddress } = useAccount();
-
   const { data: hstAddress } = useSWRImmutable(
     client && smartHousing ? { key: "smartHousing-HST-addrs", client, smartHousing } : null,
     async ({ client, smartHousing: { abi, address } }) => client.readContract({ abi, address, functionName: "hst" }),
@@ -32,7 +31,9 @@ export const useHousingStakingToken = () => {
       : null,
     async ({ userAddress, client, abi, address }) =>
       client.readContract({ abi, address, functionName: "sftBalance", args: [userAddress] }),
-    { keepPreviousData: true },
+    {
+      keepPreviousData: true,
+    },
   );
 
   return { name: nameNSymbol?.name, symbol: nameNSymbol?.symbol, hstInfo: nameNSymbol, sftBalance, refreshBalance };

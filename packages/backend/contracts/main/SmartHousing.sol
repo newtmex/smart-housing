@@ -106,9 +106,18 @@ contract SmartHousing is ISmartHousing, Ownable, UserModule, ERC1155Holder {
 	/// @param projectAddress The address of the new project.
 	function addProject(address projectAddress) external onlyProjectFunding {
 		_setPermissions(projectAddress, Permissions.HOUSING_PROJECT);
-		_projectsToken.add(
-			address(HousingProject(projectAddress).projectSFT())
-		); // Register the project's SFT address
+		HousingProject project = HousingProject(projectAddress);
+		address projectSFTaddress = address(
+			HousingProject(projectAddress).projectSFT()
+		);
+
+		_projectsToken.add(projectSFTaddress); // Register the project's SFT address
+
+		distributionStorage.addProject(
+			projectAddress,
+			projectSFTaddress,
+			project.getMaxSupply()
+		);
 	}
 
 	/// @notice Adds rent to a project and updates the distribution storage.
@@ -185,11 +194,14 @@ contract SmartHousing is ISmartHousing, Ownable, UserModule, ERC1155Holder {
 			hstAttr.shtRewardPerShare < distributionStorage.shtRewardPerShare;
 	}
 
-	function claimRewards(uint256 hstTokenId, uint256 referrerId) external {
+	function claimRewards(
+		uint256 hstNonce,
+		uint256 referrerId
+	) external returns (uint256 newHstNonce) {
 		address caller = msg.sender;
 		_createOrGetUserId(caller, referrerId);
 
-		uint256 callerHstBal = hst.balanceOf(caller, hstTokenId);
+		uint256 callerHstBal = hst.balanceOf(caller, hstNonce);
 
 		require(callerHstBal > 0, "Caller does not own the hst token");
 
@@ -197,10 +209,7 @@ contract SmartHousing is ISmartHousing, Ownable, UserModule, ERC1155Holder {
 
 		(uint256 claimedSHT, HstAttributes memory hstAttr) = distributionStorage
 			.claimRewards(
-				abi.decode(
-					hst.getRawTokenAttributes(hstTokenId),
-					(HstAttributes)
-				)
+				abi.decode(hst.getRawTokenAttributes(hstNonce), (HstAttributes))
 			);
 		uint256 rentRewards = 0;
 
@@ -211,17 +220,29 @@ contract SmartHousing is ISmartHousing, Ownable, UserModule, ERC1155Holder {
 				projectToken.token != address(0),
 				"Invalid project address"
 			);
+			address projectAddress = distributionStorage
+				.projectSftToProjectAddress[projectToken.token];
 
 			// Call the external contract's claimRentReward function
-			(, rewardshares memory rewardShares) = HousingProject(
-				projectToken.token
-			).claimRentReward(projectToken.nonce);
+			(
+				,
+				rewardshares memory rewardShares,
+				uint256 newNonce
+			) = HousingProject(projectAddress).claimRentReward(
+					projectToken.nonce
+				);
+			hstAttr.projectTokens[i].nonce = newNonce;
 
 			rentRewards = rentRewards.add(rewardShares.userValue);
 		}
 
 		// Update the attributes in the hst token
-		hst.update(caller, hstTokenId, callerHstBal, abi.encode(hstAttr));
+		newHstNonce = hst.update(
+			caller,
+			hstNonce,
+			callerHstBal,
+			abi.encode(hstAttr)
+		);
 
 		ERC20Burnable shtToken = ERC20Burnable(shtTokenAddress);
 

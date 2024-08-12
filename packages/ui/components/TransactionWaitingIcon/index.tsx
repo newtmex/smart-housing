@@ -7,7 +7,7 @@ import styles from "./style.module.scss";
 
 export type IconReqState = "idle" | "error" | "success" | "pending";
 
-const matchStrings = ["reason:", "Error:"];
+const matchStrings = [" reason:", " Error:"];
 const processedMatchString = matchStrings.reduce((acc, curr, index) => {
   acc += curr;
 
@@ -20,6 +20,8 @@ const processedMatchString = matchStrings.reduce((acc, curr, index) => {
 const errorMsg = (msg: string) => {
   const regEx = new RegExp("(" + processedMatchString + ")(\n)?(.*)", "g");
   const match = msg.match(regEx);
+
+  console.log({ match, msg });
 
   const error = match?.at(-1)?.replace(processedMatchString, "");
 

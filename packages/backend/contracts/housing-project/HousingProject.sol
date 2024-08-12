@@ -24,7 +24,7 @@ contract HousingProject is RentsModule, Ownable {
 		uint256 amountRaised,
 		address housingTokenAddr
 	) external onlyOwner {
-		require(amountRaised == 0, "Token details set already");
+		require(address(housingToken) == address(0), "Token details set already");
 
 		housingToken = ERC20Burnable(housingTokenAddr);
 

@@ -38,6 +38,7 @@ library Distribution {
 		uint256 genesisEpoch;
 		uint256 projectsTotalReceivedRents;
 		mapping(address => ProjectDistributionData) projectDets;
+		mapping(address => address) projectSftToProjectAddress;
 		uint256 lastFundsDispatchEpoch;
 		uint256 shtTotalStakeWeight;
 		uint256 shtRewardPerShare;
@@ -110,6 +111,16 @@ library Distribution {
 
 		// Add the received rent amount to the project's accumulated rents
 		projectData.receivedRents += amount;
+	}
+
+	function addProject(
+		Storage storage self,
+		address projectAddress,
+		address projectSFTaddress,
+		uint256 maxShares
+	) internal {
+		self.projectDets[projectAddress].maxShares = maxShares;
+		self.projectSftToProjectAddress[projectSFTaddress] = projectAddress;
 	}
 
 	/// @notice Generates rewards for the current epoch.
@@ -188,7 +199,8 @@ library Distribution {
 		// Claim SHT rewards
 		uint256 shtRPS = self.shtRewardPerShare;
 		if (shtRPS > 0 && attr.shtRewardPerShare < shtRPS) {
-			uint256 shtReward = (shtRPS.sub(attr.shtRewardPerShare))
+			uint256 shtReward = shtRPS
+				.sub(attr.shtRewardPerShare)
 				.mul(attr.stakeWeight)
 				.div(DIVISION_SAFETY_CONST);
 			if (self.shtStakingRewards < shtReward) {
@@ -218,12 +230,23 @@ library Distribution {
 		uint256 stakingCheckPoint,
 		uint256 tokenCheckPoint
 	) internal view returns (uint256 reward) {
-		if (stakingCheckPoint >= tokenCheckPoint) {
+		if (
+			stakingCheckPoint >= tokenCheckPoint ||
+			self.projectsTotalReceivedRents <= 0
+		) {
 			return 0;
 		}
 
-		ProjectDistributionData storage projectData = self.projectDets[
+		address projectAddress = self.projectSftToProjectAddress[
 			tokenPayment.token
+		];
+		require(
+			projectAddress != address(0),
+			"Project Address for token not set"
+		);
+
+		ProjectDistributionData storage projectData = self.projectDets[
+			self.projectSftToProjectAddress[tokenPayment.token]
 		];
 		require(
 			tokenPayment.amount <= projectData.maxShares,

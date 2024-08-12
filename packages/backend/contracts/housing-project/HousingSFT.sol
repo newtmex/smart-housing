@@ -99,7 +99,7 @@ contract HousingSFT is SFT {
 	) public view returns (HousingAttributes memory) {
 		require(
 			hasSFT(owner, nonce),
-			"HouisingSFT: No tokens found for user at nonce"
+			"HousingSFT: No tokens found for user at nonce"
 		);
 
 		return abi.decode(getRawTokenAttributes(nonce), (HousingAttributes));

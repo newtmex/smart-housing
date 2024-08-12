@@ -83,14 +83,15 @@ abstract contract SFT is ERC1155, Ownable {
 	}
 
 	/// Burns all the NFT balance of user at nonce, creates new with balance and attributes
+	/// Returns new nonce
 	function update(
 		address user,
 		uint256 nonce,
 		uint256 amount,
 		bytes memory attr
-	) external onlyOwner {
+	) external onlyOwner returns (uint256) {
 		_burn(user, nonce, amount);
-		_mint(user, amount, attr, "");
+		return _mint(user, amount, attr, "");
 	}
 
 	function _sftBalance(

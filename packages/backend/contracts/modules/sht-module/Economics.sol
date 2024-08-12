@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.24;
 
-import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "prb-math/contracts/PRBMathSD59x18.sol";
 
 /// @notice Emitted when trying to convert a uint256 number that doesn't fit within int256.
@@ -18,12 +17,11 @@ function toInt256(uint256 x) pure returns (int256 result) {
 	result = int256(x);
 }
 
-/// @notice Safe cast from uint256 to int256
+/// @notice Safe cast from int256 to uint256
 function toUint256(int256 x) pure returns (uint256 result) {
 	if (x < 0) {
 		revert ToUint256CastOverflow(x);
 	}
-
 	result = uint256(x);
 }
 
@@ -36,7 +34,7 @@ library Emission {
 
 	function atEpoch(uint256 epoch) internal pure returns (uint256) {
 		int256 decayFactor = PRBMathSD59x18.pow(DECAY_RATE, toInt256(epoch));
-		return toUint256(E0.mul(decayFactor) / 1e18);
+		return toUint256((E0 * decayFactor) / 1e18);
 	}
 
 	/// @notice Computes E0 * ​​(0.9998^epochStart − 0.9998^epochEnd​)
@@ -54,17 +52,14 @@ library Emission {
 		);
 		int256 endFactor = PRBMathSD59x18.pow(DECAY_RATE, toInt256(epochEnd));
 
-		int256 totalEmission = E0.mul(startFactor - endFactor).div(
-			DECAY_RATE.ln()
-		);
+		int256 totalEmission = (E0 * (endFactor - startFactor)) /
+			DECAY_RATE.ln();
 
 		return toUint256(totalEmission);
 	}
 }
 
 library Entities {
-	using SafeMath for uint256;
-
 	uint32 public constant UNITY = 100_00;
 
 	uint32 public constant TEAM_AND_ADVISORS_RATIO = 23_05;
@@ -86,26 +81,18 @@ library Entities {
 	function fromTotalValue(
 		uint256 totalValue
 	) internal pure returns (Value memory) {
-		uint256 othersTotal = totalValue
-			.mul(UNITY - PROTOCOL_DEVELOPMENT_RATIO)
-			.div(UNITY);
+		uint256 othersTotal = (totalValue *
+			(UNITY - PROTOCOL_DEVELOPMENT_RATIO)) / UNITY;
 
-		uint256 team = othersTotal.mul(TEAM_AND_ADVISORS_RATIO).div(UNITY);
-		uint256 growth = othersTotal.mul(GROWTH_RATIO).div(UNITY);
-		uint256 staking = othersTotal.mul(STAKING_RATIO).div(UNITY);
-		uint256 projectsReserve = othersTotal.mul(PROJECTS_RESERVE_RATIO).div(
-			UNITY
-		);
-		uint256 lpAndListing = othersTotal.mul(LP_AND_LISTINGS_RATIO).div(
-			UNITY
-		);
+		uint256 team = (othersTotal * TEAM_AND_ADVISORS_RATIO) / UNITY;
+		uint256 growth = (othersTotal * GROWTH_RATIO) / UNITY;
+		uint256 staking = (othersTotal * STAKING_RATIO) / UNITY;
+		uint256 projectsReserve = (othersTotal * PROJECTS_RESERVE_RATIO) /
+			UNITY;
+		uint256 lpAndListing = (othersTotal * LP_AND_LISTINGS_RATIO) / UNITY;
 
-		uint256 protocol = totalValue
-			.sub(team)
-			.sub(growth)
-			.sub(staking)
-			.sub(projectsReserve)
-			.sub(lpAndListing);
+		uint256 protocol = totalValue -
+			(team + growth + staking + projectsReserve + lpAndListing);
 
 		return
 			Value({
@@ -120,21 +107,20 @@ library Entities {
 
 	function total(Value memory value) internal pure returns (uint256) {
 		return
-			value
-				.team
-				.add(value.protocol)
-				.add(value.growth)
-				.add(value.staking)
-				.add(value.projectsReserve)
-				.add(value.lpAndListing);
+			value.team +
+			value.protocol +
+			value.growth +
+			value.staking +
+			value.projectsReserve +
+			value.lpAndListing;
 	}
 
 	function add(Value storage self, Value memory rhs) internal {
-		self.team = self.team.add(rhs.team);
-		self.protocol = self.protocol.add(rhs.protocol);
-		self.growth = self.growth.add(rhs.growth);
-		self.staking = self.staking.add(rhs.staking);
-		self.projectsReserve = self.projectsReserve.add(rhs.projectsReserve);
-		self.lpAndListing = self.lpAndListing.add(rhs.lpAndListing);
+		self.team += rhs.team;
+		self.protocol += rhs.protocol;
+		self.growth += rhs.growth;
+		self.staking += rhs.staking;
+		self.projectsReserve += rhs.projectsReserve;
+		self.lpAndListing += rhs.lpAndListing;
 	}
 }

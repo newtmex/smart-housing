@@ -30,7 +30,6 @@ const config: HardhatUserConfig = {
         // https://docs.soliditylang.org/en/latest/using-the-compiler.html#optimizer-options
         runs: 200,
       },
-      viaIR: true,
     },
   },
   defaultNetwork: "hardhat",
@@ -45,7 +44,6 @@ const config: HardhatUserConfig = {
     // If the network you are looking for is not here you can add new network settings
     hardhat: {
       mining: { auto: true, interval: 1_000 },
-   
     },
     opbnb: {
       chainId: 5611,

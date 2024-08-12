@@ -52,7 +52,7 @@ export default function TxButton({
       setStatus("error");
       setErr(error.toString());
     }
-  }, [onClick, err, onComplete]);
+  }, [onClick, err, onComplete, waitTx]);
 
   return (
     <button onClick={handleClick} disabled={disabled || status == "pending"} className={className} {...props}>

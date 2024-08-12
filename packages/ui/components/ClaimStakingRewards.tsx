@@ -9,10 +9,10 @@ import nonceToRandString from "~~/utils/nonceToRandom";
 
 export default function ClaimStakingRewards() {
   const { client, smartHousing } = useRawCallsInfo();
-  const { sftBalance, hstInfo } = useHousingStakingToken();
+  const { sftBalance, hstInfo, refreshBalance } = useHousingStakingToken();
   const { address: userAddress } = useAccount();
 
-  const { data: claimableHSTs } = useSWR(
+  const { data: claimableHSTs, mutate: refreshClaimableHSTs } = useSWR(
     hstInfo && userAddress && sftBalance && client && smartHousing
       ? {
           key: "getUserClaimableHSTs",
@@ -41,8 +41,10 @@ export default function ClaimStakingRewards() {
               };
             }),
         ),
-      ).then(results => results.filter(token => token.canClaim)),
-    { keepPreviousData: true },
+      ).then(results => results.filter(token => token.canClaim).sort((a, b) => +(a.nonce - b.nonce).toString())),
+    {
+      keepPreviousData: true,
+    },
   );
 
   const { writeContractAsync } = useWriteContract();
@@ -71,6 +73,10 @@ export default function ClaimStakingRewards() {
       className="btn btn-success"
       btnName={`Claim ${selectedHST.collection} Rewards`}
       onClick={() => onClaim()}
+      onComplete={async () => {
+        await refreshBalance();
+        refreshClaimableHSTs();
+      }}
     />
   );
 }

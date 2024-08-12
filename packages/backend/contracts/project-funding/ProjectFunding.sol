@@ -231,7 +231,7 @@ contract ProjectFunding is Ownable {
 		emit ProjectTokensClaimed(depositor, projectId, depositAmount);
 	}
 
-	function unlockSHT(uint256 nonce) external {
+	function unlockSHT(uint256 nonce) external returns (uint256 newNonce) {
 		address caller = msg.sender;
 
 		uint256 lkShtBal = lkSht.balanceOf(caller, nonce);
@@ -246,7 +246,7 @@ contract ProjectFunding is Ownable {
 			LkSHTAttributes.Attributes memory newAttr
 		) = attr.unlockMatured();
 
-		lkSht.update(
+		newNonce = lkSht.update(
 			caller,
 			nonce,
 			lkShtBal.sub(totalUnlockedAmount),

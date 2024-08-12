@@ -745,6 +745,7 @@ const deployedContracts = {
       inheritedFunctions: {
         claimRentReward: "contracts/housing-project/RentsModule.sol",
         facilityManagementFunds: "contracts/housing-project/RentsModule.sol",
+        housingToken: "contracts/housing-project/RentsModule.sol",
         projectSFT: "contracts/housing-project/RentsModule.sol",
         receiveRent: "contracts/housing-project/RentsModule.sol",
         rentClaimable: "contracts/housing-project/RentsModule.sol",
@@ -4605,7 +4606,7 @@ const deployedContracts = {
                 },
               ],
               internalType: "struct HousingAttributes",
-              name: "",
+              name: "attr",
               type: "tuple",
             },
             {
@@ -4622,8 +4623,13 @@ const deployedContracts = {
                 },
               ],
               internalType: "struct rewardshares",
-              name: "",
+              name: "rewardShares",
               type: "tuple",
+            },
+            {
+              internalType: "uint256",
+              name: "newNonce",
+              type: "uint256",
             },
           ],
           stateMutability: "nonpayable",
@@ -4650,6 +4656,19 @@ const deployedContracts = {
               internalType: "uint256",
               name: "",
               type: "uint256",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [],
+          name: "housingToken",
+          outputs: [
+            {
+              internalType: "contract ERC20Burnable",
+              name: "",
+              type: "address",
             },
           ],
           stateMutability: "view",
@@ -4810,6 +4829,7 @@ const deployedContracts = {
       inheritedFunctions: {
         claimRentReward: "contracts/housing-project/RentsModule.sol",
         facilityManagementFunds: "contracts/housing-project/RentsModule.sol",
+        housingToken: "contracts/housing-project/RentsModule.sol",
         projectSFT: "contracts/housing-project/RentsModule.sol",
         receiveRent: "contracts/housing-project/RentsModule.sol",
         rentClaimable: "contracts/housing-project/RentsModule.sol",
@@ -5525,7 +5545,13 @@ const deployedContracts = {
             },
           ],
           name: "update",
-          outputs: [],
+          outputs: [
+            {
+              internalType: "uint256",
+              name: "",
+              type: "uint256",
+            },
+          ],
           stateMutability: "nonpayable",
           type: "function",
         },
@@ -6342,7 +6368,13 @@ const deployedContracts = {
             },
           ],
           name: "update",
-          outputs: [],
+          outputs: [
+            {
+              internalType: "uint256",
+              name: "",
+              type: "uint256",
+            },
+          ],
           stateMutability: "nonpayable",
           type: "function",
         },
@@ -6957,7 +6989,13 @@ const deployedContracts = {
             },
           ],
           name: "update",
-          outputs: [],
+          outputs: [
+            {
+              internalType: "uint256",
+              name: "",
+              type: "uint256",
+            },
+          ],
           stateMutability: "nonpayable",
           type: "function",
         },
@@ -7543,7 +7581,13 @@ const deployedContracts = {
             },
           ],
           name: "unlockSHT",
-          outputs: [],
+          outputs: [
+            {
+              internalType: "uint256",
+              name: "newNonce",
+              type: "uint256",
+            },
+          ],
           stateMutability: "nonpayable",
           type: "function",
         },
@@ -7598,22 +7642,6 @@ const deployedContracts = {
           type: "constructor",
         },
         {
-          inputs: [],
-          name: "PRBMathSD59x18__DivInputTooSmall",
-          type: "error",
-        },
-        {
-          inputs: [
-            {
-              internalType: "uint256",
-              name: "rAbs",
-              type: "uint256",
-            },
-          ],
-          name: "PRBMathSD59x18__DivOverflow",
-          type: "error",
-        },
-        {
           inputs: [
             {
               internalType: "int256",
@@ -7660,22 +7688,6 @@ const deployedContracts = {
             },
           ],
           name: "PRBMath__MulDivFixedPointOverflow",
-          type: "error",
-        },
-        {
-          inputs: [
-            {
-              internalType: "uint256",
-              name: "prod1",
-              type: "uint256",
-            },
-            {
-              internalType: "uint256",
-              name: "denominator",
-              type: "uint256",
-            },
-          ],
-          name: "PRBMath__MulDivOverflow",
           type: "error",
         },
         {
@@ -7793,7 +7805,7 @@ const deployedContracts = {
           inputs: [
             {
               internalType: "uint256",
-              name: "hstTokenId",
+              name: "hstNonce",
               type: "uint256",
             },
             {
@@ -7803,7 +7815,13 @@ const deployedContracts = {
             },
           ],
           name: "claimRewards",
-          outputs: [],
+          outputs: [
+            {
+              internalType: "uint256",
+              name: "newHstNonce",
+              type: "uint256",
+            },
+          ],
           stateMutability: "nonpayable",
           type: "function",
         },
