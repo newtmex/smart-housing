@@ -3,7 +3,7 @@ pragma solidity 0.8.24;
 
 /// @title Epochs and Periods Management Library
 /// @notice This library provides functions to manage and calculate epochs and periods based on a genesis timestamp and an epoch length.
-/// @dev The epoch length is specified in hours, and the period is calculated as 30 epochs.
+/// @dev The epoch length is specified in seconds, and the period is calculated as 30 epochs.
 library EpochsAndPeriods {
 	struct Storage {
 		uint256 genesis;
@@ -12,7 +12,7 @@ library EpochsAndPeriods {
 
 	/// @notice Initializes the storage with the current timestamp as the genesis and sets the epoch length.
 	/// @param self The storage struct to initialize.
-	/// @param _epochLength The length of an epoch in hours. This determines how long each epoch lasts.
+	/// @param _epochLength The length of an epoch in seconds. This determines how long each epoch lasts.
 	/// @dev This function should be called in the contract constructor to set the initial genesis timestamp and epoch length.
 	function initialize(Storage storage self, uint256 _epochLength) internal {
 		self.genesis = block.timestamp;
@@ -27,7 +27,7 @@ library EpochsAndPeriods {
 		Storage storage self
 	) internal view returns (uint256) {
 		require(self.genesis > 0, "Invalid genesis timestamp");
-		return (block.timestamp - self.genesis) / (self.epochLength * 60 * 60);
+		return (block.timestamp - self.genesis) / self.epochLength;
 	}
 
 	/// @notice Returns the current period based on the current epoch.

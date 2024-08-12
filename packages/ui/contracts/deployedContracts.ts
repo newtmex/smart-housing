@@ -7598,25 +7598,57 @@ const deployedContracts = {
           type: "constructor",
         },
         {
-          inputs: [
-            {
-              internalType: "uint256",
-              name: "x",
-              type: "uint256",
-            },
-          ],
-          name: "PRBMathUD60x18__Exp2InputTooBig",
+          inputs: [],
+          name: "PRBMathSD59x18__DivInputTooSmall",
           type: "error",
         },
         {
           inputs: [
             {
               internalType: "uint256",
-              name: "x",
+              name: "rAbs",
               type: "uint256",
             },
           ],
-          name: "PRBMathUD60x18__LogInputTooSmall",
+          name: "PRBMathSD59x18__DivOverflow",
+          type: "error",
+        },
+        {
+          inputs: [
+            {
+              internalType: "int256",
+              name: "x",
+              type: "int256",
+            },
+          ],
+          name: "PRBMathSD59x18__Exp2InputTooBig",
+          type: "error",
+        },
+        {
+          inputs: [
+            {
+              internalType: "int256",
+              name: "x",
+              type: "int256",
+            },
+          ],
+          name: "PRBMathSD59x18__LogInputTooSmall",
+          type: "error",
+        },
+        {
+          inputs: [],
+          name: "PRBMathSD59x18__MulInputTooSmall",
+          type: "error",
+        },
+        {
+          inputs: [
+            {
+              internalType: "uint256",
+              name: "rAbs",
+              type: "uint256",
+            },
+          ],
+          name: "PRBMathSD59x18__MulOverflow",
           type: "error",
         },
         {
@@ -7644,6 +7676,28 @@ const deployedContracts = {
             },
           ],
           name: "PRBMath__MulDivOverflow",
+          type: "error",
+        },
+        {
+          inputs: [
+            {
+              internalType: "uint256",
+              name: "number",
+              type: "uint256",
+            },
+          ],
+          name: "ToInt256CastOverflow",
+          type: "error",
+        },
+        {
+          inputs: [
+            {
+              internalType: "int256",
+              name: "number",
+              type: "int256",
+            },
+          ],
+          name: "ToUint256CastOverflow",
           type: "error",
         },
         {

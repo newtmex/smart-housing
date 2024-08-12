@@ -62,8 +62,9 @@ contract SmartHousing is ISmartHousing, Ownable, UserModule, ERC1155Holder {
 		hst = NewHousingStakingToken.create();
 		lkSht = ProjectFunding(projectFundingAddress).lkSht();
 
-		// TODO use this for mainnet epochsAndPeriodsStorage.initialize(24); // One epoch will span 24 hours
-		epochsAndPeriodsStorage.initialize(1); // One epoch will span 1 hour
+		// TODO set this from env vars
+		// TODO use this for mainnet epochsAndPeriodsStorage.initialize(24); // One epoch will span 24 seconds
+		epochsAndPeriodsStorage.initialize(1); // One epoch will span 1 second
 	}
 
 	/// @notice Register a new user via proxy or get the referral ID if already registered.
@@ -267,7 +268,7 @@ contract SmartHousing is ISmartHousing, Ownable, UserModule, ERC1155Holder {
 		uint256 projectTokenCount = 0;
 		uint256 lkShtNoncesCount = 0;
 		uint256 shtAmount = 0;
-		
+
 		(
 			TokenPayment[] memory projectTokens,
 			uint256[] memory lkShtNonces

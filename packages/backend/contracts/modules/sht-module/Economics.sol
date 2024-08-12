@@ -2,18 +2,41 @@
 pragma solidity 0.8.24;
 
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
-import "prb-math/contracts/PRBMathUD60x18.sol";
+import "prb-math/contracts/PRBMathSD59x18.sol";
 
+/// @notice Emitted when trying to convert a uint256 number that doesn't fit within int256.
+error ToInt256CastOverflow(uint256 number);
+
+/// @notice Emitted when trying to convert a int256 number that doesn't fit within uint256.
+error ToUint256CastOverflow(int256 number);
+
+/// @notice Safe cast from uint256 to int256
+function toInt256(uint256 x) pure returns (int256 result) {
+	if (x > uint256(type(int256).max)) {
+		revert ToInt256CastOverflow(x);
+	}
+	result = int256(x);
+}
+
+/// @notice Safe cast from uint256 to int256
+function toUint256(int256 x) pure returns (uint256 result) {
+	if (x < 0) {
+		revert ToUint256CastOverflow(x);
+	}
+
+	result = uint256(x);
+}
+
+/// @dev see https://github.com/PaulRBerg/prb-math/discussions/50
 library Emission {
-	using PRBMathUD60x18 for uint256;
+	using PRBMathSD59x18 for int256;
 
-	// TODO check PRBMathUD60x18.SCALE
-	uint256 private constant DECAY_RATE = 9998e14; // 0.9998 with 18 decimals
-	uint256 private constant E0 = 2729727036845720116116; // initial emission
+	int256 private constant DECAY_RATE = 9998e14; // 0.9998 with 18 decimals
+	int256 private constant E0 = 2729727036845720116116; // initial emission
 
 	function atEpoch(uint256 epoch) internal pure returns (uint256) {
-		uint256 decayFactor = PRBMathUD60x18.pow(DECAY_RATE, epoch);
-		return E0.mul(decayFactor) / 1e18;
+		int256 decayFactor = PRBMathSD59x18.pow(DECAY_RATE, toInt256(epoch));
+		return toUint256(E0.mul(decayFactor) / 1e18);
 	}
 
 	/// @notice Computes E0 * ​​(0.9998^epochStart − 0.9998^epochEnd​)
@@ -25,13 +48,17 @@ library Emission {
 	) internal pure returns (uint256) {
 		require(epochEnd > epochStart, "Invalid epoch range");
 
-		uint256 startFactor = PRBMathUD60x18.pow(DECAY_RATE, epochStart);
-		uint256 endFactor = PRBMathUD60x18.pow(DECAY_RATE, epochEnd);
+		int256 startFactor = PRBMathSD59x18.pow(
+			DECAY_RATE,
+			toInt256(epochStart)
+		);
+		int256 endFactor = PRBMathSD59x18.pow(DECAY_RATE, toInt256(epochEnd));
 
-		uint256 totalEmission = E0
-			.mul(SafeMath.sub(startFactor, endFactor))
-			.div(DECAY_RATE.ln());
-		return totalEmission;
+		int256 totalEmission = E0.mul(startFactor - endFactor).div(
+			DECAY_RATE.ln()
+		);
+
+		return toUint256(totalEmission);
 	}
 }
 
