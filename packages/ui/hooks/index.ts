@@ -17,7 +17,7 @@ export const useAccountTokens = () => {
   const lkSHTdata = useLkSht();
   const shtData = useSht();
 
-  const { data } = useSWR(
+  const { data, mutate } = useSWR(
     prices && shtData && lkSHTdata && userAddress && client && coinbase && housingSFTAbi
       ? { client, userAddress, lkSHTdata, coinbase, housingSFTAbi, shtData, prices }
       : null,
@@ -69,34 +69,56 @@ export const useAccountTokens = () => {
         value: string;
         qty: bigint;
         decimals: number;
+        nonce: bigint;
       }[] = [];
-      for (const token of [sht, lkSht, ...projectsToken]) {
-        if (!prices || ("balance" in token ? token.balance <= 0 : token.balances.length <= 0)) {
+      for (const token of [
+        sht,
+        ...lkSht.balances.map(({ amount, nonce }) => ({
+          symbol: lkSht.symbol,
+          tokenAddress: lkSht.address,
+          balance: amount,
+          nonce,
+          decimals: lkSht.decimals,
+        })),
+        ...projectsToken.flatMap(
+          ({
+            balances,
+            projectData: {
+              sftDetails: { symbol },
+              data: { tokenAddress },
+            },
+          }) =>
+            balances.map(({ amount, nonce }) => ({
+              symbol,
+              tokenAddress,
+              balance: amount,
+              nonce,
+              decimals: 0,
+            })),
+        ),
+      ]) {
+        if (!prices || token.balance <= 0) {
           continue;
         }
 
-        const { symbol, tokenAddress, decimals } =
-          "projectData" in token
+        const { symbol, tokenAddress, decimals, nonce } =
+          "tokenAddress" in token
             ? {
-                symbol: token.projectData.sftDetails.symbol,
-                tokenAddress: token.projectData.data.tokenAddress,
-                decimals: 0,
+                symbol: token.symbol,
+                tokenAddress: token.tokenAddress,
+                decimals: token.decimals,
+                nonce: token.nonce,
               }
-            : { symbol: token.symbol, tokenAddress: token.address, decimals: token.decimals };
-
-        const tokenBalance =
-          "balance" in token ? token.balance : token.balances.reduce((acc, cur) => acc + cur.amount, 0n);
+            : { symbol: token.symbol, tokenAddress: token.address, decimals: token.decimals, nonce: 0n };
 
         assets.push({
           symbol,
           tokenAddress,
           backgroundColor: getColor(tokenAddress, 5),
-          qty: tokenBalance,
+          qty: token.balance,
           decimals,
-          value: BigNumber(tokenBalance.toString())
-            .multipliedBy(prices[symbol].toFixed(2))
-            .dividedBy(10 ** decimals)
-            .toFixed(0),
+          value: prices[symbol].value(token.balance),
+          nonce,
         });
       }
 
@@ -105,6 +127,8 @@ export const useAccountTokens = () => {
     { keepPreviousData: true },
   );
 
+  const refresh = () => mutate();
+
   if (!data) {
     return {
       sht: null,
@@ -112,10 +136,11 @@ export const useAccountTokens = () => {
       projectsToken: null,
       ownedAssets: [],
       prices,
+      refresh,
     };
   }
 
-  return { ...data, prices };
+  return { ...data, prices, refresh };
 };
 
 // TODO get real values
@@ -126,25 +151,36 @@ export const useTokenPrices = () => {
 
   return useSWRImmutable(
     sht && lkSht ? { key: "tokenPrices-Dummy", sht, lkSht, projects } : null,
-    ({ lkSht: { symbol: lkShtID }, sht: { symbol: shtID }, projects }) => {
-      const prices: { [key: string]: number } = {};
+    ({
+      lkSht: { symbol: lkShtID, address: lkShtAddress },
+      sht: { symbol: shtID, decimals: shtDecimals, address: shtAddress },
+      projects,
+    }) => {
+      const prices: { [key: string]: { value: (amount: bigint) => string; price: number; decimals: number } } = {};
+      const shtPrice: (typeof prices)[string] = {
+        decimals: shtDecimals,
+        price: Math.random() * 10,
+        value(amount) {
+          return BigNumber(amount.toString())
+            .multipliedBy(this.price.toFixed(2))
+            .dividedBy(10 ** this.decimals)
+            .toFixed(0);
+        },
+      };
 
-      const shtPrice = Math.random() * 10;
-
-      if (shtID) {
-        prices[shtID] = shtPrice;
-      }
-      if (lkShtID) {
-        prices[lkShtID] = shtPrice;
-      }
+      prices[shtAddress] = prices[shtID] = prices[lkShtID] = prices[lkShtAddress] = shtPrice;
 
       projects.forEach(
         ({
           projectData: {
             sftDetails: { symbol: tokenId },
+            data: { tokenAddress, projectAddress },
           },
         }) => {
-          prices[tokenId] = Math.random() * 10;
+          prices[projectAddress] =
+            prices[tokenAddress] =
+            prices[tokenId] =
+              { ...shtPrice, price: Math.random() * 10, decimals: 0 };
         },
       );
 

@@ -6,7 +6,6 @@ import { DeployFunction } from "hardhat-deploy/types";
 import { parseEther, ZeroAddress } from "ethers";
 import { ethers } from "hardhat";
 import { Coinbase, ProjectFunding, SmartHousing } from "../typechain-types";
-import { time } from "@nomicfoundation/hardhat-network-helpers";
 
 const deployHousingProject: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const { deployer } = await hre.getNamedAccounts();
@@ -37,15 +36,15 @@ const deployHousingProject: DeployFunction = async function (hre: HardhatRuntime
   // to simulate this in demo, hence we do this here with contract modificatino also
   await projectFunding.setProjectToken(1n);
 
-  // Done to have the abi in front end
+  // Done to have the abis in front end
+
   await hre.deployments.deploy("HousingProject", {
     from: deployer,
     args: ["", "", ZeroAddress],
   });
-  // await hre.deployments.deploy("ERC1155", {
-  //   from: deployer,
-  //   args: [""],
-  // });
+  await hre.deployments.deploy("HousingStakingToken", {
+    from: deployer,
+  });
   await hre.deployments.deploy("LkSHT", {
     from: deployer,
     args: ["", ""],

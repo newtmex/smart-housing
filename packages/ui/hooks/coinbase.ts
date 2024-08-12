@@ -13,7 +13,7 @@ export const useSht = () => {
         client.readContract({ abi, address, functionName: "name" }),
       ]);
 
-      return { decimals, name, symbol };
+      return { decimals, name, symbol, address };
     },
   ).data;
 };

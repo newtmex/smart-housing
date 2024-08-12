@@ -6,7 +6,7 @@ import PortfolioDistribution from "~~/components/PortfolioDistribution";
 import ReferralCard from "~~/components/ReferralCard";
 import Referrals from "~~/components/Referrals";
 import RentDividends from "~~/components/RentDividends";
-import UserEcosystemTransactions from "~~/components/UserEcosystemTransactions";
+import StakingAndGovernace from "~~/components/StakingAndGovernace";
 
 export default function Dashboard() {
   return (
@@ -19,7 +19,7 @@ export default function Dashboard() {
         </div>
 
         <div className="col-sm-4 d-lg-block">
-          <UserEcosystemTransactions />
+          <StakingAndGovernace />
         </div>
       </div>
 

@@ -7,8 +7,9 @@ import "prb-math/contracts/PRBMathUD60x18.sol";
 library Emission {
 	using PRBMathUD60x18 for uint256;
 
+	// TODO check PRBMathUD60x18.SCALE
 	uint256 private constant DECAY_RATE = 9998e14; // 0.9998 with 18 decimals
-	uint256 private constant E0 = 2729727036845720116116; // Example initial emission
+	uint256 private constant E0 = 2729727036845720116116; // initial emission
 
 	function atEpoch(uint256 epoch) internal pure returns (uint256) {
 		uint256 decayFactor = PRBMathUD60x18.pow(DECAY_RATE, epoch);

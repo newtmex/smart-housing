@@ -3,6 +3,7 @@
 import { useCallback } from "react";
 import Link from "next/link";
 import BuyPropertyModal from "./BuyPropertyModal";
+import { ConnectButton } from "@rainbow-me/rainbowkit";
 import useSWR from "swr";
 import { useAccount, useWriteContract } from "wagmi";
 import { useModalToShow } from "~~/components/Modals";
@@ -139,70 +140,77 @@ export default function Properties() {
                         </h3>
 
                         <div className="item-price-buttons row">
-                          {data.isTokensClaimable && (
-                            <div className="col-12 row">
-                              <div className="item-price col-8">
-                                <strong>${rentPrice}</strong>
-                                <span>/per year</span>
-                              </div>
-                              <div className="item-buttons col-4">
-                                <TxButton
-                                  btnName="Rent"
-                                  onClick={() => onRentProperty({ data })}
-                                  className="btn btn-primary"
-                                />
-                              </div>
-                            </div>
+                          {!address ? (
+                            <ConnectButton />
+                          ) : (
+                            <>
+                              {" "}
+                              {data.isTokensClaimable && (
+                                <div className="col-12 row">
+                                  <div className="item-price col-8">
+                                    <strong>${rentPrice}</strong>
+                                    <span>/per year</span>
+                                  </div>
+                                  <div className="item-buttons col-4">
+                                    <TxButton
+                                      btnName="Rent"
+                                      onClick={() => onRentProperty({ data })}
+                                      className="btn btn-primary"
+                                    />
+                                  </div>
+                                </div>
+                              )}
+                              <div className="col-12 row">
+                                {!data.isTokensClaimable && (
+                                  <div className="item-price col-8">
+                                    <strong>
+                                      <small>{fundingToken.symbol}</small>{" "}
+                                      {prettyFormatAmount({
+                                        value: unitPrice,
+                                        length: 50,
+                                        showIsLessThanDecimalsLabel: false,
+                                      })}
+                                    </strong>
+                                    <span>/per unit</span>
+                                  </div>
+                                )}
+
+                                {data.collectedFunds < data.fundingGoal && (
+                                  <div className="item-buttons col-4">
+                                    <button
+                                      className="btn btn-warning"
+                                      onClick={() =>
+                                        openModal(
+                                          <BuyPropertyModal
+                                            data={data}
+                                            fundingToken={fundingToken}
+                                            sftDetails={sftDetails}
+                                            purchased={purchased}
+                                            unitPrice={unitPrice}
+                                          />,
+                                        )
+                                      }
+                                    >
+                                      Buy {hasClaimable && "More"}
+                                    </button>
+                                  </div>
+                                )}
+
+                                {hasClaimable && data.collectedFunds >= data.fundingGoal && (
+                                  <div className="item-buttons col-4">
+                                    <TxButton
+                                      btnName="Claim Property Units"
+                                      onClick={() => onClaimProperty({ data, fundingToken })}
+                                      onComplete={async () => {
+                                        await refreshUserRefInfo();
+                                      }}
+                                      className="btn btn-success"
+                                    />
+                                  </div>
+                                )}
+                              </div>{" "}
+                            </>
                           )}
-                          <div className="col-12 row">
-                            {!data.isTokensClaimable && (
-                              <div className="item-price col-8">
-                                <strong>
-                                  <small>{fundingToken.symbol}</small>{" "}
-                                  {prettyFormatAmount({
-                                    value: unitPrice,
-                                    length: 50,
-                                    showIsLessThanDecimalsLabel: false,
-                                  })}
-                                </strong>
-                                <span>/per unit</span>
-                              </div>
-                            )}
-
-                            {data.collectedFunds < data.fundingGoal && (
-                              <div className="item-buttons col-4">
-                                <button
-                                  className="btn btn-warning"
-                                  onClick={() =>
-                                    openModal(
-                                      <BuyPropertyModal
-                                        data={data}
-                                        fundingToken={fundingToken}
-                                        sftDetails={sftDetails}
-                                        purchased={purchased}
-                                        unitPrice={unitPrice}
-                                      />,
-                                    )
-                                  }
-                                >
-                                  Buy {hasClaimable && "More"}
-                                </button>
-                              </div>
-                            )}
-
-                            {hasClaimable && data.collectedFunds >= data.fundingGoal && (
-                              <div className="item-buttons col-4">
-                                <TxButton
-                                  btnName="Claim Property Units"
-                                  onClick={() => onClaimProperty({ data, fundingToken })}
-                                  onComplete={async () => {
-                                    await refreshUserRefInfo();
-                                  }}
-                                  className="btn btn-success"
-                                />
-                              </div>
-                            )}
-                          </div>
                         </div>
                       </div>
                     </div>

@@ -7,6 +7,25 @@ import styles from "./style.module.scss";
 
 export type IconReqState = "idle" | "error" | "success" | "pending";
 
+const matchStrings = ["reason:", "Error:"];
+const processedMatchString = matchStrings.reduce((acc, curr, index) => {
+  acc += curr;
+
+  if (index !== matchStrings.length - 1) {
+    acc += "|";
+  }
+
+  return acc;
+}, "");
+const errorMsg = (msg: string) => {
+  const regEx = new RegExp("(" + processedMatchString + ")(\n)?(.*)", "g");
+  const match = msg.match(regEx);
+
+  const error = match?.at(-1)?.replace(processedMatchString, "");
+
+  return error;
+};
+
 export function TxErrorModal({ msg, handleSeen }: { msg: string; handleSeen: () => any }) {
   const { closeModal } = useModalToShow();
 
@@ -17,15 +36,21 @@ export function TxErrorModal({ msg, handleSeen }: { msg: string; handleSeen: () 
   return (
     <SlideWrapper
       imageScr="img/portfolio16.jpg"
-      title={`Error executing action`}
-      description={msg
-        .replace(/(\w+:)/g, captured => "<br> " + captured)
-        .split("<br> ")
-        .map((e, i) => (
-          <p key={i} className="text-danger d-flex justify-content-center align-items-center">
-            {e}
-          </p>
-        ))}
+      title={`Error executing ${msg.match(/function \"\w+\"/)?.at(0) || "action"}`}
+      description={
+        matchStrings.some(matchSrring => msg.includes(matchSrring)) ? (
+          <p className="text-danger d-flex justify-content-center align-items-center">{errorMsg(msg)}</p>
+        ) : (
+          msg
+            .replace(/(\w+:)/g, captured => "<br> " + captured)
+            .split("<br> ")
+            .map((e, i) => (
+              <p key={i} className="text-danger d-flex justify-content-center align-items-center">
+                {e}
+              </p>
+            ))
+        )
+      }
     >
       <div className="buttons-w">
         <button className="btn btn-info mx-2 " onClick={handleSeen}>

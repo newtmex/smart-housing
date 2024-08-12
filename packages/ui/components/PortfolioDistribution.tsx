@@ -68,7 +68,8 @@ export default function PortfolioDistribution() {
               callbacks: {
                 beforeBody(tooltipItems) {
                   const value = (tooltipItems[0].raw as string).toString();
-                  tooltipItems[0].formattedValue = prettyFormatAmount({ value: value.replace(".", ""), decimals: 2 });
+                  tooltipItems[0].formattedValue =
+                    "$" + prettyFormatAmount({ value: value.replace(".", ""), decimals: 2 });
                 },
               },
             },

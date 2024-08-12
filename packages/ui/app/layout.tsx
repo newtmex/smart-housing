@@ -4,6 +4,7 @@ import { useCallback } from "react";
 import "../styles/global.scss";
 import AppProvider from "./provider";
 import "@rainbow-me/rainbowkit/styles.css";
+import "rc-slider/assets/index.css";
 import MainMenu from "~~/components/MainMenu";
 import MobileMenu from "~~/components/MobileMenu";
 import Modals from "~~/components/Modals";

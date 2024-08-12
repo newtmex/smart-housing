@@ -40,6 +40,7 @@ export const useProjectsInfo = () => {
         ),
     {
       keepPreviousData: true,
+      revalidateIfStale: false,
     },
   );
 };
@@ -58,7 +59,7 @@ export const useProjects = () => {
         ["dog house", "guest house", "maid house"],
       ][index % 3],
       image: `img/property${((index + 2) % 3) + 1}.jpg`,
-      rentPrice: 0,
+      rentPrice: 23.45,
       projectData,
       unitPrice: projectData.data.fundingGoal / projectData.sftDetails.maxSupply,
     })) || []

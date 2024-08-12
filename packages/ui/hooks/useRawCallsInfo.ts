@@ -10,6 +10,7 @@ export default function useRawCallsInfo() {
   const { data: housingProject } = useDeployedContractInfo("HousingProject");
   const { data: housingSFT } = useDeployedContractInfo("HousingSFT");
   const { data: lkSHT } = useDeployedContractInfo("LkSHT");
+  const { data: housingStakingSFT } = useDeployedContractInfo("HousingStakingToken");
   const client = usePublicClient({ chainId: targetNetwork.id });
 
   return {
@@ -20,5 +21,6 @@ export default function useRawCallsInfo() {
     housingProjectAbi: housingProject?.abi,
     housingSFTAbi: housingSFT?.abi,
     lkSHTAbi: lkSHT?.abi,
+    housingStakingSFTAbi: housingStakingSFT?.abi,
   };
 }

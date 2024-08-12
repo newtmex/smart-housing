@@ -82,9 +82,9 @@ export default function PortfolioBalance() {
           {prices && (
             <TabTable
               data={projectsTokenDetail}
-              renderTableData={token => (
-                <td key={token.symbol}>
-                  <strong>${prices[token.symbol]?.toFixed(2) || "0"}</strong>
+              renderTableData={(token, index) => (
+                <td key={token.symbol + index}>
+                  <strong>${prices[token.symbol]?.price.toFixed(2) || "0"}</strong>
                   <div className="balance-label smaller lighter text-nowrap">
                     {token.name} {token.symbol}
                   </div>
