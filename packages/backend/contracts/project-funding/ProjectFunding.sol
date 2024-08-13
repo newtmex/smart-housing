@@ -18,33 +18,25 @@ import { HousingSFT } from "../housing-project/HousingSFT.sol";
 import { TokenPayment } from "../lib/TokenPayments.sol";
 import { NewHousingProject, HousingProject } from "../housing-project/NewHousingProjectLib.sol";
 
-/**
- * @title ProjectFunding
- * @dev This contract is used for initializing and deploying housing projects.
- * It allows the deployment of a new housing project and manages project data.
- */
+/// @title ProjectFunding
+/// @dev Manages and deploys housing projects, handles funding, and distributes tokens.
 contract ProjectFunding is Ownable {
 	using SafeMath for uint256;
 	using ProjectStorage for mapping(uint256 => ProjectStorage.Data);
 	using ProjectStorage for ProjectStorage.Data;
 	using LkSHTAttributes for LkSHTAttributes.Attributes;
 
-	address public coinbase; // Address authorized to initialize the first project, also the housingToken
+	// State variables
+	address public coinbase; // Address authorized to initialize the first project
 	address public smartHousingAddress; // Address of the SmartHousing contract
-
 	mapping(uint256 => ProjectStorage.Data) public projects; // Mapping of project ID to ProjectData
 	mapping(address => uint256) public projectsId; // Mapping of project address to project ID
 	uint256 public projectCount; // Counter for the total number of projects
-
-	mapping(uint256 => mapping(address => uint256)) public usersProjectDeposit;
-
+	mapping(uint256 => mapping(address => uint256)) public usersProjectDeposit; // User deposits per project
 	IERC20 public housingToken; // Token used for funding projects
-	LkSHT public lkSht; // The locked version
+	LkSHT public lkSht; // Instance of the locked SmartHousing Token (LkSHT)
 
-	/**
-	 * @dev Emitted when a new project is deployed.
-	 * @param projectAddress Address of the newly deployed HousingProject contract.
-	 */
+	// Events
 	event ProjectDeployed(address indexed projectAddress);
 	event ProjectFunded(
 		uint256 indexed projectId,
@@ -57,31 +49,30 @@ contract ProjectFunding is Ownable {
 		uint256 amount
 	);
 
-	/**
-	 * @param _coinbase Address authorized to initialize the first project.
-	 */
+	/// @param _coinbase Address authorized to initialize the first project
 	constructor(address _coinbase) {
 		coinbase = _coinbase;
 		lkSht = NewLkSHT.create();
 	}
 
-	/**
-	 * @dev Internal function to deploy a new HousingProject contract.
-	 * @param fundingToken Address of the ERC20 token used for funding.
-	 * @param fundingGoal The funding goal for the new project.
-	 * @param fundingDeadline The deadline for the project funding.
-	 */
+	/// @dev Internal function to deploy a new HousingProject contract
+	/// @param name Name of the project
+	/// @param symbol Symbol of the project
+	/// @param fundingToken Address of the ERC20 token used for funding
+	/// @param fundingGoal The funding goal for the new project
+	/// @param fundingDeadline The deadline for the project funding
 	function _deployProject(
 		string memory name,
 		string memory symbol,
 		address fundingToken,
 		uint256 fundingGoal,
 		uint256 fundingDeadline
-	) internal {
-		HousingProject newProject = NewHousingProject.create(
+	) internal returns (address) {
+		HousingProject newProject = NewHousingProject.deployHousingProject(
 			name,
 			symbol,
-			smartHousingAddress
+			smartHousingAddress,
+			coinbase
 		);
 		ProjectStorage.Data memory projectData = projects.createNew(
 			projectsId,
@@ -95,18 +86,19 @@ contract ProjectFunding is Ownable {
 		projectCount = projectData.id;
 
 		emit ProjectDeployed(projectData.projectAddress);
+
+		return projectData.projectAddress;
 	}
 
-	/**
-	 * @dev Initializes the first project.
-	 * This function must be called by the coinbase address and can only be called once.
-	 * It sets up the token and deploys the first project.
-	 * @param shtPayment Payment details for the Smart Housing Token (SHT).
-	 * @param smartHousingAddress_ Address of the Smart Housing contract.
-	 * @param fundingToken Address of the ERC20 token used for funding.
-	 * @param fundingGoal The funding goal for the new project.
-	 * @param fundingDeadline The deadline for the project funding.
-	 */
+	/// @dev Initializes the first project
+	/// This function must be called by the coinbase address and can only be called once
+	/// @param shtPayment Payment details for the Smart Housing Token (SHT)
+	/// @param name Name of the first project
+	/// @param symbol Symbol of the first project
+	/// @param smartHousingAddress_ Address of the Smart Housing contract
+	/// @param fundingToken Address of the ERC20 token used for funding
+	/// @param fundingGoal The funding goal for the new project
+	/// @param fundingDeadline The deadline for the project funding
 	function initFirstProject(
 		ERC20TokenPayment calldata shtPayment,
 		string memory name,
@@ -115,7 +107,7 @@ contract ProjectFunding is Ownable {
 		address fundingToken,
 		uint256 fundingGoal,
 		uint256 fundingDeadline
-	) external {
+	) external returns (address) {
 		require(msg.sender == coinbase, "Caller is not the coinbase");
 		require(projectCount == 0, "Project already initialized");
 
@@ -124,38 +116,44 @@ contract ProjectFunding is Ownable {
 
 		smartHousingAddress = smartHousingAddress_;
 
-		_deployProject(
-			name,
-			symbol,
-			fundingToken,
-			fundingGoal,
-			fundingDeadline
-		);
+		return
+			_deployProject(
+				name,
+				symbol,
+				fundingToken,
+				fundingGoal,
+				fundingDeadline
+			);
 	}
 
-	/**
-	 * @dev Deploys a new project.
-	 * This function can be called multiple times to deploy additional projects.
-	 * @param fundingToken Address of the ERC20 token used for funding.
-	 * @param fundingGoal The funding goal for the new project.
-	 * @param fundingDeadline The deadline for the project funding.
-	 */
+	/// @dev Deploys a new project
+	/// This function can be called multiple times to deploy additional projects
+	/// @param name Name of the project
+	/// @param symbol Symbol of the project
+	/// @param fundingToken Address of the ERC20 token used for funding
+	/// @param fundingGoal The funding goal for the new project
+	/// @param fundingDeadline The deadline for the project funding
 	function deployProject(
 		string memory name,
 		string memory symbol,
 		address fundingToken,
 		uint256 fundingGoal,
 		uint256 fundingDeadline
-	) public onlyOwner {
-		_deployProject(
-			name,
-			symbol,
-			fundingToken,
-			fundingGoal,
-			fundingDeadline
-		);
+	) public onlyOwner returns (address) {
+		return
+			_deployProject(
+				name,
+				symbol,
+				fundingToken,
+				fundingGoal,
+				fundingDeadline
+			);
 	}
 
+	/// @dev Allows users to fund a project
+	/// @param depositPayment Payment details for the funding
+	/// @param projectId ID of the project to fund
+	/// @param referrerId ID of the referrer (if applicable)
 	function fundProject(
 		TokenPayment calldata depositPayment,
 		uint256 projectId,
@@ -175,37 +173,32 @@ contract ProjectFunding is Ownable {
 		);
 
 		// Update project funding
-		projects.fund(
+		uint256 totalCollected = projects.fund(
 			usersProjectDeposit[projectId],
 			projectId,
 			depositor,
 			depositPayment
 		);
 
+		// Set the amount raised in the project SFT
+		HousingSFT projectSFT = HousingSFT(
+			getProjectData(projectId).tokenAddress
+		);
+		projectSFT.setAmountRaised(totalCollected);
+
 		emit ProjectFunded(projectId, depositor, depositPayment);
 	}
 
-	function setProjectToken(uint256 projectId) external onlyOwner {
+	/// @dev Sets the project once funding is successful
+	/// @param projectId ID of the project
+	function addProjectToEcosystem(uint256 projectId) external onlyOwner {
 		ProjectStorage.Data storage project = projects[projectId];
 
-		// TODO Add this after demo
-		// require(
-		// 	project.status() == ProjectStorage.Status.Successful,
-		// 	"Project Funding not yet successful"
-		// );
-
 		ISmartHousing(smartHousingAddress).addProject(project.projectAddress);
-
-		HousingProject(project.projectAddress).setTokenDetails(
-			project.collectedFunds,
-			coinbase
-		);
 	}
 
-	/**
-	 * @dev Claims project tokens for a given project ID.
-	 * @param projectId The ID of the project to claim tokens from.
-	 */
+	/// @dev Claims project tokens for a given project ID
+	/// @param projectId ID of the project to claim tokens from
 	function claimProjectTokens(uint256 projectId) external {
 		address depositor = msg.sender;
 
@@ -213,11 +206,7 @@ contract ProjectFunding is Ownable {
 		(ProjectStorage.Data memory project, uint256 depositAmount) = projects
 			.takeDeposit(usersProjectDeposit[projectId], projectId, depositor);
 
-		HousingSFT(project.tokenAddress).mintSFT(
-			depositAmount,
-			depositor,
-			project.collectedFunds
-		);
+		HousingSFT(project.tokenAddress).mintSFT(depositAmount, depositor);
 
 		// Mint LkSHT tokens if the project ID is 1
 		if (project.id == 1) {
@@ -231,6 +220,9 @@ contract ProjectFunding is Ownable {
 		emit ProjectTokensClaimed(depositor, projectId, depositAmount);
 	}
 
+	/// @dev Unlocks SHT tokens by updating the nonce and transferring unlocked tokens to the user
+	/// @param nonce Nonce of the LkSHT token to unlock
+	/// @return newNonce New nonce for the updated LkSHT token
 	function unlockSHT(uint256 nonce) external returns (uint256 newNonce) {
 		address caller = msg.sender;
 
@@ -259,10 +251,8 @@ contract ProjectFunding is Ownable {
 		}
 	}
 
-	/**
-	 * @dev Returns an array of all project IDs and their associated data.
-	 * @return projectList An array of tuples containing project details.
-	 */
+	/// @dev Returns an array of all project IDs and their associated data
+	/// @return projectList An array of tuples containing project details
 	function allProjects() public view returns (ProjectStorage.Data[] memory) {
 		ProjectStorage.Data[] memory projectList = new ProjectStorage.Data[](
 			projectCount
@@ -275,53 +265,29 @@ contract ProjectFunding is Ownable {
 		return projectList;
 	}
 
-	/**
-	 * @dev Returns the address of the HousingProject contract for a given project ID.
-	 * @param projectId The ID of the project.
-	 * @return projectAddress The address of the HousingProject contract.
-	 */
+	/// @dev Returns the address of the HousingProject contract for a given project ID
+	/// @param projectId ID of the project
+	/// @return projectAddress Address of the HousingProject contract
 	function getProjectAddress(
 		uint256 projectId
-	) external view returns (address projectAddress) {
-		ProjectStorage.Data storage project = projects[projectId];
-		return project.projectAddress;
+	) public view returns (address projectAddress) {
+		require(
+			projectId > 0 && projectId <= projectCount,
+			"Invalid project ID"
+		);
+		projectAddress = projects[projectId].projectAddress;
 	}
 
-	/**
-	 * @dev Returns the details of a project by its ID.
-	 * @param projectId The ID of the project.
-	 * @return id The project ID.
-	 * @return fundingGoal The funding goal of the project.
-	 * @return fundingDeadline The deadline for the project funding.
-	 * @return fundingToken The address of the ERC20 token used for funding.
-	 * @return projectAddress The address of the HousingProject contract.
-	 * @return status The funding status of the project.
-	 * @return collectedFunds The amount of funds collected.
-	 */
+	/// @dev Returns detailed information about a project by its ID
+	/// @param projectId ID of the project
+	/// @return projectData Project data struct
 	function getProjectData(
 		uint256 projectId
-	)
-		external
-		view
-		returns (
-			uint256 id,
-			uint256 fundingGoal,
-			uint256 fundingDeadline,
-			address fundingToken,
-			address projectAddress,
-			uint8 status,
-			uint256 collectedFunds
-		)
-	{
-		ProjectStorage.Data storage project = projects[projectId];
-		return (
-			project.id,
-			project.fundingGoal,
-			project.fundingDeadline,
-			project.fundingToken,
-			project.projectAddress,
-			uint8(project.status()),
-			project.collectedFunds
+	) public view returns (ProjectStorage.Data memory projectData) {
+		require(
+			projectId > 0 && projectId <= projectCount,
+			"Invalid project ID"
 		);
+		projectData = projects[projectId];
 	}
 }

@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: SEE LICENSE IN LICENSE
+// SPDX-License-Identifier: MIT
 pragma solidity 0.8.24;
 
 import "./Interface.sol";
@@ -47,12 +47,18 @@ abstract contract UserModule is IUserModule {
 		referrerAddress = userIdToAddress[referrerId];
 	}
 
+	/// @notice Gets the user ID for a given address.
+	/// @param userAddress The address of the user.
+	/// @return userId The ID of the user.
 	function getUserId(
 		address userAddress
 	) external view returns (uint256 userId) {
 		return users[userAddress].id;
 	}
 
+	/// @notice Retrieves the referrals of a user.
+	/// @param userAddress The address of the user.
+	/// @return referrals An array of `ReferralInfo` structs representing the user's referrals.
 	function getReferrals(
 		address userAddress
 	) external view returns (ReferralInfo[] memory) {
@@ -78,10 +84,14 @@ abstract contract UserModule is IUserModule {
 		address userAddr,
 		uint256 referrerId
 	) internal returns (uint256) {
-		if (users[userAddr].id != 0) {
-			return users[userAddr].id;
+		User storage user = users[userAddr];
+
+		// If user already exists, return the existing ID
+		if (user.id != 0) {
+			return user.id;
 		}
 
+		// Increment user count and assign new user ID
 		userCount++;
 		users[userAddr] = User({
 			id: userCount,
@@ -91,6 +101,7 @@ abstract contract UserModule is IUserModule {
 		});
 		userIdToAddress[userCount] = userAddr;
 
+		// Add user to referrer's referrals list, if applicable
 		if (
 			referrerId != 0 &&
 			referrerId != userCount &&

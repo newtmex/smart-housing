@@ -34,13 +34,13 @@ const deployHousingProject: DeployFunction = async function (hre: HardhatRuntime
   );
   // TODO idealy, this is to be done after successful funding, but it will be teadious
   // to simulate this in demo, hence we do this here with contract modificatino also
-  await projectFunding.setProjectToken(1n);
+  await projectFunding.addProjectToEcosystem(1n);
 
   // Done to have the abis in front end
 
   await hre.deployments.deploy("HousingProject", {
     from: deployer,
-    args: ["", "", ZeroAddress],
+    args: ["", "", ZeroAddress, ZeroAddress],
   });
   await hre.deployments.deploy("HousingStakingToken", {
     from: deployer,

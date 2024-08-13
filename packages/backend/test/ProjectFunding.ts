@@ -2,49 +2,30 @@ import { expect } from "chai";
 import { ethers } from "hardhat";
 import { loadFixture, time } from "@nomicfoundation/hardhat-toolbox/network-helpers";
 import { parseEther } from "ethers";
+import { deployContractsFixtures } from "./deployContractsFixture";
 
 describe("ProjectFunding", function () {
   const fundingGoal = parseEther("1000");
   const fundingDeadline = Math.floor(Date.now() / 1000) + 60 * 60 * 24 * 7; // 1 week from now
 
   async function deployFixtures() {
-    const [owner, coinbase, otherUser] = await ethers.getSigners();
-    const fundingToken = await ethers.deployContract("MintableERC20", ["FundingToken", "FTK"]);
-    const newLkSHTlib = await ethers.deployContract("NewLkSHT");
-    const projectFunding = await ethers.deployContract("ProjectFunding", [coinbase], {
-      libraries: { NewLkSHT: await newLkSHTlib.getAddress() },
-    });
-
-    const newHSTlib = await ethers.deployContract("NewHousingStakingToken");
-    const smartHousing = await ethers.deployContract("SmartHousing", [coinbase, projectFunding], {
-      libraries: { NewHousingStakingToken: await newHSTlib.getAddress() },
-    });
-
-    const LkSHT = await ethers.getContractAt("LkSHT", await projectFunding.lkSht());
-    return {
+    const {
       projectFunding,
       fundingToken,
-      coinbase,
+      initFirstProject,
+      otherUsers: [, otherUser],
+      ...fixtures
+    } = await loadFixture(deployContractsFixtures);
+    const LkSHT = await ethers.getContractAt("LkSHT", await projectFunding.lkSht());
+
+    return {
+      ...fixtures,
       otherUser,
-      owner,
-      fundingGoal,
-      fundingDeadline,
-      smartHousing,
+      fundingToken,
+      projectFunding,
       LkSHT,
       initFirstProject: async () => {
-        await fundingToken.mint(coinbase, parseEther("1000")); // Mint tokens to the coinbase contract
-        await fundingToken.connect(coinbase).approve(projectFunding, parseEther("1000")); // Approve tokens
-
-        return projectFunding.connect(coinbase).initFirstProject(
-          {
-            token: fundingToken,
-            amount: parseEther("1000"),
-          },
-          smartHousing,
-          fundingToken,
-          fundingGoal,
-          fundingDeadline,
-        );
+        return initFirstProject({ fundingDeadline, fundingGoal, name: "FirstProject", symbol: "FIRST" });
       },
     };
   }
@@ -58,8 +39,7 @@ describe("ProjectFunding", function () {
 
   describe("initFirstProject", function () {
     it("initializes the first project correctly", async () => {
-      const { projectFunding, fundingToken, initFirstProject, fundingGoal, fundingDeadline } =
-        await loadFixture(deployFixtures);
+      const { projectFunding, fundingToken, initFirstProject } = await loadFixture(deployFixtures);
 
       await expect(initFirstProject()).to.emit(projectFunding, "ProjectDeployed");
 
@@ -71,14 +51,15 @@ describe("ProjectFunding", function () {
     });
 
     it("reverts if called by non-coinbase address", async () => {
-      const { projectFunding, otherUser, fundingToken, smartHousing, fundingGoal, fundingDeadline } =
-        await loadFixture(deployFixtures);
+      const { projectFunding, otherUser, fundingToken, smartHousing } = await loadFixture(deployFixtures);
       await expect(
         projectFunding.connect(otherUser).initFirstProject(
           {
             token: fundingToken,
             amount: parseEther("1000"),
           },
+          "SomeName",
+          "TICKER",
           smartHousing,
           fundingToken,
           fundingGoal,
@@ -96,15 +77,13 @@ describe("ProjectFunding", function () {
 
   describe("deployProject", function () {
     it("deploys a new project correctly", async () => {
-      const { projectFunding, fundingToken, initFirstProject, fundingGoal, fundingDeadline } =
-        await loadFixture(deployFixtures);
+      const { projectFunding, fundingToken, initFirstProject } = await loadFixture(deployFixtures);
 
       await initFirstProject();
 
-      await expect(projectFunding.deployProject(fundingToken, fundingGoal, fundingDeadline)).to.emit(
-        projectFunding,
-        "ProjectDeployed",
-      );
+      await expect(
+        projectFunding.deployProject("SomeProject", "SPT", fundingToken, fundingGoal, fundingDeadline),
+      ).to.emit(projectFunding, "ProjectDeployed");
 
       const projectData = await projectFunding.projects(2);
       expect(projectData.fundingGoal).to.equal(fundingGoal);
@@ -128,6 +107,7 @@ describe("ProjectFunding", function () {
           {
             token: fundingToken,
             amount: parseEther("500"),
+            nonce: 0,
           },
           1,
           0,
@@ -151,6 +131,7 @@ describe("ProjectFunding", function () {
           {
             token: fundingToken,
             amount: parseEther("500"),
+            nonce: 0,
           },
           99,
           0,
@@ -159,13 +140,12 @@ describe("ProjectFunding", function () {
     });
 
     it("reverts if project funding period has ended", async () => {
-      const { projectFunding, fundingToken, initFirstProject, fundingGoal, otherUser } =
-        await loadFixture(deployFixtures);
+      const { projectFunding, fundingToken, initFirstProject, otherUser } = await loadFixture(deployFixtures);
 
       await initFirstProject();
 
       const fundingDeadline = (await time.latest()) + 60 * 60 * 24; // 1 day into the future
-      await projectFunding.deployProject(fundingToken, fundingGoal, fundingDeadline);
+      await projectFunding.deployProject("SomeName", "TTTK", fundingToken, fundingGoal, fundingDeadline);
 
       await fundingToken.mint(otherUser, parseEther("500"));
       await fundingToken.connect(otherUser).approve(projectFunding, parseEther("500"));
@@ -177,6 +157,7 @@ describe("ProjectFunding", function () {
           {
             token: fundingToken,
             amount: parseEther("500"),
+            nonce: 0,
           },
           2,
           0,
@@ -199,26 +180,29 @@ describe("ProjectFunding", function () {
         {
           token: fundingToken,
           amount: parseEther("500"),
+          nonce: 0,
         },
         1,
         0,
       );
 
       // Simulate project success
-      const [, fundingGoal] = await projectFunding.getProjectData(1);
-      await fundingToken.mint(owner, fundingGoal);
-      await fundingToken.connect(owner).approve(projectFunding, fundingGoal);
+      const { fundingGoal, collectedFunds } = await projectFunding.getProjectData(1);
+      const completeFund = fundingGoal - collectedFunds;
+      await fundingToken.mint(owner, completeFund);
+      await fundingToken.connect(owner).approve(projectFunding, completeFund);
       await projectFunding.connect(owner).fundProject(
         {
           token: fundingToken,
-          amount: fundingGoal,
+          amount: completeFund,
+          nonce: 0,
         },
         1,
         0,
       );
       await time.increaseTo(fundingDeadline + 1);
 
-      await projectFunding.setProjectToken(1, "UloAku", "");
+      await projectFunding.addProjectToEcosystem(1);
 
       await expect(projectFunding.connect(otherUser).claimProjectTokens(1)).to.emit(
         projectFunding,
@@ -241,6 +225,7 @@ describe("ProjectFunding", function () {
         {
           token: fundingToken,
           amount: parseEther("500"),
+          nonce: 0,
         },
         1,
         0,

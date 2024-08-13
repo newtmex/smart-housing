@@ -1,55 +1,44 @@
 import { expect } from "chai";
 import { ethers } from "hardhat";
 import { loadFixture } from "@nomicfoundation/hardhat-toolbox/network-helpers";
-import { token } from "../typechain-types/@openzeppelin/contracts";
+import { deployContractsFixtures } from "./deployContractsFixture";
 
 describe("Coinbase", function () {
-  async function deployContractsFixture() {
-    const [owner, addr1, addr2, ...addrs] = await ethers.getSigners();
-
-    const FundingToken = await ethers.getContractFactory("MintableERC20");
-    const fundingToken = await FundingToken.deploy("FundingToken", "FTK");
-
-    // Deploy Coinbase contract
-    const Coinbase = await ethers.getContractFactory("Coinbase");
-    const coinbase = await Coinbase.deploy();
-
-    // Deploy ProjectFunding contract
-    const newLkSHTlib = await ethers.deployContract("NewLkSHT");
-    const projectFunding = await ethers.deployContract("ProjectFunding", [coinbase], {
-      libraries: { NewLkSHT: await newLkSHTlib.getAddress() },
-    });
-
-    // Deploy SmartHousing contract
-    const newHSTlib = await ethers.deployContract("NewHousingStakingToken");
-    const smartHousing = await ethers.deployContract("SmartHousing", [coinbase, projectFunding], {
-      libraries: { NewHousingStakingToken: await newHSTlib.getAddress() },
-    });
+  async function deployFixture() {
+    const { otherUsers, ...fixtures } = await loadFixture(deployContractsFixtures);
+    const [addr1, addr2, ...addrs] = otherUsers;
 
     const SHT = await ethers.deployContract("SHT");
 
-    return { coinbase, projectFunding, smartHousing, owner, addr1, addr2, addrs, fundingToken, SHT };
+    return { ...fixtures, addr1, addr2, addrs, SHT };
   }
 
   describe("Deployment", function () {
     it("should set the right initial values", async function () {
-      const { coinbase, owner } = await loadFixture(deployContractsFixture);
+      const { coinbase, owner } = await loadFixture(deployFixture);
 
-      expect(await coinbase.owner()).to.equal(owner);
+      expect(await coinbase.owner()).to.equal(owner.address);
     });
   });
 
   describe("startICO", function () {
     it("should initialize the first project correctly", async function () {
-      const { coinbase, projectFunding, smartHousing, SHT, fundingToken } = await loadFixture(deployContractsFixture);
+      const { coinbase, projectFunding, smartHousing, fundingToken, SHT } = await loadFixture(deployFixture);
       const fundingGoal = ethers.parseUnits("1000", 18);
       const fundingDeadline = Math.floor(Date.now() / 1000) + 86400;
 
       // Start ICO
-      await expect(coinbase.startICO(projectFunding, smartHousing, fundingToken, fundingGoal, fundingDeadline)).to.emit(
-        projectFunding,
-        "ProjectDeployed",
-      );
+      await expect(
+        coinbase.startICO(
+          "TestProject",
+          "TP",
+          projectFunding,
+          smartHousing,
+          fundingToken,
+          fundingGoal,
+          fundingDeadline,
+        ),
+      ).to.emit(projectFunding, "ProjectDeployed");
 
       // Check if the project was initialized correctly
       const projectData = await projectFunding.getProjectData(1);
@@ -62,19 +51,21 @@ describe("Coinbase", function () {
     });
 
     it("should revert if called by non-owner", async function () {
-      const { coinbase, projectFunding, smartHousing, addr1, fundingToken } = await loadFixture(deployContractsFixture);
+      const { coinbase, projectFunding, smartHousing, fundingToken, addr1 } = await loadFixture(deployFixture);
       const fundingGoal = ethers.parseUnits("1000", 18);
       const fundingDeadline = Math.floor(Date.now() / 1000) + 86400;
 
       await expect(
-        coinbase.connect(addr1).startICO(projectFunding, smartHousing, fundingToken, fundingGoal, fundingDeadline),
+        coinbase
+          .connect(addr1)
+          .startICO("TestProject", "TP", projectFunding, smartHousing, fundingToken, fundingGoal, fundingDeadline),
       ).to.be.revertedWith("Ownable: caller is not the owner");
     });
   });
 
   describe("feedSmartHousing", function () {
     it("should dispatch ecosystem funds to SmartHousing contract correctly", async function () {
-      const { coinbase, smartHousing, SHT } = await loadFixture(deployContractsFixture);
+      const { coinbase, smartHousing, SHT } = await loadFixture(deployFixture);
 
       const amountToDispatch = await SHT.ECOSYSTEM_DISTRIBUTION_FUNDS();
 
@@ -86,7 +77,7 @@ describe("Coinbase", function () {
     });
 
     it("should revert if not called by the owner", async function () {
-      const { coinbase, smartHousing, addr1 } = await loadFixture(deployContractsFixture);
+      const { coinbase, smartHousing, addr1 } = await loadFixture(deployFixture);
 
       await expect(coinbase.connect(addr1).feedSmartHousing(smartHousing)).to.be.revertedWith(
         "Ownable: caller is not the owner",
@@ -94,7 +85,7 @@ describe("Coinbase", function () {
     });
 
     it("should revert if funds are already dispatched", async function () {
-      const { coinbase, smartHousing } = await loadFixture(deployContractsFixture);
+      const { coinbase, smartHousing } = await loadFixture(deployFixture);
 
       // Dispatch the funds first time
       await coinbase.feedSmartHousing(smartHousing);

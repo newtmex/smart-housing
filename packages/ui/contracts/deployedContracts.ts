@@ -743,14 +743,7 @@ const deployedContracts = {
         },
       ],
       inheritedFunctions: {
-        claimRentReward: "contracts/housing-project/RentsModule.sol",
-        facilityManagementFunds: "contracts/housing-project/RentsModule.sol",
-        housingToken: "contracts/housing-project/RentsModule.sol",
-        projectSFT: "contracts/housing-project/RentsModule.sol",
-        receiveRent: "contracts/housing-project/RentsModule.sol",
-        rentClaimable: "contracts/housing-project/RentsModule.sol",
         rewardPerShare: "contracts/housing-project/RentsModule.sol",
-        rewardsReserve: "contracts/housing-project/RentsModule.sol",
         owner: "@openzeppelin/contracts/access/Ownable.sol",
         renounceOwnership: "@openzeppelin/contracts/access/Ownable.sol",
         transferOwnership: "@openzeppelin/contracts/access/Ownable.sol",
@@ -2641,7 +2634,7 @@ const deployedContracts = {
               type: "uint256",
             },
           ],
-          name: "setProjectToken",
+          name: "addProjectToEcosystem",
           outputs: [],
           stateMutability: "nonpayable",
           type: "function",
@@ -4393,7 +4386,13 @@ const deployedContracts = {
             },
           ],
           name: "startICO",
-          outputs: [],
+          outputs: [
+            {
+              internalType: "address",
+              name: "",
+              type: "address",
+            },
+          ],
           stateMutability: "nonpayable",
           type: "function",
         },
@@ -4529,6 +4528,11 @@ const deployedContracts = {
               name: "smartHousingAddr",
               type: "address",
             },
+            {
+              internalType: "address",
+              name: "housingTokenAddr",
+              type: "address",
+            },
           ],
           stateMutability: "nonpayable",
           type: "constructor",
@@ -4553,29 +4557,43 @@ const deployedContracts = {
           type: "event",
         },
         {
-          anonymous: false,
-          inputs: [
+          inputs: [],
+          name: "ECOSYSTEM_PERCENT",
+          outputs: [
             {
-              indexed: false,
-              internalType: "address",
-              name: "tokenAddress",
-              type: "address",
-            },
-            {
-              indexed: false,
-              internalType: "string",
-              name: "name",
-              type: "string",
-            },
-            {
-              indexed: false,
               internalType: "uint256",
-              name: "amountRaised",
+              name: "",
               type: "uint256",
             },
           ],
-          name: "TokenIssued",
-          type: "event",
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [],
+          name: "FACILITY_PERCENT",
+          outputs: [
+            {
+              internalType: "uint256",
+              name: "",
+              type: "uint256",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [],
+          name: "REWARD_PERCENT",
+          outputs: [
+            {
+              internalType: "uint256",
+              name: "",
+              type: "uint256",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
         },
         {
           inputs: [
@@ -4795,21 +4813,16 @@ const deployedContracts = {
           type: "function",
         },
         {
-          inputs: [
-            {
-              internalType: "uint256",
-              name: "amountRaised",
-              type: "uint256",
-            },
+          inputs: [],
+          name: "smartHousingAddr",
+          outputs: [
             {
               internalType: "address",
-              name: "housingTokenAddr",
+              name: "",
               type: "address",
             },
           ],
-          name: "setTokenDetails",
-          outputs: [],
-          stateMutability: "nonpayable",
+          stateMutability: "view",
           type: "function",
         },
         {
@@ -4827,17 +4840,11 @@ const deployedContracts = {
         },
       ],
       inheritedFunctions: {
-        claimRentReward: "contracts/housing-project/RentsModule.sol",
-        facilityManagementFunds: "contracts/housing-project/RentsModule.sol",
-        housingToken: "contracts/housing-project/RentsModule.sol",
-        projectSFT: "contracts/housing-project/RentsModule.sol",
-        receiveRent: "contracts/housing-project/RentsModule.sol",
-        rentClaimable: "contracts/housing-project/RentsModule.sol",
         rewardPerShare: "contracts/housing-project/RentsModule.sol",
-        rewardsReserve: "contracts/housing-project/RentsModule.sol",
         owner: "@openzeppelin/contracts/access/Ownable.sol",
         renounceOwnership: "@openzeppelin/contracts/access/Ownable.sol",
         transferOwnership: "@openzeppelin/contracts/access/Ownable.sol",
+        smartHousingAddr: "contracts/housing-project/CallsSmartHousing.sol",
       },
     },
     HousingSFT: {
@@ -5221,11 +5228,6 @@ const deployedContracts = {
               internalType: "address",
               name: "depositor",
               type: "address",
-            },
-            {
-              internalType: "uint256",
-              name: "amount_raised",
-              type: "uint256",
             },
           ],
           name: "mintSFT",
@@ -7135,6 +7137,19 @@ const deployedContracts = {
           type: "event",
         },
         {
+          inputs: [
+            {
+              internalType: "uint256",
+              name: "projectId",
+              type: "uint256",
+            },
+          ],
+          name: "addProjectToEcosystem",
+          outputs: [],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
           inputs: [],
           name: "allProjects",
           outputs: [
@@ -7173,6 +7188,11 @@ const deployedContracts = {
                 {
                   internalType: "uint256",
                   name: "collectedFunds",
+                  type: "uint256",
+                },
+                {
+                  internalType: "uint256",
+                  name: "minDeposit",
                   type: "uint256",
                 },
               ],
@@ -7239,7 +7259,13 @@ const deployedContracts = {
             },
           ],
           name: "deployProject",
-          outputs: [],
+          outputs: [
+            {
+              internalType: "address",
+              name: "",
+              type: "address",
+            },
+          ],
           stateMutability: "nonpayable",
           type: "function",
         },
@@ -7313,39 +7339,51 @@ const deployedContracts = {
           name: "getProjectData",
           outputs: [
             {
-              internalType: "uint256",
-              name: "id",
-              type: "uint256",
-            },
-            {
-              internalType: "uint256",
-              name: "fundingGoal",
-              type: "uint256",
-            },
-            {
-              internalType: "uint256",
-              name: "fundingDeadline",
-              type: "uint256",
-            },
-            {
-              internalType: "address",
-              name: "fundingToken",
-              type: "address",
-            },
-            {
-              internalType: "address",
-              name: "projectAddress",
-              type: "address",
-            },
-            {
-              internalType: "uint8",
-              name: "status",
-              type: "uint8",
-            },
-            {
-              internalType: "uint256",
-              name: "collectedFunds",
-              type: "uint256",
+              components: [
+                {
+                  internalType: "uint256",
+                  name: "id",
+                  type: "uint256",
+                },
+                {
+                  internalType: "address",
+                  name: "tokenAddress",
+                  type: "address",
+                },
+                {
+                  internalType: "address",
+                  name: "projectAddress",
+                  type: "address",
+                },
+                {
+                  internalType: "uint256",
+                  name: "fundingGoal",
+                  type: "uint256",
+                },
+                {
+                  internalType: "uint256",
+                  name: "fundingDeadline",
+                  type: "uint256",
+                },
+                {
+                  internalType: "address",
+                  name: "fundingToken",
+                  type: "address",
+                },
+                {
+                  internalType: "uint256",
+                  name: "collectedFunds",
+                  type: "uint256",
+                },
+                {
+                  internalType: "uint256",
+                  name: "minDeposit",
+                  type: "uint256",
+                },
+              ],
+              internalType: "struct ProjectStorage.Data",
+              name: "projectData",
+              type: "tuple",
             },
           ],
           stateMutability: "view",
@@ -7415,7 +7453,13 @@ const deployedContracts = {
             },
           ],
           name: "initFirstProject",
-          outputs: [],
+          outputs: [
+            {
+              internalType: "address",
+              name: "",
+              type: "address",
+            },
+          ],
           stateMutability: "nonpayable",
           type: "function",
         },
@@ -7503,6 +7547,11 @@ const deployedContracts = {
               name: "collectedFunds",
               type: "uint256",
             },
+            {
+              internalType: "uint256",
+              name: "minDeposit",
+              type: "uint256",
+            },
           ],
           stateMutability: "view",
           type: "function",
@@ -7529,19 +7578,6 @@ const deployedContracts = {
         {
           inputs: [],
           name: "renounceOwnership",
-          outputs: [],
-          stateMutability: "nonpayable",
-          type: "function",
-        },
-        {
-          inputs: [
-            {
-              internalType: "uint256",
-              name: "projectId",
-              type: "uint256",
-            },
-          ],
-          name: "setProjectToken",
           outputs: [],
           stateMutability: "nonpayable",
           type: "function",

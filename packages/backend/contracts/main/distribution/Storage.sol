@@ -95,22 +95,20 @@ library Distribution {
 		address projectAddress,
 		uint256 amount
 	) internal {
-		// Update the total received rents across all projects
-		self.projectsTotalReceivedRents += amount;
+		self.projectsTotalReceivedRents = self.projectsTotalReceivedRents.add(
+			amount
+		);
 
-		// Retrieve or initialize project-specific data
 		ProjectDistributionData storage projectData = self.projectDets[
 			projectAddress
 		];
 
-		// If `maxShares` is not set, initialize it with the maximum supply from the HousingProject contract
 		if (projectData.maxShares == 0) {
 			projectData.maxShares = HousingProject(projectAddress)
 				.getMaxSupply();
 		}
 
-		// Add the received rent amount to the project's accumulated rents
-		projectData.receivedRents += amount;
+		projectData.receivedRents = projectData.receivedRents.add(amount);
 	}
 
 	function addProject(
@@ -123,7 +121,7 @@ library Distribution {
 		self.projectSftToProjectAddress[projectSFTaddress] = projectAddress;
 	}
 
-	/// @notice Generates rewards for the current epoch.
+	/// @notice Generates rewards for the epochs that have elapsed.
 	/// @param self The storage struct for the `Distribution` contract.
 	function generateRewards(
 		Storage storage self,
@@ -142,12 +140,12 @@ library Distribution {
 			toDispatch
 		);
 
-		// Take staking value
+		// Take stakers value
 		uint256 stakingRewards = entitiesValue.staking;
 		entitiesValue.staking = 0;
 		self.entityFunds.add(entitiesValue);
 
-		uint256 shtStakersShare = stakingRewards.mul(7).div(10); // 70% goes to SHT stakers
+		uint256 shtStakersShare = stakingRewards.mul(7).div(10); // 70% to SHT stakers
 
 		uint256 totalShtWeight = self.shtTotalStakeWeight;
 		if (totalShtWeight > 0) {
@@ -173,7 +171,6 @@ library Distribution {
 	) internal returns (uint256, HstAttributes memory) {
 		uint256 shtClaimed = 0;
 
-		// Claim PT rewards
 		uint256 ptRewardCheckpoint = self.projectsStakingRewards.checkpoint;
 		if (ptRewardCheckpoint > 0) {
 			for (uint256 i = 0; i < attr.projectTokens.length; i++) {
@@ -196,7 +193,6 @@ library Distribution {
 				.sub(shtClaimed);
 		}
 
-		// Claim SHT rewards
 		uint256 shtRPS = self.shtRewardPerShare;
 		if (shtRPS > 0 && attr.shtRewardPerShare < shtRPS) {
 			uint256 shtReward = shtRPS
@@ -207,11 +203,9 @@ library Distribution {
 				shtClaimed = self.shtStakingRewards;
 			}
 			self.shtStakingRewards = self.shtStakingRewards.sub(shtReward);
-
 			shtClaimed = shtClaimed.add(shtReward);
 		}
 
-		// Update claim parameters
 		attr.shtRewardPerShare = shtRPS;
 		attr.projectsShareCheckpoint = ptRewardCheckpoint;
 
@@ -232,7 +226,7 @@ library Distribution {
 	) internal view returns (uint256 reward) {
 		if (
 			stakingCheckPoint >= tokenCheckPoint ||
-			self.projectsTotalReceivedRents <= 0
+			self.projectsTotalReceivedRents == 0
 		) {
 			return 0;
 		}
@@ -246,7 +240,7 @@ library Distribution {
 		);
 
 		ProjectDistributionData storage projectData = self.projectDets[
-			self.projectSftToProjectAddress[tokenPayment.token]
+			projectAddress
 		];
 		require(
 			tokenPayment.amount <= projectData.maxShares,
@@ -254,7 +248,6 @@ library Distribution {
 		);
 
 		uint256 shareIncrease = tokenCheckPoint.sub(stakingCheckPoint);
-		// Project's allocation is dynamic, as rents received chages
 		uint256 projectAllocation = shareIncrease
 			.mul(projectData.receivedRents)
 			.div(self.projectsTotalReceivedRents);

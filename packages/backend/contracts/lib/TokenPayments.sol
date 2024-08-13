@@ -48,7 +48,7 @@ library TokenPayments {
 				from == msg.sender,
 				"can receive native payment only from caller"
 			);
-			
+
 			// Nothing to do again since the VM will handle balance movements
 		} else if (payment.nonce == 0) {
 			IERC20(payment.token).transferFrom(

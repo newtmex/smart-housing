@@ -5,7 +5,6 @@ import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 
 import { TokenPayment } from "../lib/TokenPayments.sol";
 import { SFT } from "../modules/SFT.sol";
@@ -46,6 +45,15 @@ contract HousingStakingToken is SFT {
 
 	constructor() SFT("Housing Staking Token", "HST") {}
 
+	/// @notice Mints a new Housing Staking Token (HST) with specified attributes.
+	/// @param projectTokens Array of project tokens associated with the HST.
+	/// @param projectsShareCheckpoint The checkpoint for project share calculations.
+	/// @param shtRewardPerShare The reward per share of SHT.
+	/// @param lkDuration Duration of the lock in epochs.
+	/// @param shtAmount Amount of SHT to be associated with the token.
+	/// @param lkShtNonces Array of nonces associated with locked SHT.
+	/// @param caller Address of the caller requesting the minting.
+	/// @return attr The attributes associated with the minted token.
 	function mint(
 		TokenPayment[] calldata projectTokens,
 		uint256 projectsShareCheckpoint,
@@ -62,10 +70,11 @@ contract HousingStakingToken is SFT {
 		);
 
 		require(shtAmount > 0 || lkShtNonces.length > 0, "Must send SHT");
+
 		uint256 projectTokenCount = projectTokens.length;
 		require(
 			projectTokenCount > 0 && projectTokenCount <= 10,
-			"Must send project tokens of approved number"
+			"Must send approved number of project tokens"
 		);
 
 		uint256 stakeWeight = shtAmount.mul(lkDuration);
@@ -85,6 +94,9 @@ contract HousingStakingToken is SFT {
 		emit MintHstToken(caller, nonce, attr);
 	}
 
+	/// @notice Retrieves the balance of HST tokens for a specified user.
+	/// @param user Address of the user whose balance is to be retrieved.
+	/// @return balance Array of HSTBalance representing the user's HST holdings.
 	function sftBalance(
 		address user
 	) public view returns (HSTBalance[] memory) {

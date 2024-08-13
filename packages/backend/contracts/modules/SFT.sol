@@ -6,8 +6,8 @@ import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
-// TODO I think we should create a standard of this
-abstract contract SFT is ERC1155, Ownable {
+// TODO: Consider creating a standard for this
+contract SFT is ERC1155, Ownable {
 	using Counters for Counters.Counter;
 	using EnumerableSet for EnumerableSet.UintSet;
 
@@ -32,7 +32,7 @@ abstract contract SFT is ERC1155, Ownable {
 		_symbol = symbol_;
 	}
 
-	// Private function to mint new tokens
+	/// @dev Internal function to mint new tokens with attributes and store the nonce.
 	function _mint(
 		address to,
 		uint256 amount,
@@ -54,36 +54,51 @@ abstract contract SFT is ERC1155, Ownable {
 		return nonce;
 	}
 
+	/// @dev Returns the name of the token.
 	function name() public view returns (string memory) {
 		return _name;
 	}
 
+	/// @dev Returns the symbol of the token.
 	function symbol() public view returns (string memory) {
 		return _symbol;
 	}
 
+	/// @dev Returns the token name and symbol.
 	function tokenInfo() public view returns (string memory, string memory) {
 		return (_name, _symbol);
 	}
 
-	// Function to get token attributes by nonce
+	/// @dev Returns raw token attributes by nonce.
+	/// @param nonce The nonce of the token.
+	/// @return Attributes in bytes.
 	function getRawTokenAttributes(
 		uint256 nonce
 	) public view returns (bytes memory) {
 		return _tokenAttributes[nonce];
 	}
 
-	// Function to get list of nonces owned by an address
+	/// @dev Returns the list of nonces owned by an address.
+	/// @param owner The address of the token owner.
+	/// @return Array of nonces.
 	function getNonces(address owner) public view returns (uint256[] memory) {
 		return _addressToNonces[owner].values();
 	}
 
+	/// @dev Checks if the address owns a specific nonce.
+	/// @param owner The address of the token owner.
+	/// @param nonce The nonce to check.
+	/// @return True if the address owns the nonce, otherwise false.
 	function hasSFT(address owner, uint256 nonce) public view returns (bool) {
 		return _addressToNonces[owner].contains(nonce);
 	}
 
-	/// Burns all the NFT balance of user at nonce, creates new with balance and attributes
-	/// Returns new nonce
+	/// @dev Burns the tokens of a specific nonce and mints new tokens with updated attributes.
+	/// @param user The address of the token holder.
+	/// @param nonce The nonce of the token to update.
+	/// @param amount The amount of tokens to mint.
+	/// @param attr The new attributes to assign.
+	/// @return The new nonce for the minted tokens.
 	function update(
 		address user,
 		uint256 nonce,
@@ -94,6 +109,9 @@ abstract contract SFT is ERC1155, Ownable {
 		return _mint(user, amount, attr, "");
 	}
 
+	/// @dev Returns the balance of the user with their token attributes.
+	/// @param user The address of the user.
+	/// @return Array of SftBalance containing nonce, amount, and attributes.
 	function _sftBalance(
 		address user
 	) internal view returns (SftBalance[] memory) {
@@ -115,7 +133,13 @@ abstract contract SFT is ERC1155, Ownable {
 		return balance;
 	}
 
-	// Override _beforeTokenTransfer to handle address-to-nonce mapping
+	/// @dev Override _beforeTokenTransfer to handle address-to-nonce mapping.
+	/// @param operator The address performing the transfer.
+	/// @param from The address sending tokens.
+	/// @param to The address receiving tokens.
+	/// @param ids The token IDs being transferred.
+	/// @param amounts The amounts of tokens being transferred.
+	/// @param data Additional data.
 	function _beforeTokenTransfer(
 		address operator,
 		address from,
