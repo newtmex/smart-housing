@@ -35,17 +35,15 @@ export default function Properties() {
         properties.map(
           ({
             projectData: {
-              data: { id: projectId, isTokensClaimable },
+              data: { id: projectId },
             },
           }) =>
-            !isTokensClaimable
-              ? Promise.resolve(0n)
-              : client.readContract({
-                  abi: projectFunding.abi,
-                  address: projectFunding.address,
-                  functionName: "usersProjectDeposit",
-                  args: [projectId, user],
-                }),
+            client.readContract({
+              abi: projectFunding.abi,
+              address: projectFunding.address,
+              functionName: "usersProjectDeposit",
+              args: [projectId, user],
+            }),
         ),
       ),
   );
