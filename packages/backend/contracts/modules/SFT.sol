@@ -36,22 +36,19 @@ contract SFT is ERC1155, Ownable {
 	function _mint(
 		address to,
 		uint256 amount,
-		bytes memory attributes,
-		bytes memory data
-	) internal returns (uint256) {
+		bytes memory attributes
+	) internal returns (uint256 nonce) {
 		_nonceCounter.increment();
-		uint256 nonce = _nonceCounter.current();
+		nonce = _nonceCounter.current();
 
 		// Store the attributes
 		_tokenAttributes[nonce] = attributes;
 
 		// Mint the token with the nonce as its ID
-		super._mint(to, nonce, amount, data);
+		super._mint(to, nonce, amount, "");
 
 		// Track the nonce for the address
 		_addressToNonces[to].add(nonce);
-
-		return nonce;
 	}
 
 	/// @dev Returns the name of the token.
@@ -72,9 +69,9 @@ contract SFT is ERC1155, Ownable {
 	/// @dev Returns raw token attributes by nonce.
 	/// @param nonce The nonce of the token.
 	/// @return Attributes in bytes.
-	function getRawTokenAttributes(
+	function _getRawTokenAttributes(
 		uint256 nonce
-	) public view returns (bytes memory) {
+	) internal view returns (bytes memory) {
 		return _tokenAttributes[nonce];
 	}
 
@@ -106,7 +103,7 @@ contract SFT is ERC1155, Ownable {
 		bytes memory attr
 	) external onlyOwner returns (uint256) {
 		_burn(user, nonce, amount);
-		return _mint(user, amount, attr, "");
+		return amount > 0 ? _mint(user, amount, attr) : 0;
 	}
 
 	/// @dev Returns the balance of the user with their token attributes.
@@ -151,11 +148,10 @@ contract SFT is ERC1155, Ownable {
 		super._beforeTokenTransfer(operator, from, to, ids, amounts, data);
 
 		for (uint256 i = 0; i < ids.length; i++) {
-			_addressToNonces[from].remove(ids[i]);
-		}
+			uint256 id = ids[i];
 
-		for (uint256 i = 0; i < ids.length; i++) {
-			_addressToNonces[to].add(ids[i]);
+			_addressToNonces[from].remove(id);
+			_addressToNonces[to].add(id);
 		}
 	}
 }

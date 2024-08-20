@@ -89,9 +89,16 @@ contract HousingStakingToken is SFT {
 		});
 
 		// Mint the HST token
-		uint256 nonce = _mint(caller, 1, abi.encode(attr), "");
+		uint256 nonce = _mint(caller, 1, abi.encode(attr));
 
 		emit MintHstToken(caller, nonce, attr);
+	}
+
+	function getAttribute(uint256 nonce) external view returns (HstAttributes memory) {
+		return abi.decode(
+			_getRawTokenAttributes(nonce),
+			(HstAttributes)
+		);
 	}
 
 	/// @notice Retrieves the balance of HST tokens for a specified user.

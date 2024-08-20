@@ -75,8 +75,18 @@ contract LkSHT is SFT {
 			LkSHTAttributes.newAttributes(startTimestamp, amount)
 		);
 
-		super._mint(to, amount, attributes, "LockedSmartHousingToken");
+		super._mint(to, amount, attributes);
 
 		emit TokensMinted(to, amount);
+	}
+
+	function getAttribute(
+		uint256 nonce
+	) external view returns (LkSHTAttributes.Attributes memory) {
+		return
+			abi.decode(
+				_getRawTokenAttributes(nonce),
+				(LkSHTAttributes.Attributes)
+			);
 	}
 }

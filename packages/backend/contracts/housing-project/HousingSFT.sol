@@ -85,7 +85,7 @@ contract HousingSFT is SFT {
 			})
 		);
 
-		return _mint(depositor, mintShare, attributes, "");
+		return _mint(depositor, mintShare, attributes);
 	}
 
 	/// @notice Retrieves the SFT attributes for a given owner and nonce.
@@ -101,7 +101,7 @@ contract HousingSFT is SFT {
 			"HousingSFT: No tokens found for user at nonce"
 		);
 
-		return abi.decode(getRawTokenAttributes(nonce), (HousingAttributes));
+		return abi.decode(_getRawTokenAttributes(nonce), (HousingAttributes));
 	}
 
 	/// @notice Returns the maximum supply of the HousingSFT tokens.

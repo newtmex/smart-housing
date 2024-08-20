@@ -229,10 +229,7 @@ contract ProjectFunding is Ownable {
 		uint256 lkShtBal = lkSht.balanceOf(caller, nonce);
 		require(lkShtBal > 0, "ProjectFunding: Nothing to unlock");
 
-		LkSHTAttributes.Attributes memory attr = abi.decode(
-			lkSht.getRawTokenAttributes(nonce),
-			(LkSHTAttributes.Attributes)
-		);
+		LkSHTAttributes.Attributes memory attr = lkSht.getAttribute(nonce);
 		(
 			uint256 totalUnlockedAmount,
 			LkSHTAttributes.Attributes memory newAttr

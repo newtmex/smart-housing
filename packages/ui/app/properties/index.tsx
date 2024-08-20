@@ -180,6 +180,7 @@ export default function Properties() {
                                       onClick={() =>
                                         openModal(
                                           <BuyPropertyModal
+                                            imgSrc={image}
                                             data={data}
                                             fundingToken={fundingToken}
                                             sftDetails={sftDetails}

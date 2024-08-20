@@ -162,10 +162,7 @@ contract SmartHousing is ISmartHousing, Ownable, UserModule, ERC1155Holder {
 			.lastFundsDispatchEpoch < currentEpoch();
 		if (rewardsCanBeGenerated) return true;
 
-		HstAttributes memory hstAttr = abi.decode(
-			hst.getRawTokenAttributes(tokenNonce),
-			(HstAttributes)
-		);
+		HstAttributes memory hstAttr = hst.getAttribute(tokenNonce);
 		return
 			hstAttr.shtRewardPerShare < distributionStorage.shtRewardPerShare;
 	}
@@ -186,9 +183,7 @@ contract SmartHousing is ISmartHousing, Ownable, UserModule, ERC1155Holder {
 
 		distributionStorage.generateRewards(epochsAndPeriodsStorage);
 		(uint256 claimedSHT, HstAttributes memory hstAttr) = distributionStorage
-			.claimRewards(
-				abi.decode(hst.getRawTokenAttributes(hstNonce), (HstAttributes))
-			);
+			.claimRewards(hst.getAttribute(hstNonce));
 		uint256 rentRewards = 0;
 
 		// Claim rent rewards from HousingProjects

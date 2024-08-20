@@ -13,8 +13,8 @@ import useRawCallsInfo from "~~/hooks/useRawCallsInfo";
 import { useSpendERC20 } from "~~/hooks/useSpendERC20";
 import { RefIdData } from "~~/utils";
 
-type Props = ProjectsValue["projectData"] & { purchased?: bigint; unitPrice: bigint };
-export default function BuyPropertyModal({ unitPrice, data, fundingToken, sftDetails, purchased }: Props) {
+type Props = ProjectsValue["projectData"] & { purchased?: bigint; unitPrice: bigint; imgSrc: string };
+export default function BuyPropertyModal({ imgSrc, unitPrice, data, fundingToken, sftDetails, purchased }: Props) {
   const unitsLeft = +BigNumber(sftDetails.maxSupply.toString())
     .multipliedBy((data.fundingGoal - data.collectedFunds).toString())
     .dividedBy(data.fundingGoal.toString())
@@ -88,7 +88,7 @@ export default function BuyPropertyModal({ unitPrice, data, fundingToken, sftDet
           </button>
           <div className="onboarding-side-by-side">
             <div className="onboarding-media">
-              <img alt="" src="img/bigicon5.png" width="200px" />
+              <img alt="" src={imgSrc} width="200px" />
             </div>
             <div className="onboarding-content with-gradient">
               <h4 className="onboarding-title">

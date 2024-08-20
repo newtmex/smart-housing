@@ -1482,7 +1482,6 @@ const deployedContracts = {
         balanceOf: "contracts/modules/SFT.sol",
         balanceOfBatch: "contracts/modules/SFT.sol",
         getNonces: "contracts/modules/SFT.sol",
-        getRawTokenAttributes: "contracts/modules/SFT.sol",
         hasSFT: "contracts/modules/SFT.sol",
         isApprovedForAll: "contracts/modules/SFT.sol",
         name: "contracts/modules/SFT.sol",
@@ -5112,25 +5111,6 @@ const deployedContracts = {
         {
           inputs: [
             {
-              internalType: "uint256",
-              name: "nonce",
-              type: "uint256",
-            },
-          ],
-          name: "getRawTokenAttributes",
-          outputs: [
-            {
-              internalType: "bytes",
-              name: "",
-              type: "bytes",
-            },
-          ],
-          stateMutability: "view",
-          type: "function",
-        },
-        {
-          inputs: [
-            {
               internalType: "address",
               name: "owner",
               type: "address",
@@ -5581,7 +5561,6 @@ const deployedContracts = {
         balanceOf: "contracts/modules/SFT.sol",
         balanceOfBatch: "contracts/modules/SFT.sol",
         getNonces: "contracts/modules/SFT.sol",
-        getRawTokenAttributes: "contracts/modules/SFT.sol",
         hasSFT: "contracts/modules/SFT.sol",
         isApprovedForAll: "contracts/modules/SFT.sol",
         name: "contracts/modules/SFT.sol",
@@ -5873,6 +5852,79 @@ const deployedContracts = {
         {
           inputs: [
             {
+              internalType: "uint256",
+              name: "nonce",
+              type: "uint256",
+            },
+          ],
+          name: "getAttribute",
+          outputs: [
+            {
+              components: [
+                {
+                  components: [
+                    {
+                      internalType: "address",
+                      name: "token",
+                      type: "address",
+                    },
+                    {
+                      internalType: "uint256",
+                      name: "amount",
+                      type: "uint256",
+                    },
+                    {
+                      internalType: "uint256",
+                      name: "nonce",
+                      type: "uint256",
+                    },
+                  ],
+                  internalType: "struct TokenPayment[]",
+                  name: "projectTokens",
+                  type: "tuple[]",
+                },
+                {
+                  internalType: "uint256",
+                  name: "projectsShareCheckpoint",
+                  type: "uint256",
+                },
+                {
+                  internalType: "uint256",
+                  name: "shtRewardPerShare",
+                  type: "uint256",
+                },
+                {
+                  internalType: "uint256",
+                  name: "shtAmount",
+                  type: "uint256",
+                },
+                {
+                  internalType: "uint256",
+                  name: "stakeWeight",
+                  type: "uint256",
+                },
+                {
+                  internalType: "uint256",
+                  name: "lkDuration",
+                  type: "uint256",
+                },
+                {
+                  internalType: "uint256[]",
+                  name: "lkShtNonces",
+                  type: "uint256[]",
+                },
+              ],
+              internalType: "struct HstAttributes",
+              name: "",
+              type: "tuple",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
               internalType: "address",
               name: "owner",
               type: "address",
@@ -5884,25 +5936,6 @@ const deployedContracts = {
               internalType: "uint256[]",
               name: "",
               type: "uint256[]",
-            },
-          ],
-          stateMutability: "view",
-          type: "function",
-        },
-        {
-          inputs: [
-            {
-              internalType: "uint256",
-              name: "nonce",
-              type: "uint256",
-            },
-          ],
-          name: "getRawTokenAttributes",
-          outputs: [
-            {
-              internalType: "bytes",
-              name: "",
-              type: "bytes",
             },
           ],
           stateMutability: "view",
@@ -6628,6 +6661,47 @@ const deployedContracts = {
         {
           inputs: [
             {
+              internalType: "uint256",
+              name: "nonce",
+              type: "uint256",
+            },
+          ],
+          name: "getAttribute",
+          outputs: [
+            {
+              components: [
+                {
+                  internalType: "uint256",
+                  name: "initialAmount",
+                  type: "uint256",
+                },
+                {
+                  internalType: "uint256",
+                  name: "amount",
+                  type: "uint256",
+                },
+                {
+                  internalType: "uint256",
+                  name: "startTimestamp",
+                  type: "uint256",
+                },
+                {
+                  internalType: "uint256",
+                  name: "endTimestamp",
+                  type: "uint256",
+                },
+              ],
+              internalType: "struct LkSHTAttributes.Attributes",
+              name: "",
+              type: "tuple",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
               internalType: "address",
               name: "owner",
               type: "address",
@@ -6639,25 +6713,6 @@ const deployedContracts = {
               internalType: "uint256[]",
               name: "",
               type: "uint256[]",
-            },
-          ],
-          stateMutability: "view",
-          type: "function",
-        },
-        {
-          inputs: [
-            {
-              internalType: "uint256",
-              name: "nonce",
-              type: "uint256",
-            },
-          ],
-          name: "getRawTokenAttributes",
-          outputs: [
-            {
-              internalType: "bytes",
-              name: "",
-              type: "bytes",
             },
           ],
           stateMutability: "view",

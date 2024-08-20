@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import LoggedUserInfo from "./LoggedUserInfo";
@@ -12,7 +13,7 @@ export default function MainMenu() {
     <div className="menu-w menu-position-side menu-side-left menu-layout-mini sub-menu-style-over sub-menu-color-bright menu-activated-on-hover menu-has-selected-link color-scheme-dark color-style-transparent selected-menu-color-bright">
       <div className="logo-w">
         <a className="logo" href="/">
-          <div className="logo-element"></div>
+          <Image src="/logo.svg" alt="smart-housing" width={50} height={50} />
           <div className="logo-label">{APP_NAME}</div>
         </a>
       </div>
