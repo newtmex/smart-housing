@@ -2,44 +2,39 @@
 pragma solidity 0.8.24;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 
-import "../../lib/EpochsAndPeriods.sol";
+import "../../lib/Epochs.sol";
 import "../../housing-project/HousingProject.sol";
 import "../../modules/sht-module/Economics.sol";
 import { HstAttributes } from "../HST.sol";
 
 library ProjectStakingRewards {
-	using SafeMath for uint256;
-
 	struct Value {
 		uint256 toShare;
 		uint256 checkpoint;
 	}
 
 	function add(Value storage self, uint256 rhs) internal {
-		self.toShare = self.toShare.add(rhs);
-		self.checkpoint = self.checkpoint.add(rhs);
+		self.toShare += rhs;
+		self.checkpoint += rhs;
 	}
 
 	function sub(Value storage self, uint256 rhs) internal {
-		self.toShare = self.toShare.sub(rhs);
+		self.toShare -= rhs;
 	}
 }
 
 library Distribution {
-	using SafeMath for uint256;
-	using EpochsAndPeriods for EpochsAndPeriods.Storage;
+	using Epochs for Epochs.Storage;
 	using Entities for Entities.Value;
 	using ProjectStakingRewards for ProjectStakingRewards.Value;
 
 	struct Storage {
 		uint256 totalFunds;
-		uint256 genesisEpoch;
 		uint256 projectsTotalReceivedRents;
 		mapping(address => ProjectDistributionData) projectDets;
 		mapping(address => address) projectSftToProjectAddress;
-		uint256 lastFundsDispatchEpoch;
+		uint256 lastFundsDispatchTimestamp;
 		uint256 shtTotalStakeWeight;
 		uint256 shtRewardPerShare;
 		uint256 shtStakingRewards;
@@ -55,15 +50,10 @@ library Distribution {
 	/// @notice Sets the total funds and the genesis epoch. This can only be done once.
 	/// @param self The storage struct to set the total funds and genesis epoch.
 	/// @param amount The amount of total funds to set.
-	/// @param epochsAndPeriods The storage struct for epoch and period management.
-	function setTotalFunds(
-		Storage storage self,
-		EpochsAndPeriods.Storage storage epochsAndPeriods,
-		uint256 amount
-	) internal {
+	function setTotalFunds(Storage storage self, uint256 amount) internal {
 		require(self.totalFunds == 0, "Total funds already set");
 		self.totalFunds = amount;
-		self.genesisEpoch = epochsAndPeriods.currentEpoch();
+		self.lastFundsDispatchTimestamp = block.timestamp;
 	}
 
 	/// @notice Returns the total funds.
@@ -73,15 +63,6 @@ library Distribution {
 		Storage storage self
 	) internal view returns (uint256) {
 		return self.totalFunds;
-	}
-
-	/// @notice Returns the genesis epoch when the total funds were set.
-	/// @param self The storage struct containing the genesis epoch.
-	/// @return The genesis epoch.
-	function getGenesisEpoch(
-		Storage storage self
-	) internal view returns (uint256) {
-		return self.genesisEpoch;
 	}
 
 	/// @notice Adds the rent received for a project and updates the total received rents and project-specific data.
@@ -95,9 +76,7 @@ library Distribution {
 		address projectAddress,
 		uint256 amount
 	) internal {
-		self.projectsTotalReceivedRents = self.projectsTotalReceivedRents.add(
-			amount
-		);
+		self.projectsTotalReceivedRents += amount;
 
 		ProjectDistributionData storage projectData = self.projectDets[
 			projectAddress
@@ -108,7 +87,7 @@ library Distribution {
 				.getMaxSupply();
 		}
 
-		projectData.receivedRents = projectData.receivedRents.add(amount);
+		projectData.receivedRents += amount;
 	}
 
 	function addProject(
@@ -121,44 +100,116 @@ library Distribution {
 		self.projectSftToProjectAddress[projectSFTaddress] = projectAddress;
 	}
 
-	/// @notice Generates rewards for the epochs that have elapsed.
+	/// @notice Computes the emissions for a specific epoch based on provided timestamps.
+	/// @param epochs The storage struct containing epoch information.
+	/// @param epoch The epoch for which to compute emissions.
+	/// @param lastTimestamp The timestamp of the last reward generation.
+	/// @param latestTimestamp The current timestamp.
+	/// @return The computed emissions for the specified time range within the epoch.
+	function _computeEdgeEmissions(
+		Epochs.Storage memory epochs,
+		uint256 epoch,
+		uint256 lastTimestamp,
+		uint256 latestTimestamp
+	) private pure returns (uint256) {
+		(uint256 startTimestamp, uint256 endTimestamp) = epochs
+			.epochEdgeTimestamps(epoch);
+
+		// Determine the bounds for emission calculation.
+		uint256 upperBoundTime;
+		uint256 lowerBoundTime;
+
+		if (
+			startTimestamp <= latestTimestamp && latestTimestamp <= endTimestamp
+		) {
+			upperBoundTime = latestTimestamp;
+			lowerBoundTime = startTimestamp;
+		} else if (
+			startTimestamp <= lastTimestamp && lastTimestamp <= endTimestamp
+		) {
+			upperBoundTime = latestTimestamp <= endTimestamp
+				? latestTimestamp
+				: endTimestamp;
+			lowerBoundTime = lastTimestamp;
+		} else {
+			revert("Router._computeEdgeEmissions: Invalid timestamps");
+		}
+
+		// Calculate emissions based on the time range.
+		return
+			Emission.throughTimeRange(
+				epoch,
+				upperBoundTime - lowerBoundTime,
+				epochs.epochLength
+			);
+	}
+
+	/// @notice Generates rewards for the epochs that have elapsed since the last dispatch.
 	/// @param self The storage struct for the `Distribution` contract.
+	/// @param epochs The storage struct containing epoch information.
 	function generateRewards(
 		Storage storage self,
-		EpochsAndPeriods.Storage storage epochsAndPeriods
+		Epochs.Storage storage epochs
 	) internal {
-		uint256 currentEpoch = epochsAndPeriods.currentEpoch();
-		if (currentEpoch <= self.lastFundsDispatchEpoch) {
+		uint256 currentTimestamp = block.timestamp;
+		uint256 lastTimestamp = self.lastFundsDispatchTimestamp;
+
+		// Return early if no time has passed since the last dispatch.
+		if (currentTimestamp <= lastTimestamp) {
 			return;
 		}
 
-		uint256 toDispatch = Emission.throughEpochRange(
-			self.lastFundsDispatchEpoch,
-			currentEpoch
+		uint256 lastGenerateEpoch = epochs.computeEpoch(lastTimestamp);
+		uint256 toDispatch = _computeEdgeEmissions(
+			epochs,
+			lastGenerateEpoch,
+			lastTimestamp,
+			currentTimestamp
 		);
+
+		uint256 currentEpoch = epochs.currentEpoch();
+		if (currentEpoch > lastGenerateEpoch) {
+			uint256 intermediateEpochs = currentEpoch - lastGenerateEpoch - 1;
+
+			if (intermediateEpochs > 1) {
+				toDispatch += Emission.throughEpochRange(
+					lastGenerateEpoch,
+					lastGenerateEpoch + intermediateEpochs
+				);
+			}
+
+			toDispatch += _computeEdgeEmissions(
+				epochs,
+				currentEpoch,
+				lastTimestamp,
+				currentTimestamp
+			);
+		}
+
+		// Convert the total dispatched value into entity-specific funds.
 		Entities.Value memory entitiesValue = Entities.fromTotalValue(
 			toDispatch
 		);
 
-		// Take stakers value
+		// Allocate staking rewards and update entity funds.
 		uint256 stakingRewards = entitiesValue.staking;
-		entitiesValue.staking = 0;
+		entitiesValue.staking = 0; // Reset staking rewards in the entity value.
 		self.entityFunds.add(entitiesValue);
 
-		uint256 shtStakersShare = stakingRewards.mul(7).div(10); // 70% to SHT stakers
+		uint256 shtStakersShare = (stakingRewards * 7) / 10; // 70% to SHT stakers.
 
 		uint256 totalShtWeight = self.shtTotalStakeWeight;
 		if (totalShtWeight > 0) {
-			uint256 rpsIncrease = shtStakersShare
-				.mul(DIVISION_SAFETY_CONST)
-				.div(totalShtWeight);
-			self.shtRewardPerShare = self.shtRewardPerShare.add(rpsIncrease);
+			uint256 rpsIncrease = (shtStakersShare * DIVISION_SAFETY_CONST) /
+				totalShtWeight;
+			self.shtRewardPerShare += rpsIncrease;
 		}
 
-		self.shtStakingRewards = self.shtStakingRewards.add(shtStakersShare);
-		self.projectsStakingRewards.add(stakingRewards.sub(shtStakersShare));
+		self.shtStakingRewards += shtStakersShare;
+		self.projectsStakingRewards.add(stakingRewards - shtStakersShare);
 
-		self.lastFundsDispatchEpoch = currentEpoch;
+		// Update the last funds dispatch timestamp to the current timestamp.
+		self.lastFundsDispatchTimestamp = currentTimestamp;
 	}
 
 	/// @notice Claims rewards for a given attribute.
@@ -174,36 +225,29 @@ library Distribution {
 		uint256 ptRewardCheckpoint = self.projectsStakingRewards.checkpoint;
 		if (ptRewardCheckpoint > 0) {
 			for (uint256 i = 0; i < attr.projectTokens.length; i++) {
-				shtClaimed = shtClaimed.add(
-					computeRewardForPT(
-						self,
-						attr.projectTokens[i],
-						attr.projectsShareCheckpoint,
-						ptRewardCheckpoint
-					)
+				shtClaimed += computeRewardForPT(
+					self,
+					attr.projectTokens[i],
+					attr.projectsShareCheckpoint,
+					ptRewardCheckpoint
 				);
 			}
 
 			if (self.projectsStakingRewards.toShare < shtClaimed) {
 				shtClaimed = self.projectsStakingRewards.toShare;
 			}
-			self.projectsStakingRewards.toShare = self
-				.projectsStakingRewards
-				.toShare
-				.sub(shtClaimed);
+			self.projectsStakingRewards.toShare -= shtClaimed;
 		}
 
 		uint256 shtRPS = self.shtRewardPerShare;
 		if (shtRPS > 0 && attr.shtRewardPerShare < shtRPS) {
-			uint256 shtReward = shtRPS
-				.sub(attr.shtRewardPerShare)
-				.mul(attr.stakeWeight)
-				.div(DIVISION_SAFETY_CONST);
+			uint256 shtReward = ((shtRPS - attr.shtRewardPerShare) *
+				attr.stakeWeight) / DIVISION_SAFETY_CONST;
 			if (self.shtStakingRewards < shtReward) {
 				shtClaimed = self.shtStakingRewards;
 			}
-			self.shtStakingRewards = self.shtStakingRewards.sub(shtReward);
-			shtClaimed = shtClaimed.add(shtReward);
+			self.shtStakingRewards -= (shtReward);
+			shtClaimed += (shtReward);
 		}
 
 		attr.shtRewardPerShare = shtRPS;
@@ -247,20 +291,19 @@ library Distribution {
 			"Project token amount too large"
 		);
 
-		uint256 shareIncrease = tokenCheckPoint.sub(stakingCheckPoint);
-		uint256 projectAllocation = shareIncrease
-			.mul(projectData.receivedRents)
-			.div(self.projectsTotalReceivedRents);
+		uint256 shareIncrease = tokenCheckPoint - (stakingCheckPoint);
+		uint256 projectAllocation = (shareIncrease *
+			(projectData.receivedRents)) / (self.projectsTotalReceivedRents);
 
-		reward = projectAllocation.mul(tokenPayment.amount).div(
-			projectData.maxShares
-		);
+		reward =
+			(projectAllocation * (tokenPayment.amount)) /
+			(projectData.maxShares);
 	}
 
 	/// @notice Enters staking for the given attributes.
 	/// @param self The storage struct for the `Distribution` contract.
 	/// @param stakeWeight The stake weight to be added.
 	function enterStaking(Storage storage self, uint256 stakeWeight) internal {
-		self.shtTotalStakeWeight = self.shtTotalStakeWeight.add(stakeWeight);
+		self.shtTotalStakeWeight += (stakeWeight);
 	}
 }

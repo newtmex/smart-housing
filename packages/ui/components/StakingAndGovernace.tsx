@@ -64,21 +64,25 @@ export default function StakingAndGovernace() {
           </div>
         </div>
         <div className="element-wrapper pb-4 mb-4 border-bottom">
-          <div className="element-box-tp">
+          <div className="element-box-tp row">
             {ownedAssets.length > 1 && (
-              <a
-                className="btn btn-primary"
-                onClick={e => {
-                  e.preventDefault();
-                  openModal(<StakingModal />);
-                }}
-              >
-                <i className="os-icon os-icon-refresh-ccw"></i>
-                <span>Stake Assets</span>
-              </a>
+              <div className="col-sm-5">
+                <a
+                  className="btn btn-primary"
+                  onClick={e => {
+                    e.preventDefault();
+                    openModal(<StakingModal />);
+                  }}
+                >
+                  <i className="os-icon os-icon-refresh-ccw"></i>
+                  <span>Stake Assets</span>
+                </a>
+              </div>
             )}
 
-            <ClaimStakingRewards />
+            <div className="col-sm-7">
+              <ClaimStakingRewards />
+            </div>
           </div>
         </div>
       </div>

@@ -30,7 +30,7 @@ library Emission {
 	using PRBMathSD59x18 for int256;
 
 	int256 private constant DECAY_RATE = 9998e14; // 0.9998 with 18 decimals
-	int256 private constant E0 = 2729727036845720116116; // initial emission
+	int256 private constant E0 = 2729727036845720116116; // Epoch 0 emission
 
 	/// @notice Computes emission at a specific epoch
 	/// @param epoch The epoch to compute emission for
@@ -58,6 +58,14 @@ library Emission {
 
 		// return the absolute value of totalEmission as uint256
 		return toUint256(totalEmission * -1);
+	}
+
+	function throughTimeRange(
+		uint256 epoch,
+		uint256 timeRange,
+		uint256 epochLength
+	) internal pure returns (uint256) {
+		return (atEpoch(epoch) * timeRange) / epochLength;
 	}
 
 	function epochDecayFactor(uint256 epoch) private pure returns (int256) {

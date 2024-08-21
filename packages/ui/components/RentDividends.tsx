@@ -12,7 +12,7 @@ export default function RentDividends() {
   const { client, housingProjectAbi } = useRawCallsInfo();
   const { writeContractAsync } = useWriteContract();
 
-  const { data: tokenBalances } = useSWR(
+  const { data: tokenBalances, mutate: refreshClaimableRents } = useSWR(
     housingProjectAbi && client && projectsToken
       ? { key: "projects-rent-rewards", tokens: projectsToken, client, housingProjectAbi }
       : null,
@@ -44,6 +44,7 @@ export default function RentDividends() {
             ),
         ),
       ),
+    { refreshInterval: 5_000 },
   );
 
   const onClaimRentReward = useCallback(
@@ -74,10 +75,13 @@ export default function RentDividends() {
             <TxButton
               className="element-box el-tablo centered trend-in-corner smaller"
               onClick={() => onClaimRentReward(token)}
+              onComplete={async () => {
+                refreshClaimableRents();
+              }}
               btnName={
                 <>
                   <div className="label">{name} Rent Reward</div>
-                  <div className="value">{prettyFormatAmount({ value: claimable, length: 4 })}</div>
+                  <div className="value">{prettyFormatAmount({ value: claimable, length: 8 })}</div>
                   <div className="trending trending-up">
                     <span>{collection}</span>
                     <i className="os-icon os-icon-arrow-up6"></i>

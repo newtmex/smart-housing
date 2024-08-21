@@ -743,7 +743,6 @@ const deployedContracts = {
         },
       ],
       inheritedFunctions: {
-        rewardPerShare: "contracts/housing-project/RentsModule.sol",
         owner: "@openzeppelin/contracts/access/Ownable.sol",
         renounceOwnership: "@openzeppelin/contracts/access/Ownable.sol",
         transferOwnership: "@openzeppelin/contracts/access/Ownable.sol",
@@ -4654,6 +4653,19 @@ const deployedContracts = {
         },
         {
           inputs: [],
+          name: "endRewardGenerateTimestamp",
+          outputs: [
+            {
+              internalType: "uint256",
+              name: "",
+              type: "uint256",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [],
           name: "facilityManagementFunds",
           outputs: [
             {
@@ -4686,6 +4698,32 @@ const deployedContracts = {
               internalType: "contract ERC20Burnable",
               name: "",
               type: "address",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [],
+          name: "lastRewardGenerateTimestamp",
+          outputs: [
+            {
+              internalType: "uint256",
+              name: "",
+              type: "uint256",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [],
+          name: "maxSupply",
+          outputs: [
+            {
+              internalType: "uint256",
+              name: "",
+              type: "uint256",
             },
           ],
           stateMutability: "view",
@@ -4800,6 +4838,19 @@ const deployedContracts = {
         },
         {
           inputs: [],
+          name: "rewardsAPR",
+          outputs: [
+            {
+              internalType: "uint256",
+              name: "",
+              type: "uint256",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [],
           name: "rewardsReserve",
           outputs: [
             {
@@ -4825,6 +4876,32 @@ const deployedContracts = {
           type: "function",
         },
         {
+          inputs: [],
+          name: "totalRewardsCollected",
+          outputs: [
+            {
+              internalType: "uint256",
+              name: "",
+              type: "uint256",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [],
+          name: "totalRewardsGenerated",
+          outputs: [
+            {
+              internalType: "uint256",
+              name: "",
+              type: "uint256",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
           inputs: [
             {
               internalType: "address",
@@ -4839,7 +4916,6 @@ const deployedContracts = {
         },
       ],
       inheritedFunctions: {
-        rewardPerShare: "contracts/housing-project/RentsModule.sol",
         owner: "@openzeppelin/contracts/access/Ownable.sol",
         renounceOwnership: "@openzeppelin/contracts/access/Ownable.sol",
         transferOwnership: "@openzeppelin/contracts/access/Ownable.sol",
@@ -7974,19 +8050,6 @@ const deployedContracts = {
         },
         {
           inputs: [],
-          name: "currentEpoch",
-          outputs: [
-            {
-              internalType: "uint256",
-              name: "",
-              type: "uint256",
-            },
-          ],
-          stateMutability: "view",
-          type: "function",
-        },
-        {
-          inputs: [],
           name: "distributionStorage",
           outputs: [
             {
@@ -7996,17 +8059,12 @@ const deployedContracts = {
             },
             {
               internalType: "uint256",
-              name: "genesisEpoch",
-              type: "uint256",
-            },
-            {
-              internalType: "uint256",
               name: "projectsTotalReceivedRents",
               type: "uint256",
             },
             {
               internalType: "uint256",
-              name: "lastFundsDispatchEpoch",
+              name: "lastFundsDispatchTimestamp",
               type: "uint256",
             },
             {
@@ -8084,7 +8142,7 @@ const deployedContracts = {
         },
         {
           inputs: [],
-          name: "epochsAndPeriodsStorage",
+          name: "epochs",
           outputs: [
             {
               internalType: "uint256",

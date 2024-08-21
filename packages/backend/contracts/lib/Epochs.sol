@@ -4,7 +4,7 @@ pragma solidity 0.8.24;
 /// @title Epochs and Periods Management Library
 /// @notice Provides functions to manage and calculate epochs and periods based on a genesis timestamp and epoch length.
 /// @dev The epoch length is specified in seconds, and the period is calculated as 30 epochs.
-library EpochsAndPeriods {
+library Epochs {
 	// Struct to store epoch management parameters
 	struct Storage {
 		uint256 genesis; // The genesis timestamp
@@ -20,6 +20,8 @@ library EpochsAndPeriods {
 	function initialize(Storage storage self, uint256 _epochLength) internal {
 		self.genesis = block.timestamp;
 		self.epochLength = _epochLength;
+
+		require(self.epochLength > 0, "Invalid Epoch length");
 	}
 
 	// View Functions
@@ -31,17 +33,25 @@ library EpochsAndPeriods {
 	function currentEpoch(
 		Storage storage self
 	) internal view returns (uint256) {
-		require(self.genesis > 0, "Invalid genesis timestamp");
-		return (block.timestamp - self.genesis) / self.epochLength;
+		return computeEpoch(self, block.timestamp);
 	}
 
-	/// @notice Returns the current period based on the current epoch.
-	/// @param self The storage struct containing the genesis timestamp and epoch length.
-	/// @return The current period number.
-	/// @dev The period is calculated by dividing the current epoch by 30.
-	function currentPeriod(
-		Storage storage self
+	function computeEpoch(
+		Storage storage self,
+		uint256 timestamp
 	) internal view returns (uint256) {
-		return currentEpoch(self) / 30;
+		require(self.genesis > 0, "Invalid genesis timestamp");
+		require(timestamp > 0, "Invalid timestamp");
+		require(self.epochLength > 0, "Invalid Epoch length");
+
+		return (timestamp - self.genesis) / self.epochLength;
+	}
+
+	function epochEdgeTimestamps(
+		Storage memory self,
+		uint256 epoch
+	) internal pure returns (uint256 epochStart, uint256 epochEnd) {
+		epochStart = self.genesis + (epoch * self.epochLength);
+		epochEnd = epochStart + self.epochLength - 1;
 	}
 }

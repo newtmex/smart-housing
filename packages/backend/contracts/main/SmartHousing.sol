@@ -12,7 +12,7 @@ import "../project-funding/ProjectFunding.sol";
 import "./Interface.sol";
 import "./User.sol";
 import { Distribution } from "./distribution/Storage.sol";
-import { EpochsAndPeriods } from "../lib/EpochsAndPeriods.sol";
+import { Epochs } from "../lib/Epochs.sol";
 import { HousingStakingToken, NewHousingStakingToken, MIN_EPOCHS_LOCK, MAX_EPOCHS_LOCK, HstAttributes } from "./HST.sol";
 import { HousingProject } from "../housing-project/HousingProject.sol";
 import { rewardshares } from "../housing-project/RewardSharing.sol";
@@ -24,7 +24,7 @@ import { LkSHT } from "../modules/LockedSmartHousingToken.sol";
 contract SmartHousing is ISmartHousing, Ownable, UserModule, ERC1155Holder {
 	using TokenPayments for ERC20TokenPayment;
 	using Distribution for Distribution.Storage;
-	using EpochsAndPeriods for EpochsAndPeriods.Storage;
+	using Epochs for Epochs.Storage;
 	using EnumerableSet for EnumerableSet.AddressSet;
 	using TokenPayments for TokenPayment;
 	using SafeMath for uint256;
@@ -38,7 +38,7 @@ contract SmartHousing is ISmartHousing, Ownable, UserModule, ERC1155Holder {
 
 	// Storage for distribution and epochs
 	Distribution.Storage public distributionStorage;
-	EpochsAndPeriods.Storage public epochsAndPeriodsStorage;
+	Epochs.Storage public epochs;
 
 	// Permission management
 	enum Permissions {
@@ -58,7 +58,7 @@ contract SmartHousing is ISmartHousing, Ownable, UserModule, ERC1155Holder {
 		lkSht = ProjectFunding(projectFundingAddress).lkSht();
 
 		// Initialize epochs and periods (24 hours for mainnet, 30 minutes for testing)
-		epochsAndPeriodsStorage.initialize(30 minutes);
+		epochs.initialize(30 minutes);
 	}
 
 	/// @notice Register a new user or get the referral ID if already registered.
@@ -84,10 +84,7 @@ contract SmartHousing is ISmartHousing, Ownable, UserModule, ERC1155Holder {
 		);
 		payment.accept();
 
-		distributionStorage.setTotalFunds(
-			epochsAndPeriodsStorage,
-			payment.amount
-		);
+		distributionStorage.setTotalFunds(payment.amount);
 	}
 
 	/// @notice Add a new project and set its permissions.
@@ -128,7 +125,7 @@ contract SmartHousing is ISmartHousing, Ownable, UserModule, ERC1155Holder {
 		address caller = msg.sender;
 
 		_createOrGetUserId(caller, referrerId);
-		distributionStorage.generateRewards(epochsAndPeriodsStorage);
+		distributionStorage.generateRewards(epochs);
 
 		HstAttributes memory newAttr = _mintHstToken(
 			stakingTokens,
@@ -139,12 +136,6 @@ contract SmartHousing is ISmartHousing, Ownable, UserModule, ERC1155Holder {
 		);
 
 		distributionStorage.enterStaking(newAttr.stakeWeight);
-	}
-
-	/// @notice Get the current epoch.
-	/// @return Current epoch number.
-	function currentEpoch() public view returns (uint256) {
-		return epochsAndPeriodsStorage.currentEpoch();
 	}
 
 	/// @notice Check if a user can claim rewards.
@@ -159,7 +150,7 @@ contract SmartHousing is ISmartHousing, Ownable, UserModule, ERC1155Holder {
 		if (!hasSft) return false;
 
 		bool rewardsCanBeGenerated = distributionStorage
-			.lastFundsDispatchEpoch < currentEpoch();
+			.lastFundsDispatchTimestamp < block.timestamp;
 		if (rewardsCanBeGenerated) return true;
 
 		HstAttributes memory hstAttr = hst.getAttribute(tokenNonce);
@@ -181,7 +172,7 @@ contract SmartHousing is ISmartHousing, Ownable, UserModule, ERC1155Holder {
 		uint256 callerHstBal = hst.balanceOf(caller, hstNonce);
 		require(callerHstBal > 0, "No HST token balance at nonce");
 
-		distributionStorage.generateRewards(epochsAndPeriodsStorage);
+		distributionStorage.generateRewards(epochs);
 		(uint256 claimedSHT, HstAttributes memory hstAttr) = distributionStorage
 			.claimRewards(hst.getAttribute(hstNonce));
 		uint256 rentRewards = 0;

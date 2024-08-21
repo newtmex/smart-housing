@@ -111,9 +111,12 @@ export default function PortfolioDistribution() {
         <div className="row">
           {ownedAssets
             ?.sort((a, b) => +BigNumber(b.value).minus(a.value))
-            .reduce<(typeof ownedAssets)[]>((acc, curr, index) => {
+            .reduce<(typeof ownedAssets)[]>((acc, curr, index_) => {
+              const rowLength = 2;
+              const index = index_ % rowLength;
               const row = acc[index] || [];
-              if (row.length < 2) {
+
+              if (row.length < rowLength) {
                 acc[index] = [...row, curr];
               } else {
                 acc[index + 1] = [curr];
