@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
+import BuyPropertyLink from "../BuyPropertyLink";
 import { useReferralInfo } from "./hooks";
 import { ReferralIDStructure } from "./structure";
 import { CopyButton } from "@multiversx/sdk-dapp/UI/CopyButton/CopyButton";
@@ -21,6 +22,7 @@ export default function ReferralCard() {
         <div className="cta-content extra-padded">
           <div className="highlight-header">Bonus</div>
           <h5 className="cta-header">Purchase a property and get a referral link to enjoy more rewards</h5>
+          <BuyPropertyLink />
         </div>
       </div>
     );

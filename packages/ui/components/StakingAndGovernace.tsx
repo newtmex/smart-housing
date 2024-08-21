@@ -3,13 +3,16 @@ import ClaimStakingRewards from "./ClaimStakingRewards";
 import LoadingState from "./LoadingState";
 import { useModalToShow } from "./Modals";
 import StakingModal from "./StakingModal";
+import { ConnectButton } from "@rainbow-me/rainbowkit";
 import BigNumber from "bignumber.js";
+import { useAccount } from "wagmi";
 import { useAccountTokens, useTokenPrices } from "~~/hooks";
 import { useSht } from "~~/hooks/coinbase";
 import { useHousingStakingToken } from "~~/hooks/smartHousing";
 import { prettyFormatAmount } from "~~/utils/prettyFormatAmount";
 
 export default function StakingAndGovernace() {
+  const { address } = useAccount();
   const prices = useTokenPrices();
   const { sftBalance } = useHousingStakingToken();
   const sht = useSht();
@@ -39,16 +42,20 @@ export default function StakingAndGovernace() {
 
   const { openModal } = useModalToShow();
 
+  if (!address) {
+    return <ConnectButton />;
+  }
+
   if (sftBalance == undefined || stakingBalance == undefined) {
     return <LoadingState text="Loading Staking Details" />;
   }
 
   return (
     <div className="element-wrapper compact pt-4">
-      <h6 className="element-header">Staking and Governance</h6>
+      <h6 className="element-header">Staking</h6>
       <div className="col-12">
         <div className="element-balances justify-content-between mobile-full-width">
-          <div className="balance balance-v2">
+          <div className="balance balance-v2" style={{ marginTop: "-35px" }}>
             <div className="balance-title">Your Staking Balance</div>
             <div className="balance-value">
               <span className="d-xxl-none">${stakingBalance}</span>

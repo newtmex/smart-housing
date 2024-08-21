@@ -1,11 +1,10 @@
 import { ReactNode, useEffect, useMemo, useState } from "react";
-import Link from "next/link";
+import BuyPropertyLink from "./BuyPropertyLink";
 import BigNumber from "bignumber.js";
 import { useAccountTokens } from "~~/hooks";
 import { useProjects } from "~~/hooks/housingProject";
 import { useWindowWidthChange } from "~~/hooks/useWindowResize";
 import { prettyFormatAmount } from "~~/utils/prettyFormatAmount";
-import { RoutePath } from "~~/utils/routes";
 
 interface TableProps<TableData> {
   data: TableData[];
@@ -94,12 +93,10 @@ export default function PortfolioBalance() {
           )}
         </div>
       </div>
-      <div className="element-wrapper pb-4 mb-4 border-bottom">
-        <div className="element-box-tp">
-          <Link className="btn btn-primary" href={RoutePath.Properties}>
-            <i className="os-icon os-icon-plus-circle"></i>
-            <span>Buy Property</span>
-          </Link>
+
+      <div className="element-box-tp">
+        <div className="element-wrapper pb-4 mb-4 border-bottom">
+          <BuyPropertyLink />
         </div>
       </div>
     </div>
