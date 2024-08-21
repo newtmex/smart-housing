@@ -11,16 +11,13 @@ import "../lib/TokenPayments.sol";
 /// @notice Manages rent payments, reward calculations, and distribution for housing projects.
 /// @dev This abstract contract should be inherited by the HousingProject contract.
 abstract contract RentsModule {
-	// State Variables
-	uint256 public rewardPerShare;
-
 	/// @dev Computes the reward shares for a given token based on its attributes.
 	/// @param attr The attributes of the token.
 	/// @return rewardShares The computed RewardShares.
 	function _computeRewardShares(
-		HousingAttributes memory attr
-	) internal view returns (rewardshares memory) {
-		uint256 currentRPS = rewardPerShare;
+		HousingAttributes memory attr,
+		uint256 currentRPS
+	) internal pure returns (rewardshares memory) {
 		if (currentRPS == 0 || attr.rewardsPerShare >= currentRPS) {
 			return rewardshares({ userValue: 0, referrerValue: 0 });
 		}

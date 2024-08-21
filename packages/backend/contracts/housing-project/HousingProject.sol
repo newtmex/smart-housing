@@ -5,6 +5,8 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "./RentsModule.sol";
 import "./CallsSmartHousing.sol";
 
+uint256 constant RENT_SPREAD_RANGE = 365 days;
+
 /// @title HousingProject Contract
 /// @notice Represents a unique real estate project within the SmartHousing ecosystem.
 /// @dev This contract inherits from RentsModule and Ownable for management functions.
@@ -12,8 +14,18 @@ contract HousingProject is RentsModule, Ownable, CallsSmartHousing {
 	using RewardShares for rewardshares;
 	using TokenPayments for ERC20TokenPayment;
 
+	uint256 public maxSupply;
+
 	// State Variables
 	uint256 public rewardsReserve;
+	uint256 public rewardPerShare;
+
+	uint256 public totalRewardsCollected;
+	uint256 public totalRewardsGenerated;
+	uint256 public rewardsAPR;
+	uint256 public lastRewardGenerateTimestamp;
+	uint256 public endRewardGenerateTimestamp;
+
 	uint256 public facilityManagementFunds;
 
 	// Constants
@@ -36,6 +48,7 @@ contract HousingProject is RentsModule, Ownable, CallsSmartHousing {
 		address housingTokenAddr
 	) CallsSmartHousing(smartHousingAddr) {
 		projectSFT = new HousingSFT(name, symbol);
+		maxSupply = projectSFT.getMaxSupply();
 
 		// Initialize the housing token
 		housingToken = ERC20Burnable(housingTokenAddr);
@@ -53,20 +66,60 @@ contract HousingProject is RentsModule, Ownable, CallsSmartHousing {
 
 		rentPayment.receiveERC20();
 
+		// Calculate reward components
 		uint256 rentReward = (rentAmount * REWARD_PERCENT) / 100;
 		uint256 ecosystemReward = (rentAmount * ECOSYSTEM_PERCENT) / 100;
 		uint256 facilityReward = (rentAmount * FACILITY_PERCENT) / 100;
 
+		// Initialize reward generation if it's the first rent payment
+		if (totalRewardsCollected == 0) {
+			lastRewardGenerateTimestamp = block.timestamp;
+		}
+
 		// Update rewards and reserve
-		rewardPerShare +=
-			(rentReward * DIVISION_SAFETY_CONST) /
-			projectSFT.getMaxSupply();
-		rewardsReserve += rentReward;
+		endRewardGenerateTimestamp = block.timestamp + RENT_SPREAD_RANGE;
+		totalRewardsCollected += rentReward;
+		rewardsAPR =
+			((totalRewardsCollected - totalRewardsGenerated) *
+				DIVISION_SAFETY_CONST) /
+			maxSupply /
+			(endRewardGenerateTimestamp - lastRewardGenerateTimestamp);
+
 		facilityManagementFunds += facilityReward;
 
 		// Burn ecosystem reward and notify SmartHousing contract
 		housingToken.burn(ecosystemReward);
 		ISmartHousing(smartHousingAddr).addProjectRent(rentAmount);
+	}
+
+	/// @notice Generates rewards based on elapsed time since the last generation.
+	/// @return generatedRewards The total rewards generated during the elapsed time.
+	/// @return rpsIncrement The increment to be added to rewardPerShare.
+	function _generateRewards()
+		internal
+		view
+		returns (uint256 generatedRewards, uint256 rpsIncrement)
+	{
+		uint256 timeElapsed = _min(
+			endRewardGenerateTimestamp,
+			block.timestamp
+		) - lastRewardGenerateTimestamp;
+
+		if (timeElapsed > 0) {
+			generatedRewards =
+				(rewardsAPR * maxSupply * timeElapsed) /
+				DIVISION_SAFETY_CONST;
+
+			require(
+				(totalRewardsGenerated + generatedRewards) <=
+					totalRewardsCollected,
+				"HousingProject: Rewards generated overflowed"
+			);
+
+			rpsIncrement =
+				(generatedRewards * DIVISION_SAFETY_CONST) /
+				maxSupply;
+		}
 	}
 
 	/// @notice Claims rent rewards for a given token and updates attributes.
@@ -84,11 +137,28 @@ contract HousingProject is RentsModule, Ownable, CallsSmartHousing {
 			uint256 newNonce
 		)
 	{
-		address caller = msg.sender;
-		uint256 currentRPS = rewardPerShare;
+		// Generate rewards and increment reward per share
+		{
+			(
+				uint256 generatedRewards,
+				uint256 rpsIncrement
+			) = _generateRewards();
+			if (generatedRewards > 0) {
+				rewardPerShare += rpsIncrement;
+				rewardsReserve += generatedRewards;
+				totalRewardsGenerated += generatedRewards;
+				lastRewardGenerateTimestamp = _min(
+					endRewardGenerateTimestamp,
+					block.timestamp
+				);
+			}
+		}
 
+		address caller = msg.sender;
+
+		// Fetch user attributes and compute rewards
 		attr = projectSFT.getUserSFT(caller, nonce);
-		rewardShares = _computeRewardShares(attr);
+		rewardShares = _computeRewardShares(attr, rewardPerShare);
 
 		uint256 totalReward = rewardShares.total();
 		if (totalReward == 0) {
@@ -101,27 +171,36 @@ contract HousingProject is RentsModule, Ownable, CallsSmartHousing {
 		);
 		rewardsReserve -= totalReward;
 
-		(, address referrer) = _getReferrer(attr.originalOwner);
-		if (rewardShares.referrerValue > 0) {
+		// Transfer or burn referrer reward
+		uint256 referrerValue = rewardShares.referrerValue;
+		if (referrerValue > 0) {
+			(, address referrer) = _getReferrer(attr.originalOwner);
 			if (referrer != address(0)) {
-				housingToken.transfer(referrer, rewardShares.referrerValue);
+				housingToken.transfer(referrer, referrerValue);
 			} else {
-				housingToken.burn(rewardShares.referrerValue);
+				housingToken.burn(referrerValue);
 			}
 		}
 
-		attr.rewardsPerShare = currentRPS;
-
+		// Update user attributes and transfer reward
+		attr.rewardsPerShare = rewardPerShare;
 		newNonce = projectSFT.update(
 			caller,
 			nonce,
 			projectSFT.balanceOf(caller, nonce),
 			abi.encode(attr)
 		);
-
 		housingToken.transfer(caller, rewardShares.userValue);
 
 		return (attr, rewardShares, newNonce);
+	}
+
+	/// @notice Helper function to calculate the minimum of two values.
+	/// @param a The first value.
+	/// @param b The second value.
+	/// @return The minimum of the two values.
+	function _min(uint256 a, uint256 b) private pure returns (uint256) {
+		return a < b ? a : b;
 	}
 
 	/// @notice Returns the maximum supply of the HousingSFT token.
@@ -136,6 +215,9 @@ contract HousingProject is RentsModule, Ownable, CallsSmartHousing {
 	function rentClaimable(
 		HousingAttributes memory attr
 	) public view returns (uint256) {
-		return _computeRewardShares(attr).userValue;
+		(, uint256 rpsIncrement) = _generateRewards();
+
+		return
+			_computeRewardShares(attr, rewardPerShare + rpsIncrement).userValue;
 	}
 }

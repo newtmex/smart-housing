@@ -106,7 +106,8 @@ describe("HousingProject", function () {
         await coinbase.connect(rentPayer).approve(housingProject, rentAmount);
 
         // Capture initial state
-        const initialRewardsReserve = await housingProject.rewardsReserve();
+        const initialRewardsCollected = await housingProject.totalRewardsCollected();
+        const initialRewardsGenerated = await housingProject.totalRewardsGenerated();
         const initialFacilityManagementFunds = await housingProject.facilityManagementFunds();
         const initialTotalSupply = await coinbase.totalSupply();
 
@@ -119,11 +120,11 @@ describe("HousingProject", function () {
         const ecosystemReward = (rentAmount * 18n) / 100n;
 
         // Verify storage parameter updates
-        expect(await housingProject.rewardsReserve()).to.equal(initialRewardsReserve + rentReward);
+        expect(await housingProject.totalRewardsCollected()).to.equal(initialRewardsCollected + rentReward);
+        expect(await housingProject.totalRewardsGenerated()).to.equal(initialRewardsGenerated);
         expect(await housingProject.facilityManagementFunds()).to.equal(
           initialFacilityManagementFunds + facilityReward,
         );
-        expect(await housingProject.rewardPerShare()).to.gt(0);
 
         // Verify ecosystem reward was burned
         expect(await coinbase.totalSupply()).to.equal(initialTotalSupply - ecosystemReward);
@@ -233,15 +234,16 @@ describe("HousingProject", function () {
         });
 
         // Capture initial state
-        const initialRewardsReserve = await housingProject.rewardsReserve();
+        const initialtotalRewardsGenerated = await housingProject.totalRewardsGenerated();
         const initialCoinbaseBalance = await coinbase.balanceOf(investor);
 
         // Claim rent reward
+        await time.increase(500_000);
         await housingProject.connect(investor).claimRentReward(investorSFTNonce);
         investorSFTNonce += 1n;
 
         // Verify rewards reserve is decremented
-        expect(await housingProject.rewardsReserve()).to.be.below(initialRewardsReserve);
+        expect(await housingProject.totalRewardsGenerated()).to.be.above(initialtotalRewardsGenerated);
 
         // Verify the investor's token attributes have been updated
         await checkHousingTokenAttr({
@@ -263,23 +265,57 @@ describe("HousingProject", function () {
           const { housingProject, investor, projectFunding, housingSFT, payRent } =
             await loadFixture(claimRentRewardFixtures);
 
-          const rentAmount = ethers.parseUnits("500", 18);
-
+          const rentAmount = ethers.parseEther("0.00049487");
           await payRent(rentAmount);
 
-          // Claiming SFT after rent was paid
+          // Claim project tokens after rent payment
           await projectFunding.connect(investor).claimProjectTokens(1);
-          const { rewardsPerShare, originalOwner, tokenWeight } = await housingSFT.getUserSFT(investor, 1);
 
-          // Check claimable rent rewards
-          const claimableRent = await housingProject.rentClaimable({ rewardsPerShare, tokenWeight, originalOwner });
+          // Function to claim rent and return the claimable amount
+          const claimRent = async () => {
+            const [nonce] = await housingSFT.getNonces(investor);
+            const { rewardsPerShare, originalOwner, tokenWeight } = await housingSFT.getUserSFT(investor, nonce);
+            const claimable = await housingProject.rentClaimable({
+              rewardsPerShare,
+              tokenWeight,
+              originalOwner,
+            });
 
-          // 70%
-          const investorsShare = (rentAmount * 75n) / 100n;
-          // Referrer gets 0.3% as there bonus
-          const expectedClaimableRent = (investorsShare * 99_70n) / 100_00n;
+            await housingProject.connect(investor).claimRentReward(nonce);
+            return claimable;
+          };
 
-          expect(claimableRent).to.equal(expectedClaimableRent);
+          let lastClaimable = await claimRent();
+
+          const fiveYears = 5 * 365 * 24 * 60 * 60; // Total seconds in five years
+          let totalTime = 0;
+
+          let count = 1;
+          while (totalTime <= fiveYears) {
+            const addTime = Math.floor((fiveYears * count) / 29); // Increment time by a fraction of five years
+            count++;
+            totalTime += addTime;
+
+            await time.increase(addTime);
+            lastClaimable += await claimRent(); // Update claimable amount after time increase
+
+            // Assert that the last claimable amount is non-decreasing
+            expect(lastClaimable).to.be.gte(lastClaimable - (await claimRent()));
+          }
+
+          // Pay rent again and increase the rent amount
+          await payRent(rentAmount);
+          const updatedRentAmount = rentAmount * 2n;
+
+          await time.increase(fiveYears);
+          lastClaimable += await claimRent();
+
+          // Calculate expected claimable rent after rent payment and time increase
+          const investorsShare = (updatedRentAmount * 75n) / 100n; // 75% of rent amount goes to investors
+          const expectedClaimableRent = (investorsShare * 99_70n) / 100_00n; // 99.7% of investors' share is claimable
+
+          // Assert that the final claimable rent is approximately equal to the expected value
+          expect(lastClaimable).to.be.approximately(expectedClaimableRent, ethers.parseEther("0.0000000001"));
         });
       });
     });

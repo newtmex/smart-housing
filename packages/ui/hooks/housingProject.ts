@@ -2,6 +2,39 @@ import useRawCallsInfo from "./useRawCallsInfo";
 import useSwr from "swr";
 import getFundingTokenInfo from "~~/utils/fundingTokenInfo";
 
+const features = [
+  ["solar panels", "garage", "smart home system"],
+  ["garden", "patio", "fenced yard"],
+  ["fireplace", "walk-in closet", "jacuzzi"],
+  ["rooftop terrace", "elevator", "wine cellar"],
+  ["double glazing", "underfloor heating", "alarm system"],
+  ["study room", "laundry room", "home office"],
+  ["playground", "basketball court", "tennis court"],
+  ["sauna", "spa", "steam room"],
+  ["outdoor kitchen", "fire pit", "grill area"],
+  ["library", "game room", "bar"],
+  ["private cinema", "soundproof rooms", "music studio"],
+  ["energy-efficient appliances", "rainwater harvesting", "greenhouse"],
+  ["home automation", "voice control", "wireless charging stations"],
+  ["indoor pool", "home gym", "yoga room"],
+  ["guest suite", "separate entrance", "private balcony"],
+  ["panoramic windows", "skylights", "vaulted ceilings"],
+  ["backup generator", "water purifier", "air filtration system"],
+  ["outdoor shower", "cabana", "sun deck"],
+  ["kitchen", "en-suite", "cctv"],
+  ["security", "balcony"],
+  ["dog house", "guest house", "maid house"],
+  ["swimming pool", "gym", "home theater"],
+  ["walk-in pantry", "island kitchen", "breakfast nook"],
+  ["pet-friendly", "dog run", "catio"],
+  ["sound system", "media room", "gaming setup"],
+  ["wine fridge", "butler's pantry", "second kitchen"],
+  ["attic", "basement", "storage room"],
+  ["outdoor lighting", "driveway", "carport"],
+  ["hardwood floors", "custom cabinetry", "granite countertops"],
+  ["floor-to-ceiling windows", "open-concept living", "chef's kitchen"],
+];
+
 export const useProjectsInfo = () => {
   const { client, projectFunding, housingSFTAbi } = useRawCallsInfo();
   return useSwr(
@@ -53,11 +86,7 @@ export const useProjects = () => {
   return (
     data?.map((projectData, index) => ({
       description: "",
-      features: [
-        ["kitchen", "en-suite", "cctv"],
-        ["security", "balcony"],
-        ["dog house", "guest house", "maid house"],
-      ][index % 3],
+      features: features[index % 3],
       image: `img/property${((index + 2) % 3) + 1}.jpg`,
       rentPrice: 23.45,
       projectData,
