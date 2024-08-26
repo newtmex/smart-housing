@@ -7,7 +7,7 @@ import { GenericContractsDeclaration } from "~~/utils/scaffold-eth/contract";
 const deployedContracts = {
   5611: {
     Coinbase: {
-      address: "0x254c81165e1BEF4d1B158Ac27A6B40F07e85187b",
+      address: "0xE2ae4623A59930977DA62fb976e055AEB2B63eFb",
       abi: [
         {
           inputs: [],
@@ -327,7 +327,13 @@ const deployedContracts = {
             },
           ],
           name: "startICO",
-          outputs: [],
+          outputs: [
+            {
+              internalType: "address",
+              name: "",
+              type: "address",
+            },
+          ],
           stateMutability: "nonpayable",
           type: "function",
         },
@@ -444,7 +450,7 @@ const deployedContracts = {
       },
     },
     HousingProject: {
-      address: "0x529023A50FA8998db13d87eF668DFBE9D16BfB8d",
+      address: "0x8adE69137992aDAD66c66D433167B02312439bC2",
       abi: [
         {
           inputs: [
@@ -461,6 +467,11 @@ const deployedContracts = {
             {
               internalType: "address",
               name: "smartHousingAddr",
+              type: "address",
+            },
+            {
+              internalType: "address",
+              name: "housingTokenAddr",
               type: "address",
             },
           ],
@@ -487,29 +498,43 @@ const deployedContracts = {
           type: "event",
         },
         {
-          anonymous: false,
-          inputs: [
+          inputs: [],
+          name: "ECOSYSTEM_PERCENT",
+          outputs: [
             {
-              indexed: false,
-              internalType: "address",
-              name: "tokenAddress",
-              type: "address",
-            },
-            {
-              indexed: false,
-              internalType: "string",
-              name: "name",
-              type: "string",
-            },
-            {
-              indexed: false,
               internalType: "uint256",
-              name: "amountRaised",
+              name: "",
               type: "uint256",
             },
           ],
-          name: "TokenIssued",
-          type: "event",
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [],
+          name: "FACILITY_PERCENT",
+          outputs: [
+            {
+              internalType: "uint256",
+              name: "",
+              type: "uint256",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [],
+          name: "REWARD_PERCENT",
+          outputs: [
+            {
+              internalType: "uint256",
+              name: "",
+              type: "uint256",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
         },
         {
           inputs: [
@@ -540,7 +565,7 @@ const deployedContracts = {
                 },
               ],
               internalType: "struct HousingAttributes",
-              name: "",
+              name: "attr",
               type: "tuple",
             },
             {
@@ -557,11 +582,29 @@ const deployedContracts = {
                 },
               ],
               internalType: "struct rewardshares",
-              name: "",
+              name: "rewardShares",
               type: "tuple",
+            },
+            {
+              internalType: "uint256",
+              name: "newNonce",
+              type: "uint256",
             },
           ],
           stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
+          inputs: [],
+          name: "endRewardGenerateTimestamp",
+          outputs: [
+            {
+              internalType: "uint256",
+              name: "",
+              type: "uint256",
+            },
+          ],
+          stateMutability: "view",
           type: "function",
         },
         {
@@ -580,6 +623,45 @@ const deployedContracts = {
         {
           inputs: [],
           name: "getMaxSupply",
+          outputs: [
+            {
+              internalType: "uint256",
+              name: "",
+              type: "uint256",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [],
+          name: "housingToken",
+          outputs: [
+            {
+              internalType: "contract ERC20Burnable",
+              name: "",
+              type: "address",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [],
+          name: "lastRewardGenerateTimestamp",
+          outputs: [
+            {
+              internalType: "uint256",
+              name: "",
+              type: "uint256",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [],
+          name: "maxSupply",
           outputs: [
             {
               internalType: "uint256",
@@ -699,6 +781,19 @@ const deployedContracts = {
         },
         {
           inputs: [],
+          name: "rewardsAPR",
+          outputs: [
+            {
+              internalType: "uint256",
+              name: "",
+              type: "uint256",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [],
           name: "rewardsReserve",
           outputs: [
             {
@@ -711,21 +806,42 @@ const deployedContracts = {
           type: "function",
         },
         {
-          inputs: [
-            {
-              internalType: "uint256",
-              name: "amountRaised",
-              type: "uint256",
-            },
+          inputs: [],
+          name: "smartHousingAddr",
+          outputs: [
             {
               internalType: "address",
-              name: "housingTokenAddr",
+              name: "",
               type: "address",
             },
           ],
-          name: "setTokenDetails",
-          outputs: [],
-          stateMutability: "nonpayable",
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [],
+          name: "totalRewardsCollected",
+          outputs: [
+            {
+              internalType: "uint256",
+              name: "",
+              type: "uint256",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [],
+          name: "totalRewardsGenerated",
+          outputs: [
+            {
+              internalType: "uint256",
+              name: "",
+              type: "uint256",
+            },
+          ],
+          stateMutability: "view",
           type: "function",
         },
         {
@@ -746,10 +862,11 @@ const deployedContracts = {
         owner: "@openzeppelin/contracts/access/Ownable.sol",
         renounceOwnership: "@openzeppelin/contracts/access/Ownable.sol",
         transferOwnership: "@openzeppelin/contracts/access/Ownable.sol",
+        smartHousingAddr: "contracts/housing-project/CallsSmartHousing.sol",
       },
     },
     HousingSFT: {
-      address: "0x6c27455287cA2f0d40d0190C1204aFad4Beef878",
+      address: "0x57DFfE43718dEAC671BF18aE65f57A3187F722D8",
       abi: [
         {
           inputs: [
@@ -1013,25 +1130,6 @@ const deployedContracts = {
         {
           inputs: [
             {
-              internalType: "uint256",
-              name: "nonce",
-              type: "uint256",
-            },
-          ],
-          name: "getRawTokenAttributes",
-          outputs: [
-            {
-              internalType: "bytes",
-              name: "",
-              type: "bytes",
-            },
-          ],
-          stateMutability: "view",
-          type: "function",
-        },
-        {
-          inputs: [
-            {
               internalType: "address",
               name: "owner",
               type: "address",
@@ -1129,11 +1227,6 @@ const deployedContracts = {
               internalType: "address",
               name: "depositor",
               type: "address",
-            },
-            {
-              internalType: "uint256",
-              name: "amount_raised",
-              type: "uint256",
             },
           ],
           name: "mintSFT",
@@ -1453,7 +1546,13 @@ const deployedContracts = {
             },
           ],
           name: "update",
-          outputs: [],
+          outputs: [
+            {
+              internalType: "uint256",
+              name: "",
+              type: "uint256",
+            },
+          ],
           stateMutability: "nonpayable",
           type: "function",
         },
@@ -1497,8 +1596,866 @@ const deployedContracts = {
         uri: "contracts/modules/SFT.sol",
       },
     },
+    HousingStakingToken: {
+      address: "0x4e62341842ab8951dB86Cc7239684D76CE0dd0ea",
+      abi: [
+        {
+          inputs: [],
+          stateMutability: "nonpayable",
+          type: "constructor",
+        },
+        {
+          anonymous: false,
+          inputs: [
+            {
+              indexed: true,
+              internalType: "address",
+              name: "account",
+              type: "address",
+            },
+            {
+              indexed: true,
+              internalType: "address",
+              name: "operator",
+              type: "address",
+            },
+            {
+              indexed: false,
+              internalType: "bool",
+              name: "approved",
+              type: "bool",
+            },
+          ],
+          name: "ApprovalForAll",
+          type: "event",
+        },
+        {
+          anonymous: false,
+          inputs: [
+            {
+              indexed: true,
+              internalType: "address",
+              name: "to",
+              type: "address",
+            },
+            {
+              indexed: false,
+              internalType: "uint256",
+              name: "nonce",
+              type: "uint256",
+            },
+            {
+              components: [
+                {
+                  components: [
+                    {
+                      internalType: "address",
+                      name: "token",
+                      type: "address",
+                    },
+                    {
+                      internalType: "uint256",
+                      name: "amount",
+                      type: "uint256",
+                    },
+                    {
+                      internalType: "uint256",
+                      name: "nonce",
+                      type: "uint256",
+                    },
+                  ],
+                  internalType: "struct TokenPayment[]",
+                  name: "projectTokens",
+                  type: "tuple[]",
+                },
+                {
+                  internalType: "uint256",
+                  name: "projectsShareCheckpoint",
+                  type: "uint256",
+                },
+                {
+                  internalType: "uint256",
+                  name: "shtRewardPerShare",
+                  type: "uint256",
+                },
+                {
+                  internalType: "uint256",
+                  name: "shtAmount",
+                  type: "uint256",
+                },
+                {
+                  internalType: "uint256",
+                  name: "stakeWeight",
+                  type: "uint256",
+                },
+                {
+                  internalType: "uint256",
+                  name: "lkDuration",
+                  type: "uint256",
+                },
+                {
+                  internalType: "uint256[]",
+                  name: "lkShtNonces",
+                  type: "uint256[]",
+                },
+              ],
+              indexed: false,
+              internalType: "struct HstAttributes",
+              name: "attributes",
+              type: "tuple",
+            },
+          ],
+          name: "MintHstToken",
+          type: "event",
+        },
+        {
+          anonymous: false,
+          inputs: [
+            {
+              indexed: true,
+              internalType: "address",
+              name: "previousOwner",
+              type: "address",
+            },
+            {
+              indexed: true,
+              internalType: "address",
+              name: "newOwner",
+              type: "address",
+            },
+          ],
+          name: "OwnershipTransferred",
+          type: "event",
+        },
+        {
+          anonymous: false,
+          inputs: [
+            {
+              indexed: true,
+              internalType: "address",
+              name: "operator",
+              type: "address",
+            },
+            {
+              indexed: true,
+              internalType: "address",
+              name: "from",
+              type: "address",
+            },
+            {
+              indexed: true,
+              internalType: "address",
+              name: "to",
+              type: "address",
+            },
+            {
+              indexed: false,
+              internalType: "uint256[]",
+              name: "ids",
+              type: "uint256[]",
+            },
+            {
+              indexed: false,
+              internalType: "uint256[]",
+              name: "values",
+              type: "uint256[]",
+            },
+          ],
+          name: "TransferBatch",
+          type: "event",
+        },
+        {
+          anonymous: false,
+          inputs: [
+            {
+              indexed: true,
+              internalType: "address",
+              name: "operator",
+              type: "address",
+            },
+            {
+              indexed: true,
+              internalType: "address",
+              name: "from",
+              type: "address",
+            },
+            {
+              indexed: true,
+              internalType: "address",
+              name: "to",
+              type: "address",
+            },
+            {
+              indexed: false,
+              internalType: "uint256",
+              name: "id",
+              type: "uint256",
+            },
+            {
+              indexed: false,
+              internalType: "uint256",
+              name: "value",
+              type: "uint256",
+            },
+          ],
+          name: "TransferSingle",
+          type: "event",
+        },
+        {
+          anonymous: false,
+          inputs: [
+            {
+              indexed: false,
+              internalType: "string",
+              name: "value",
+              type: "string",
+            },
+            {
+              indexed: true,
+              internalType: "uint256",
+              name: "id",
+              type: "uint256",
+            },
+          ],
+          name: "URI",
+          type: "event",
+        },
+        {
+          inputs: [
+            {
+              internalType: "address",
+              name: "account",
+              type: "address",
+            },
+            {
+              internalType: "uint256",
+              name: "id",
+              type: "uint256",
+            },
+          ],
+          name: "balanceOf",
+          outputs: [
+            {
+              internalType: "uint256",
+              name: "",
+              type: "uint256",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "address[]",
+              name: "accounts",
+              type: "address[]",
+            },
+            {
+              internalType: "uint256[]",
+              name: "ids",
+              type: "uint256[]",
+            },
+          ],
+          name: "balanceOfBatch",
+          outputs: [
+            {
+              internalType: "uint256[]",
+              name: "",
+              type: "uint256[]",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "uint256",
+              name: "nonce",
+              type: "uint256",
+            },
+          ],
+          name: "getAttribute",
+          outputs: [
+            {
+              components: [
+                {
+                  components: [
+                    {
+                      internalType: "address",
+                      name: "token",
+                      type: "address",
+                    },
+                    {
+                      internalType: "uint256",
+                      name: "amount",
+                      type: "uint256",
+                    },
+                    {
+                      internalType: "uint256",
+                      name: "nonce",
+                      type: "uint256",
+                    },
+                  ],
+                  internalType: "struct TokenPayment[]",
+                  name: "projectTokens",
+                  type: "tuple[]",
+                },
+                {
+                  internalType: "uint256",
+                  name: "projectsShareCheckpoint",
+                  type: "uint256",
+                },
+                {
+                  internalType: "uint256",
+                  name: "shtRewardPerShare",
+                  type: "uint256",
+                },
+                {
+                  internalType: "uint256",
+                  name: "shtAmount",
+                  type: "uint256",
+                },
+                {
+                  internalType: "uint256",
+                  name: "stakeWeight",
+                  type: "uint256",
+                },
+                {
+                  internalType: "uint256",
+                  name: "lkDuration",
+                  type: "uint256",
+                },
+                {
+                  internalType: "uint256[]",
+                  name: "lkShtNonces",
+                  type: "uint256[]",
+                },
+              ],
+              internalType: "struct HstAttributes",
+              name: "",
+              type: "tuple",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "address",
+              name: "owner",
+              type: "address",
+            },
+          ],
+          name: "getNonces",
+          outputs: [
+            {
+              internalType: "uint256[]",
+              name: "",
+              type: "uint256[]",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "address",
+              name: "owner",
+              type: "address",
+            },
+            {
+              internalType: "uint256",
+              name: "nonce",
+              type: "uint256",
+            },
+          ],
+          name: "hasSFT",
+          outputs: [
+            {
+              internalType: "bool",
+              name: "",
+              type: "bool",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "address",
+              name: "account",
+              type: "address",
+            },
+            {
+              internalType: "address",
+              name: "operator",
+              type: "address",
+            },
+          ],
+          name: "isApprovedForAll",
+          outputs: [
+            {
+              internalType: "bool",
+              name: "",
+              type: "bool",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              components: [
+                {
+                  internalType: "address",
+                  name: "token",
+                  type: "address",
+                },
+                {
+                  internalType: "uint256",
+                  name: "amount",
+                  type: "uint256",
+                },
+                {
+                  internalType: "uint256",
+                  name: "nonce",
+                  type: "uint256",
+                },
+              ],
+              internalType: "struct TokenPayment[]",
+              name: "projectTokens",
+              type: "tuple[]",
+            },
+            {
+              internalType: "uint256",
+              name: "projectsShareCheckpoint",
+              type: "uint256",
+            },
+            {
+              internalType: "uint256",
+              name: "shtRewardPerShare",
+              type: "uint256",
+            },
+            {
+              internalType: "uint256",
+              name: "lkDuration",
+              type: "uint256",
+            },
+            {
+              internalType: "uint256",
+              name: "shtAmount",
+              type: "uint256",
+            },
+            {
+              internalType: "uint256[]",
+              name: "lkShtNonces",
+              type: "uint256[]",
+            },
+            {
+              internalType: "address",
+              name: "caller",
+              type: "address",
+            },
+          ],
+          name: "mint",
+          outputs: [
+            {
+              components: [
+                {
+                  components: [
+                    {
+                      internalType: "address",
+                      name: "token",
+                      type: "address",
+                    },
+                    {
+                      internalType: "uint256",
+                      name: "amount",
+                      type: "uint256",
+                    },
+                    {
+                      internalType: "uint256",
+                      name: "nonce",
+                      type: "uint256",
+                    },
+                  ],
+                  internalType: "struct TokenPayment[]",
+                  name: "projectTokens",
+                  type: "tuple[]",
+                },
+                {
+                  internalType: "uint256",
+                  name: "projectsShareCheckpoint",
+                  type: "uint256",
+                },
+                {
+                  internalType: "uint256",
+                  name: "shtRewardPerShare",
+                  type: "uint256",
+                },
+                {
+                  internalType: "uint256",
+                  name: "shtAmount",
+                  type: "uint256",
+                },
+                {
+                  internalType: "uint256",
+                  name: "stakeWeight",
+                  type: "uint256",
+                },
+                {
+                  internalType: "uint256",
+                  name: "lkDuration",
+                  type: "uint256",
+                },
+                {
+                  internalType: "uint256[]",
+                  name: "lkShtNonces",
+                  type: "uint256[]",
+                },
+              ],
+              internalType: "struct HstAttributes",
+              name: "attr",
+              type: "tuple",
+            },
+          ],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
+          inputs: [],
+          name: "name",
+          outputs: [
+            {
+              internalType: "string",
+              name: "",
+              type: "string",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [],
+          name: "owner",
+          outputs: [
+            {
+              internalType: "address",
+              name: "",
+              type: "address",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [],
+          name: "renounceOwnership",
+          outputs: [],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "address",
+              name: "from",
+              type: "address",
+            },
+            {
+              internalType: "address",
+              name: "to",
+              type: "address",
+            },
+            {
+              internalType: "uint256[]",
+              name: "ids",
+              type: "uint256[]",
+            },
+            {
+              internalType: "uint256[]",
+              name: "amounts",
+              type: "uint256[]",
+            },
+            {
+              internalType: "bytes",
+              name: "data",
+              type: "bytes",
+            },
+          ],
+          name: "safeBatchTransferFrom",
+          outputs: [],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "address",
+              name: "from",
+              type: "address",
+            },
+            {
+              internalType: "address",
+              name: "to",
+              type: "address",
+            },
+            {
+              internalType: "uint256",
+              name: "id",
+              type: "uint256",
+            },
+            {
+              internalType: "uint256",
+              name: "amount",
+              type: "uint256",
+            },
+            {
+              internalType: "bytes",
+              name: "data",
+              type: "bytes",
+            },
+          ],
+          name: "safeTransferFrom",
+          outputs: [],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "address",
+              name: "operator",
+              type: "address",
+            },
+            {
+              internalType: "bool",
+              name: "approved",
+              type: "bool",
+            },
+          ],
+          name: "setApprovalForAll",
+          outputs: [],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "address",
+              name: "user",
+              type: "address",
+            },
+          ],
+          name: "sftBalance",
+          outputs: [
+            {
+              components: [
+                {
+                  internalType: "uint256",
+                  name: "nonce",
+                  type: "uint256",
+                },
+                {
+                  internalType: "uint256",
+                  name: "amount",
+                  type: "uint256",
+                },
+                {
+                  components: [
+                    {
+                      components: [
+                        {
+                          internalType: "address",
+                          name: "token",
+                          type: "address",
+                        },
+                        {
+                          internalType: "uint256",
+                          name: "amount",
+                          type: "uint256",
+                        },
+                        {
+                          internalType: "uint256",
+                          name: "nonce",
+                          type: "uint256",
+                        },
+                      ],
+                      internalType: "struct TokenPayment[]",
+                      name: "projectTokens",
+                      type: "tuple[]",
+                    },
+                    {
+                      internalType: "uint256",
+                      name: "projectsShareCheckpoint",
+                      type: "uint256",
+                    },
+                    {
+                      internalType: "uint256",
+                      name: "shtRewardPerShare",
+                      type: "uint256",
+                    },
+                    {
+                      internalType: "uint256",
+                      name: "shtAmount",
+                      type: "uint256",
+                    },
+                    {
+                      internalType: "uint256",
+                      name: "stakeWeight",
+                      type: "uint256",
+                    },
+                    {
+                      internalType: "uint256",
+                      name: "lkDuration",
+                      type: "uint256",
+                    },
+                    {
+                      internalType: "uint256[]",
+                      name: "lkShtNonces",
+                      type: "uint256[]",
+                    },
+                  ],
+                  internalType: "struct HstAttributes",
+                  name: "attributes",
+                  type: "tuple",
+                },
+              ],
+              internalType: "struct HousingStakingToken.HSTBalance[]",
+              name: "",
+              type: "tuple[]",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "bytes4",
+              name: "interfaceId",
+              type: "bytes4",
+            },
+          ],
+          name: "supportsInterface",
+          outputs: [
+            {
+              internalType: "bool",
+              name: "",
+              type: "bool",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [],
+          name: "symbol",
+          outputs: [
+            {
+              internalType: "string",
+              name: "",
+              type: "string",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [],
+          name: "tokenInfo",
+          outputs: [
+            {
+              internalType: "string",
+              name: "",
+              type: "string",
+            },
+            {
+              internalType: "string",
+              name: "",
+              type: "string",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "address",
+              name: "newOwner",
+              type: "address",
+            },
+          ],
+          name: "transferOwnership",
+          outputs: [],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "address",
+              name: "user",
+              type: "address",
+            },
+            {
+              internalType: "uint256",
+              name: "nonce",
+              type: "uint256",
+            },
+            {
+              internalType: "uint256",
+              name: "amount",
+              type: "uint256",
+            },
+            {
+              internalType: "bytes",
+              name: "attr",
+              type: "bytes",
+            },
+          ],
+          name: "update",
+          outputs: [
+            {
+              internalType: "uint256",
+              name: "",
+              type: "uint256",
+            },
+          ],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "uint256",
+              name: "",
+              type: "uint256",
+            },
+          ],
+          name: "uri",
+          outputs: [
+            {
+              internalType: "string",
+              name: "",
+              type: "string",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+      ],
+      inheritedFunctions: {},
+    },
     LkSHT: {
-      address: "0xa7fD31a9A61470eD895A560f26E3a0e6A45988b1",
+      address: "0x6D1202f971b9a0C73CD9A031D0fa1495028372DE",
       abi: [
         {
           inputs: [
@@ -1723,6 +2680,47 @@ const deployedContracts = {
         {
           inputs: [
             {
+              internalType: "uint256",
+              name: "nonce",
+              type: "uint256",
+            },
+          ],
+          name: "getAttribute",
+          outputs: [
+            {
+              components: [
+                {
+                  internalType: "uint256",
+                  name: "initialAmount",
+                  type: "uint256",
+                },
+                {
+                  internalType: "uint256",
+                  name: "amount",
+                  type: "uint256",
+                },
+                {
+                  internalType: "uint256",
+                  name: "startTimestamp",
+                  type: "uint256",
+                },
+                {
+                  internalType: "uint256",
+                  name: "endTimestamp",
+                  type: "uint256",
+                },
+              ],
+              internalType: "struct LkSHTAttributes.Attributes",
+              name: "",
+              type: "tuple",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
               internalType: "address",
               name: "owner",
               type: "address",
@@ -1734,25 +2732,6 @@ const deployedContracts = {
               internalType: "uint256[]",
               name: "",
               type: "uint256[]",
-            },
-          ],
-          stateMutability: "view",
-          type: "function",
-        },
-        {
-          inputs: [
-            {
-              internalType: "uint256",
-              name: "nonce",
-              type: "uint256",
-            },
-          ],
-          name: "getRawTokenAttributes",
-          outputs: [
-            {
-              internalType: "bytes",
-              name: "",
-              type: "bytes",
             },
           ],
           stateMutability: "view",
@@ -2086,7 +3065,13 @@ const deployedContracts = {
             },
           ],
           name: "update",
-          outputs: [],
+          outputs: [
+            {
+              internalType: "uint256",
+              name: "",
+              type: "uint256",
+            },
+          ],
           stateMutability: "nonpayable",
           type: "function",
         },
@@ -2113,7 +3098,7 @@ const deployedContracts = {
       inheritedFunctions: {},
     },
     ProjectFunding: {
-      address: "0xe7B72eA97Be46a017C49e261B5036efa5EEFFa1f",
+      address: "0x780FE8Dda96247AF2B3F5aa62e75d61Aa66AB66B",
       abi: [
         {
           inputs: [
@@ -2226,6 +3211,19 @@ const deployedContracts = {
           type: "event",
         },
         {
+          inputs: [
+            {
+              internalType: "uint256",
+              name: "projectId",
+              type: "uint256",
+            },
+          ],
+          name: "addProjectToEcosystem",
+          outputs: [],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
           inputs: [],
           name: "allProjects",
           outputs: [
@@ -2264,6 +3262,11 @@ const deployedContracts = {
                 {
                   internalType: "uint256",
                   name: "collectedFunds",
+                  type: "uint256",
+                },
+                {
+                  internalType: "uint256",
+                  name: "minDeposit",
                   type: "uint256",
                 },
               ],
@@ -2330,7 +3333,13 @@ const deployedContracts = {
             },
           ],
           name: "deployProject",
-          outputs: [],
+          outputs: [
+            {
+              internalType: "address",
+              name: "",
+              type: "address",
+            },
+          ],
           stateMutability: "nonpayable",
           type: "function",
         },
@@ -2404,39 +3413,51 @@ const deployedContracts = {
           name: "getProjectData",
           outputs: [
             {
-              internalType: "uint256",
-              name: "id",
-              type: "uint256",
-            },
-            {
-              internalType: "uint256",
-              name: "fundingGoal",
-              type: "uint256",
-            },
-            {
-              internalType: "uint256",
-              name: "fundingDeadline",
-              type: "uint256",
-            },
-            {
-              internalType: "address",
-              name: "fundingToken",
-              type: "address",
-            },
-            {
-              internalType: "address",
-              name: "projectAddress",
-              type: "address",
-            },
-            {
-              internalType: "uint8",
-              name: "status",
-              type: "uint8",
-            },
-            {
-              internalType: "uint256",
-              name: "collectedFunds",
-              type: "uint256",
+              components: [
+                {
+                  internalType: "uint256",
+                  name: "id",
+                  type: "uint256",
+                },
+                {
+                  internalType: "address",
+                  name: "tokenAddress",
+                  type: "address",
+                },
+                {
+                  internalType: "address",
+                  name: "projectAddress",
+                  type: "address",
+                },
+                {
+                  internalType: "uint256",
+                  name: "fundingGoal",
+                  type: "uint256",
+                },
+                {
+                  internalType: "uint256",
+                  name: "fundingDeadline",
+                  type: "uint256",
+                },
+                {
+                  internalType: "address",
+                  name: "fundingToken",
+                  type: "address",
+                },
+                {
+                  internalType: "uint256",
+                  name: "collectedFunds",
+                  type: "uint256",
+                },
+                {
+                  internalType: "uint256",
+                  name: "minDeposit",
+                  type: "uint256",
+                },
+              ],
+              internalType: "struct ProjectStorage.Data",
+              name: "projectData",
+              type: "tuple",
             },
           ],
           stateMutability: "view",
@@ -2506,7 +3527,13 @@ const deployedContracts = {
             },
           ],
           name: "initFirstProject",
-          outputs: [],
+          outputs: [
+            {
+              internalType: "address",
+              name: "",
+              type: "address",
+            },
+          ],
           stateMutability: "nonpayable",
           type: "function",
         },
@@ -2594,6 +3621,11 @@ const deployedContracts = {
               name: "collectedFunds",
               type: "uint256",
             },
+            {
+              internalType: "uint256",
+              name: "minDeposit",
+              type: "uint256",
+            },
           ],
           stateMutability: "view",
           type: "function",
@@ -2620,19 +3652,6 @@ const deployedContracts = {
         {
           inputs: [],
           name: "renounceOwnership",
-          outputs: [],
-          stateMutability: "nonpayable",
-          type: "function",
-        },
-        {
-          inputs: [
-            {
-              internalType: "uint256",
-              name: "projectId",
-              type: "uint256",
-            },
-          ],
-          name: "addProjectToEcosystem",
           outputs: [],
           stateMutability: "nonpayable",
           type: "function",
@@ -2672,7 +3691,13 @@ const deployedContracts = {
             },
           ],
           name: "unlockSHT",
-          outputs: [],
+          outputs: [
+            {
+              internalType: "uint256",
+              name: "newNonce",
+              type: "uint256",
+            },
+          ],
           stateMutability: "nonpayable",
           type: "function",
         },
@@ -2708,13 +3733,13 @@ const deployedContracts = {
       },
     },
     SmartHousing: {
-      address: "0x8283C5385203C3175D3f06E3F28dD116C63A449b",
+      address: "0xBcCd3f7BcA798508bc7aa44bbD76a1CE1E9dfc9e",
       abi: [
         {
           inputs: [
             {
               internalType: "address",
-              name: "conibase",
+              name: "coinbase",
               type: "address",
             },
             {
@@ -2729,23 +3754,39 @@ const deployedContracts = {
         {
           inputs: [
             {
-              internalType: "uint256",
+              internalType: "int256",
               name: "x",
-              type: "uint256",
+              type: "int256",
             },
           ],
-          name: "PRBMathUD60x18__Exp2InputTooBig",
+          name: "PRBMathSD59x18__Exp2InputTooBig",
+          type: "error",
+        },
+        {
+          inputs: [
+            {
+              internalType: "int256",
+              name: "x",
+              type: "int256",
+            },
+          ],
+          name: "PRBMathSD59x18__LogInputTooSmall",
+          type: "error",
+        },
+        {
+          inputs: [],
+          name: "PRBMathSD59x18__MulInputTooSmall",
           type: "error",
         },
         {
           inputs: [
             {
               internalType: "uint256",
-              name: "x",
+              name: "rAbs",
               type: "uint256",
             },
           ],
-          name: "PRBMathUD60x18__LogInputTooSmall",
+          name: "PRBMathSD59x18__MulOverflow",
           type: "error",
         },
         {
@@ -2763,121 +3804,23 @@ const deployedContracts = {
           inputs: [
             {
               internalType: "uint256",
-              name: "prod1",
-              type: "uint256",
-            },
-            {
-              internalType: "uint256",
-              name: "denominator",
+              name: "number",
               type: "uint256",
             },
           ],
-          name: "PRBMath__MulDivOverflow",
+          name: "ToInt256CastOverflow",
           type: "error",
         },
         {
-          anonymous: false,
           inputs: [
             {
-              indexed: true,
-              internalType: "address",
-              name: "account",
-              type: "address",
-            },
-            {
-              indexed: true,
-              internalType: "address",
-              name: "operator",
-              type: "address",
-            },
-            {
-              indexed: false,
-              internalType: "bool",
-              name: "approved",
-              type: "bool",
+              internalType: "int256",
+              name: "number",
+              type: "int256",
             },
           ],
-          name: "ApprovalForAll",
-          type: "event",
-        },
-        {
-          anonymous: false,
-          inputs: [
-            {
-              indexed: true,
-              internalType: "address",
-              name: "to",
-              type: "address",
-            },
-            {
-              indexed: false,
-              internalType: "uint256",
-              name: "nonce",
-              type: "uint256",
-            },
-            {
-              components: [
-                {
-                  components: [
-                    {
-                      internalType: "address",
-                      name: "token",
-                      type: "address",
-                    },
-                    {
-                      internalType: "uint256",
-                      name: "amount",
-                      type: "uint256",
-                    },
-                    {
-                      internalType: "uint256",
-                      name: "nonce",
-                      type: "uint256",
-                    },
-                  ],
-                  internalType: "struct TokenPayment[]",
-                  name: "projectTokens",
-                  type: "tuple[]",
-                },
-                {
-                  internalType: "uint256",
-                  name: "projectsShareCheckpoint",
-                  type: "uint256",
-                },
-                {
-                  internalType: "uint256",
-                  name: "shtRewardPerShare",
-                  type: "uint256",
-                },
-                {
-                  internalType: "uint256",
-                  name: "shtAmount",
-                  type: "uint256",
-                },
-                {
-                  internalType: "uint256",
-                  name: "stakeWeight",
-                  type: "uint256",
-                },
-                {
-                  internalType: "uint256",
-                  name: "lkDuration",
-                  type: "uint256",
-                },
-                {
-                  internalType: "uint256",
-                  name: "lkShtNonce",
-                  type: "uint256",
-                },
-              ],
-              indexed: false,
-              internalType: "struct HstAttributes",
-              name: "attributes",
-              type: "tuple",
-            },
-          ],
-          name: "MintHstToken",
-          type: "event",
+          name: "ToUint256CastOverflow",
+          type: "error",
         },
         {
           anonymous: false,
@@ -2921,99 +3864,6 @@ const deployedContracts = {
           anonymous: false,
           inputs: [
             {
-              indexed: true,
-              internalType: "address",
-              name: "operator",
-              type: "address",
-            },
-            {
-              indexed: true,
-              internalType: "address",
-              name: "from",
-              type: "address",
-            },
-            {
-              indexed: true,
-              internalType: "address",
-              name: "to",
-              type: "address",
-            },
-            {
-              indexed: false,
-              internalType: "uint256[]",
-              name: "ids",
-              type: "uint256[]",
-            },
-            {
-              indexed: false,
-              internalType: "uint256[]",
-              name: "values",
-              type: "uint256[]",
-            },
-          ],
-          name: "TransferBatch",
-          type: "event",
-        },
-        {
-          anonymous: false,
-          inputs: [
-            {
-              indexed: true,
-              internalType: "address",
-              name: "operator",
-              type: "address",
-            },
-            {
-              indexed: true,
-              internalType: "address",
-              name: "from",
-              type: "address",
-            },
-            {
-              indexed: true,
-              internalType: "address",
-              name: "to",
-              type: "address",
-            },
-            {
-              indexed: false,
-              internalType: "uint256",
-              name: "id",
-              type: "uint256",
-            },
-            {
-              indexed: false,
-              internalType: "uint256",
-              name: "value",
-              type: "uint256",
-            },
-          ],
-          name: "TransferSingle",
-          type: "event",
-        },
-        {
-          anonymous: false,
-          inputs: [
-            {
-              indexed: false,
-              internalType: "string",
-              name: "value",
-              type: "string",
-            },
-            {
-              indexed: true,
-              internalType: "uint256",
-              name: "id",
-              type: "uint256",
-            },
-          ],
-          name: "URI",
-          type: "event",
-        },
-        {
-          anonymous: false,
-          inputs: [
-            {
               indexed: false,
               internalType: "uint256",
               name: "userId",
@@ -3034,32 +3884,6 @@ const deployedContracts = {
           ],
           name: "UserRegistered",
           type: "event",
-        },
-        {
-          inputs: [],
-          name: "MAX_EPOCHS_LOCK",
-          outputs: [
-            {
-              internalType: "uint256",
-              name: "",
-              type: "uint256",
-            },
-          ],
-          stateMutability: "view",
-          type: "function",
-        },
-        {
-          inputs: [],
-          name: "MIN_EPOCHS_LOCK",
-          outputs: [
-            {
-              internalType: "uint256",
-              name: "",
-              type: "uint256",
-            },
-          ],
-          stateMutability: "view",
-          type: "function",
         },
         {
           inputs: [
@@ -3090,56 +3914,8 @@ const deployedContracts = {
         {
           inputs: [
             {
-              internalType: "address",
-              name: "account",
-              type: "address",
-            },
-            {
               internalType: "uint256",
-              name: "id",
-              type: "uint256",
-            },
-          ],
-          name: "balanceOf",
-          outputs: [
-            {
-              internalType: "uint256",
-              name: "",
-              type: "uint256",
-            },
-          ],
-          stateMutability: "view",
-          type: "function",
-        },
-        {
-          inputs: [
-            {
-              internalType: "address[]",
-              name: "accounts",
-              type: "address[]",
-            },
-            {
-              internalType: "uint256[]",
-              name: "ids",
-              type: "uint256[]",
-            },
-          ],
-          name: "balanceOfBatch",
-          outputs: [
-            {
-              internalType: "uint256[]",
-              name: "",
-              type: "uint256[]",
-            },
-          ],
-          stateMutability: "view",
-          type: "function",
-        },
-        {
-          inputs: [
-            {
-              internalType: "uint256",
-              name: "hstTokenId",
+              name: "hstNonce",
               type: "uint256",
             },
             {
@@ -3149,7 +3925,13 @@ const deployedContracts = {
             },
           ],
           name: "claimRewards",
-          outputs: [],
+          outputs: [
+            {
+              internalType: "uint256",
+              name: "newHstNonce",
+              type: "uint256",
+            },
+          ],
           stateMutability: "nonpayable",
           type: "function",
         },
@@ -3220,17 +4002,12 @@ const deployedContracts = {
             },
             {
               internalType: "uint256",
-              name: "genesisEpoch",
-              type: "uint256",
-            },
-            {
-              internalType: "uint256",
               name: "projectsTotalReceivedRents",
               type: "uint256",
             },
             {
               internalType: "uint256",
-              name: "lastFundsDispatchEpoch",
+              name: "lastFundsDispatchTimestamp",
               type: "uint256",
             },
             {
@@ -3308,7 +4085,7 @@ const deployedContracts = {
         },
         {
           inputs: [],
-          name: "epochsAndPeriodsStorage",
+          name: "epochs",
           outputs: [
             {
               internalType: "uint256",
@@ -3319,44 +4096,6 @@ const deployedContracts = {
               internalType: "uint256",
               name: "epochLength",
               type: "uint256",
-            },
-          ],
-          stateMutability: "view",
-          type: "function",
-        },
-        {
-          inputs: [
-            {
-              internalType: "address",
-              name: "owner",
-              type: "address",
-            },
-          ],
-          name: "getNonces",
-          outputs: [
-            {
-              internalType: "uint256[]",
-              name: "",
-              type: "uint256[]",
-            },
-          ],
-          stateMutability: "view",
-          type: "function",
-        },
-        {
-          inputs: [
-            {
-              internalType: "uint256",
-              name: "nonce",
-              type: "uint256",
-            },
-          ],
-          name: "getRawTokenAttributes",
-          outputs: [
-            {
-              internalType: "bytes",
-              name: "",
-              type: "bytes",
             },
           ],
           stateMutability: "view",
@@ -3437,30 +4176,6 @@ const deployedContracts = {
           type: "function",
         },
         {
-          inputs: [
-            {
-              internalType: "address",
-              name: "owner",
-              type: "address",
-            },
-            {
-              internalType: "uint256",
-              name: "nonce",
-              type: "uint256",
-            },
-          ],
-          name: "hasSFT",
-          outputs: [
-            {
-              internalType: "bool",
-              name: "",
-              type: "bool",
-            },
-          ],
-          stateMutability: "view",
-          type: "function",
-        },
-        {
           inputs: [],
           name: "hst",
           outputs: [
@@ -3474,24 +4189,13 @@ const deployedContracts = {
           type: "function",
         },
         {
-          inputs: [
-            {
-              internalType: "address",
-              name: "account",
-              type: "address",
-            },
-            {
-              internalType: "address",
-              name: "operator",
-              type: "address",
-            },
-          ],
-          name: "isApprovedForAll",
+          inputs: [],
+          name: "lkSht",
           outputs: [
             {
-              internalType: "bool",
+              internalType: "contract LkSHT",
               name: "",
-              type: "bool",
+              type: "address",
             },
           ],
           stateMutability: "view",
@@ -3500,129 +4204,79 @@ const deployedContracts = {
         {
           inputs: [
             {
-              components: [
-                {
-                  internalType: "address",
-                  name: "token",
-                  type: "address",
-                },
-                {
-                  internalType: "uint256",
-                  name: "amount",
-                  type: "uint256",
-                },
-                {
-                  internalType: "uint256",
-                  name: "nonce",
-                  type: "uint256",
-                },
-              ],
-              internalType: "struct TokenPayment[]",
-              name: "projectTokens",
-              type: "tuple[]",
+              internalType: "address",
+              name: "",
+              type: "address",
             },
             {
-              internalType: "uint256",
-              name: "projectsShareCheckpoint",
-              type: "uint256",
+              internalType: "address",
+              name: "",
+              type: "address",
             },
             {
-              internalType: "uint256",
-              name: "shtRewardPerShare",
-              type: "uint256",
+              internalType: "uint256[]",
+              name: "",
+              type: "uint256[]",
             },
             {
-              internalType: "uint256",
-              name: "lkDuration",
-              type: "uint256",
+              internalType: "uint256[]",
+              name: "",
+              type: "uint256[]",
             },
             {
-              internalType: "uint256",
-              name: "shtAmount",
-              type: "uint256",
-            },
-            {
-              internalType: "uint256",
-              name: "lkShtNonce",
-              type: "uint256",
+              internalType: "bytes",
+              name: "",
+              type: "bytes",
             },
           ],
-          name: "mint",
+          name: "onERC1155BatchReceived",
           outputs: [
             {
-              components: [
-                {
-                  components: [
-                    {
-                      internalType: "address",
-                      name: "token",
-                      type: "address",
-                    },
-                    {
-                      internalType: "uint256",
-                      name: "amount",
-                      type: "uint256",
-                    },
-                    {
-                      internalType: "uint256",
-                      name: "nonce",
-                      type: "uint256",
-                    },
-                  ],
-                  internalType: "struct TokenPayment[]",
-                  name: "projectTokens",
-                  type: "tuple[]",
-                },
-                {
-                  internalType: "uint256",
-                  name: "projectsShareCheckpoint",
-                  type: "uint256",
-                },
-                {
-                  internalType: "uint256",
-                  name: "shtRewardPerShare",
-                  type: "uint256",
-                },
-                {
-                  internalType: "uint256",
-                  name: "shtAmount",
-                  type: "uint256",
-                },
-                {
-                  internalType: "uint256",
-                  name: "stakeWeight",
-                  type: "uint256",
-                },
-                {
-                  internalType: "uint256",
-                  name: "lkDuration",
-                  type: "uint256",
-                },
-                {
-                  internalType: "uint256",
-                  name: "lkShtNonce",
-                  type: "uint256",
-                },
-              ],
-              internalType: "struct HstAttributes",
-              name: "attr",
-              type: "tuple",
+              internalType: "bytes4",
+              name: "",
+              type: "bytes4",
             },
           ],
           stateMutability: "nonpayable",
           type: "function",
         },
         {
-          inputs: [],
-          name: "name",
-          outputs: [
+          inputs: [
             {
-              internalType: "string",
+              internalType: "address",
               name: "",
-              type: "string",
+              type: "address",
+            },
+            {
+              internalType: "address",
+              name: "",
+              type: "address",
+            },
+            {
+              internalType: "uint256",
+              name: "",
+              type: "uint256",
+            },
+            {
+              internalType: "uint256",
+              name: "",
+              type: "uint256",
+            },
+            {
+              internalType: "bytes",
+              name: "",
+              type: "bytes",
             },
           ],
-          stateMutability: "view",
+          name: "onERC1155Received",
+          outputs: [
+            {
+              internalType: "bytes4",
+              name: "",
+              type: "bytes4",
+            },
+          ],
+          stateMutability: "nonpayable",
           type: "function",
         },
         {
@@ -3724,90 +4378,6 @@ const deployedContracts = {
         {
           inputs: [
             {
-              internalType: "address",
-              name: "from",
-              type: "address",
-            },
-            {
-              internalType: "address",
-              name: "to",
-              type: "address",
-            },
-            {
-              internalType: "uint256[]",
-              name: "ids",
-              type: "uint256[]",
-            },
-            {
-              internalType: "uint256[]",
-              name: "amounts",
-              type: "uint256[]",
-            },
-            {
-              internalType: "bytes",
-              name: "data",
-              type: "bytes",
-            },
-          ],
-          name: "safeBatchTransferFrom",
-          outputs: [],
-          stateMutability: "nonpayable",
-          type: "function",
-        },
-        {
-          inputs: [
-            {
-              internalType: "address",
-              name: "from",
-              type: "address",
-            },
-            {
-              internalType: "address",
-              name: "to",
-              type: "address",
-            },
-            {
-              internalType: "uint256",
-              name: "id",
-              type: "uint256",
-            },
-            {
-              internalType: "uint256",
-              name: "amount",
-              type: "uint256",
-            },
-            {
-              internalType: "bytes",
-              name: "data",
-              type: "bytes",
-            },
-          ],
-          name: "safeTransferFrom",
-          outputs: [],
-          stateMutability: "nonpayable",
-          type: "function",
-        },
-        {
-          inputs: [
-            {
-              internalType: "address",
-              name: "operator",
-              type: "address",
-            },
-            {
-              internalType: "bool",
-              name: "approved",
-              type: "bool",
-            },
-          ],
-          name: "setApprovalForAll",
-          outputs: [],
-          stateMutability: "nonpayable",
-          type: "function",
-        },
-        {
-          inputs: [
-            {
               components: [
                 {
                   internalType: "contract IERC20",
@@ -3880,7 +4450,7 @@ const deployedContracts = {
           ],
           name: "stake",
           outputs: [],
-          stateMutability: "payable",
+          stateMutability: "nonpayable",
           type: "function",
         },
         {
@@ -3897,37 +4467,6 @@ const deployedContracts = {
               internalType: "bool",
               name: "",
               type: "bool",
-            },
-          ],
-          stateMutability: "view",
-          type: "function",
-        },
-        {
-          inputs: [],
-          name: "symbol",
-          outputs: [
-            {
-              internalType: "string",
-              name: "",
-              type: "string",
-            },
-          ],
-          stateMutability: "view",
-          type: "function",
-        },
-        {
-          inputs: [],
-          name: "tokenInfo",
-          outputs: [
-            {
-              internalType: "string",
-              name: "",
-              type: "string",
-            },
-            {
-              internalType: "string",
-              name: "",
-              type: "string",
             },
           ],
           stateMutability: "view",
@@ -3955,39 +4494,16 @@ const deployedContracts = {
             },
             {
               internalType: "uint256",
-              name: "nonce",
-              type: "uint256",
-            },
-            {
-              internalType: "uint256",
-              name: "amount",
-              type: "uint256",
-            },
-            {
-              internalType: "bytes",
-              name: "attr",
-              type: "bytes",
-            },
-          ],
-          name: "update",
-          outputs: [],
-          stateMutability: "nonpayable",
-          type: "function",
-        },
-        {
-          inputs: [
-            {
-              internalType: "uint256",
-              name: "",
+              name: "tokenNonce",
               type: "uint256",
             },
           ],
-          name: "uri",
+          name: "userCanClaim",
           outputs: [
             {
-              internalType: "string",
+              internalType: "bool",
               name: "",
-              type: "string",
+              type: "bool",
             },
           ],
           stateMutability: "view",
@@ -4059,6 +4575,9 @@ const deployedContracts = {
         owner: "@openzeppelin/contracts/access/Ownable.sol",
         renounceOwnership: "@openzeppelin/contracts/access/Ownable.sol",
         transferOwnership: "@openzeppelin/contracts/access/Ownable.sol",
+        onERC1155BatchReceived: "@openzeppelin/contracts/token/ERC1155/utils/ERC1155Holder.sol",
+        onERC1155Received: "@openzeppelin/contracts/token/ERC1155/utils/ERC1155Holder.sol",
+        supportsInterface: "@openzeppelin/contracts/token/ERC1155/utils/ERC1155Holder.sol",
       },
     },
   },
