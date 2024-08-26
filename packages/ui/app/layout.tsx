@@ -34,24 +34,24 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <MobileMenu />
               <MainMenu />
 
-              <div className="content-w">
+              <div className="content-w" style={{ minHeight: "95vh" }}>
                 <TopBar />
+
                 <div onClick={toggleContentPanel} className="content-panel-toggler">
                   <i className="os-icon os-icon-grid-squares-22"></i>
                   <span>Sidebar</span>
                 </div>
-                <div className="content-i">
-                  <div className="content-box" style={{ minHeight: "95vh" }}>
-                    {children}
-                  </div>
 
+                <div className="content-i">
+                  <div className="content-box">{children}</div>
                   <Sidebar />
                 </div>
+
+                <Modals />
               </div>
             </div>
             <div className="display-type"></div>
           </div>
-          <Modals />
         </AppProvider>
       </body>
     </html>

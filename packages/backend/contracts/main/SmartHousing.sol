@@ -2,15 +2,16 @@
 pragma solidity 0.8.24;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol";
 import "@openzeppelin/contracts/token/ERC1155/utils/ERC1155Holder.sol";
+
 import "../lib/TokenPayments.sol";
 import "../modules/sht-module/SHT.sol";
 import "../project-funding/ProjectFunding.sol";
 import "./Interface.sol";
 import "./User.sol";
+
 import { Distribution } from "./distribution/Storage.sol";
 import { Epochs } from "../lib/Epochs.sol";
 import { HousingStakingToken, NewHousingStakingToken, MIN_EPOCHS_LOCK, MAX_EPOCHS_LOCK, HstAttributes } from "./HST.sol";

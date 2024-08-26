@@ -72,77 +72,66 @@ export default function BuyPropertyModal({ imgSrc, unitPrice, data, fundingToken
   }, [projectFunding, refIdData, data, fundingToken, unitPrice, values, isValid]);
 
   return (
-    <div
-      className="onboarding-modal modal fade animated show"
-      id="onboardingWideFormModal"
-      role="dialog"
-      tabIndex={-1}
-      style={{ display: "block" }}
-      aria-modal="true"
-    >
-      <div className="modal-dialog modal-lg modal-centered" role="document">
-        <div className="modal-content text-center">
-          <button className="close" onClick={() => closeModal()} type="button">
-            <span className="close-label">Close</span>
-            <span className="os-icon os-icon-close"></span>
-          </button>
-          <div className="onboarding-side-by-side">
-            <div className="onboarding-media">
-              <img alt="" src={imgSrc} width="200px" />
-            </div>
-            <div className="onboarding-content with-gradient">
-              <h4 className="onboarding-title">
-                Buy {purchased && "more"} Units of Property {sftDetails.name}
-              </h4>
-              <div className="onboarding-text">
-                Set the number of {sftDetails.name} housing units you want and click on the button.
-                <b>Units Left: {unitsLeft}</b>
-              </div>
-              <form>
-                <div className="row">
-                  <div className="col-sm-6">
-                    <div className="form-group">
-                      <label>Number of Units</label>
-                      <div className="input-group">
-                        <input
-                          placeholder="Enter units amount"
-                          type="number"
-                          className={`form-control ${errors.units ? "is-invalid" : ""}`}
-                          id="units"
-                          name="units"
-                          onChange={handleChange}
-                          value={values.units}
-                          step={"any"}
-                          min={1}
-                        />
-                        {!(unitsLeft === values.units) && (
-                          <div className="input-group-append">
-                            <div onClick={onMax} className="input-group-text max btn">
-                              Max
-                            </div>
-                          </div>
-                        )}
-                        <FormErrorMessage message={errors.units} />
+    <>
+      <button className="close" onClick={() => closeModal()} type="button">
+        <span className="close-label">Close</span>
+        <span className="os-icon os-icon-close"></span>
+      </button>
+      <div className="onboarding-side-by-side">
+        <div className="onboarding-media">
+          <img alt="" src={imgSrc} width="200px" />
+        </div>
+        <div className="onboarding-content with-gradient">
+          <h4 className="onboarding-title">
+            Buy {purchased && "more"} Units of Property {sftDetails.name}
+          </h4>
+          <div className="onboarding-text">
+            Set the number of {sftDetails.name} housing units you want and click on the button.
+            <b>Units Left: {unitsLeft}</b>
+          </div>
+          <form>
+            <div className="row">
+              <div className="col-sm-6">
+                <div className="form-group">
+                  <label>Number of Units</label>
+                  <div className="input-group">
+                    <input
+                      placeholder="Enter units amount"
+                      type="number"
+                      className={`form-control ${errors.units ? "is-invalid" : ""}`}
+                      id="units"
+                      name="units"
+                      onChange={handleChange}
+                      value={values.units}
+                      step={"any"}
+                      min={1}
+                    />
+                    {!(unitsLeft === values.units) && (
+                      <div className="input-group-append">
+                        <div onClick={onMax} className="input-group-text max btn">
+                          Max
+                        </div>
                       </div>
-                    </div>
+                    )}
+                    <FormErrorMessage message={errors.units} />
                   </div>
                 </div>
-
-                <TxButton
-                  disabled={!isValid}
-                  btnName="Complete Buy"
-                  onClick={() => onBuyPropertyUnits()}
-                  onComplete={async () => {
-                    refreshUserRefInfo();
-                    closeModal();
-                  }}
-                  className="btn btn-primary"
-                />
-              </form>
+              </div>
             </div>
-          </div>
+
+            <TxButton
+              disabled={!isValid}
+              btnName="Complete Buy"
+              onClick={() => onBuyPropertyUnits()}
+              onComplete={async () => {
+                refreshUserRefInfo();
+                closeModal();
+              }}
+              className="btn btn-primary"
+            />
+          </form>
         </div>
       </div>
-    </div>
+    </>
   );
 }

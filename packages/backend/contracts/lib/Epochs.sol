@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.24;
 
-/// @title Epochs and Periods Management Library
-/// @notice Provides functions to manage and calculate epochs and periods based on a genesis timestamp and epoch length.
-/// @dev The epoch length is specified in seconds, and the period is calculated as 30 epochs.
+/// @title Epochs Management Library
+/// @notice Provides functions to manage and calculate epochs based on a genesis timestamp and epoch length.
+/// @dev The epoch length is specified in seconds
 library Epochs {
 	// Struct to store epoch management parameters
 	struct Storage {

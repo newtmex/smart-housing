@@ -100,126 +100,115 @@ export default function StakingModal() {
   }, [smartHousing, values, isValid, sht, userAddress, client]);
 
   return (
-    <div
-      className="onboarding-modal modal fade animated show"
-      id="onboardingWideFormModal"
-      role="dialog"
-      tabIndex={-1}
-      style={{ display: "block" }}
-      aria-modal="true"
-    >
-      <div className="modal-dialog modal-lg modal-centered" role="document">
-        <div className="modal-content text-center">
-          <button className="close" onClick={() => closeModal()} type="button">
-            <span className="close-label">Close</span>
-            <span className="os-icon os-icon-close"></span>
-          </button>
-          <div className="onboarding-side-by-side">
-            <div className="onboarding-media">
-              <img alt="" src="img/bigicon5.png" width="200px" />
-            </div>
-
-            {!sht || !lkSht || !ownedAssets ? (
-              <LoadingState text="Getting Tokens" />
-            ) : (
-              <div className="onboarding-content with-gradient">
-                <h4 className="onboarding-title">Stake Your Assets</h4>
-                <div className="onboarding-text">
-                  Stake your {sht.symbol} or {lkSht.symbol} with atleast one project asset to earn more rewards and
-                  participate in platform governance
-                </div>
-                <form>
-                  <div className="mb-3 form-group" style={{ width: "100%" }}>
-                    <label htmlFor="splippage">Number of Epochs to Lock token: {values.epochsLock}</label>
-                    <RcSlider
-                      defaultValue={values.epochsLock}
-                      step={25}
-                      min={10}
-                      max={1000}
-                      onChange={value => {
-                        setFieldValue("epochsLock", value);
-                      }}
-                    />
-                  </div>
-                  <div className="row">
-                    {sht.balance > 0n && (
-                      <div className="col-sm-6">
-                        <div className="form-group">
-                          <label>{sht.symbol} Amount</label>
-                          <input
-                            placeholder={`Enter ${sht.symbol} amount`}
-                            type="number"
-                            className={`form-control ${errors.shtAmount ? "is-invalid" : ""}`}
-                            id="shtAmount"
-                            name="shtAmount"
-                            onChange={handleChange}
-                            value={values.shtAmount}
-                            step={"any"}
-                            min={1}
-                          />
-                          <FormErrorMessage message={errors.shtAmount} />
-                        </div>
-                      </div>
-                    )}
-
-                    {ownedAssets.length > 0 && (
-                      <div className="col-sm-12">
-                        <div className="form-group">
-                          <label>{sht.balance > 0 ? "Other a" : "A"}ssets to use</label>
-                          <Select
-                            id="sfts"
-                            name="sfts"
-                            onChange={tokens => {
-                              const payments = [];
-
-                              for (const { value } of tokens) {
-                                if (value.amount > 0) {
-                                  payments.push(value);
-                                }
-                              }
-
-                              setFieldValue("sfts", payments);
-                            }}
-                            styles={{
-                              option: styles => {
-                                return { ...styles, color: "black" };
-                              },
-                            }}
-                            isMulti={true}
-                            options={ownedAssets.map(token => {
-                              return {
-                                value: {
-                                  nonce: token.nonce,
-                                  amount: token.qty,
-                                  token: token.tokenAddress,
-                                },
-                                label: `${token.symbol + "-" + nonceToRandString(token.nonce, token.tokenAddress)} ${prettyFormatAmount({ value: token.qty, decimals: token.decimals })}`,
-                              };
-                            })}
-                          />
-                        </div>
-                      </div>
-                    )}
-                  </div>
-
-                  <TxButton
-                    disabled={!isValid || !values.sfts?.length}
-                    btnName="Stake"
-                    onClick={() => onStake()}
-                    onComplete={async () => {
-                      await refreshAccountTokens();
-                      await refreshHST();
-
-                      closeModal();
-                    }}
-                    className="btn btn-primary"
-                  />
-                </form>
-              </div>
-            )}
-          </div>
+    <>
+      <button className="close" onClick={() => closeModal()} type="button">
+        <span className="close-label">Close</span>
+        <span className="os-icon os-icon-close"></span>
+      </button>
+      <div className="onboarding-side-by-side">
+        <div className="onboarding-media">
+          <img alt="" src="img/bigicon5.png" width="200px" />
         </div>
+
+        {!sht || !lkSht || !ownedAssets ? (
+          <LoadingState text="Getting Tokens" />
+        ) : (
+          <div className="onboarding-content with-gradient">
+            <h4 className="onboarding-title">Stake Your Assets</h4>
+            <div className="onboarding-text">
+              Stake your {sht.symbol} or {lkSht.symbol} with atleast one project asset to earn more rewards and
+              participate in platform governance
+            </div>
+            <form>
+              <div className="mb-3 form-group" style={{ width: "100%" }}>
+                <label htmlFor="splippage">Number of Epochs to Lock token: {values.epochsLock}</label>
+                <RcSlider
+                  defaultValue={values.epochsLock}
+                  step={25}
+                  min={10}
+                  max={1000}
+                  onChange={value => {
+                    setFieldValue("epochsLock", value);
+                  }}
+                />
+              </div>
+              <div className="row">
+                {sht.balance > 0n && (
+                  <div className="col-sm-6">
+                    <div className="form-group">
+                      <label>{sht.symbol} Amount</label>
+                      <input
+                        placeholder={`Enter ${sht.symbol} amount`}
+                        type="number"
+                        className={`form-control ${errors.shtAmount ? "is-invalid" : ""}`}
+                        id="shtAmount"
+                        name="shtAmount"
+                        onChange={handleChange}
+                        value={values.shtAmount}
+                        step={"any"}
+                        min={1}
+                      />
+                      <FormErrorMessage message={errors.shtAmount} />
+                    </div>
+                  </div>
+                )}
+
+                {ownedAssets.length > 0 && (
+                  <div className="col-sm-12">
+                    <div className="form-group">
+                      <label>{sht.balance > 0 ? "Other a" : "A"}ssets to use</label>
+                      <Select
+                        id="sfts"
+                        name="sfts"
+                        onChange={tokens => {
+                          const payments = [];
+
+                          for (const { value } of tokens) {
+                            if (value.amount > 0) {
+                              payments.push(value);
+                            }
+                          }
+
+                          setFieldValue("sfts", payments);
+                        }}
+                        styles={{
+                          option: styles => {
+                            return { ...styles, color: "black" };
+                          },
+                        }}
+                        isMulti={true}
+                        options={ownedAssets.map(token => {
+                          return {
+                            value: {
+                              nonce: token.nonce,
+                              amount: token.qty,
+                              token: token.tokenAddress,
+                            },
+                            label: `${token.symbol + "-" + nonceToRandString(token.nonce, token.tokenAddress)} ${prettyFormatAmount({ value: token.qty, decimals: token.decimals })}`,
+                          };
+                        })}
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <TxButton
+                disabled={!isValid || !values.sfts?.length}
+                btnName="Stake"
+                onClick={() => onStake()}
+                onComplete={async () => {
+                  await refreshAccountTokens();
+                  await refreshHST();
+
+                  closeModal();
+                }}
+                className="btn btn-primary"
+              />
+            </form>
+          </div>
+        )}
       </div>
-    </div>
+    </>
   );
 }

@@ -146,7 +146,6 @@ library ProjectStorage {
 	/// @param depositor The address of the depositor.
 	/// @return project The project data.
 	/// @return depositAmount The amount of deposit for the user.
-
 	function takeDeposit(
 		mapping(uint256 => Data) storage projects,
 		mapping(address => uint256) storage usersDeposit,

@@ -2,7 +2,6 @@ import "@nomicfoundation/hardhat-toolbox";
 import { task } from "hardhat/config";
 import { ProjectFunding } from "../typechain-types";
 import { parseEther, ZeroAddress } from "ethers";
-import { time } from "@nomicfoundation/hardhat-network-helpers";
 
 task("deployProject", "Deploys new Housing Project")
   .addParam("name", "Housing Project's name")
@@ -15,12 +14,13 @@ task("deployProject", "Deploys new Housing Project")
     const currentBlock = await hre.ethers.provider.getBlockNumber();
     const currentTimestamp = (await hre.ethers.provider.getBlock(currentBlock))!.timestamp;
 
+    const threeWeeks = 3 * 7 * 24 * 3600;
     await projectFunding.deployProject(
       name,
       symbol,
       ZeroAddress,
       parseEther(fundingGoal),
-      currentTimestamp + 10_000_000,
+      currentTimestamp + threeWeeks,
     );
     const projectId = await projectFunding.projectCount();
 

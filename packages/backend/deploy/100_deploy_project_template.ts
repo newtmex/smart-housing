@@ -23,14 +23,15 @@ const deployHousingProject: DeployFunction = async function (hre: HardhatRuntime
   const currentBlock = await ethers.provider.getBlockNumber();
   const currentTimestamp = (await ethers.provider.getBlock(currentBlock))!.timestamp;
 
+  const threeWeeks = 3 * 7 * 24 * 3600;
   await coinbase.startICO(
     "UloAku",
     "AKU",
     projectFunding,
     smartHousing,
-    fundingToken,
-    parseEther("20"),
-    currentTimestamp + 10_000_000,
+    ZeroAddress,
+    parseEther("2.005"),
+    currentTimestamp + threeWeeks,
   );
   // TODO idealy, this is to be done after successful funding, but it will be teadious
   // to simulate this in demo, hence we do this here with contract modificatino also
