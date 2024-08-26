@@ -7,7 +7,7 @@ import styles from "./style.module.scss";
 
 export type IconReqState = "idle" | "error" | "success" | "pending";
 
-const matchStrings = [" reason:", " Error:", "TransactionExecutionError:"];
+const matchStrings = [" reason:", " Error:", "TransactionExecutionError:", "ContractFunctionExecutionError:"];
 const processedMatchString = matchStrings.reduce((acc, curr, index) => {
   acc += curr;
 
