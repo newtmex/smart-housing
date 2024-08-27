@@ -1,0 +1,4 @@
+module.exports = {
+  NewLkSHT: "0xEB53a7a93bD765e6EfC66386Cce878fB62e3e0e7",
+  NewHousingProject: "0x44089200b81d517E3D3F3d86C46d73758AbC3C03",
+};
