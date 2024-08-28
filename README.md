@@ -137,7 +137,7 @@ By integrating these components, the SmartHousing ecosystem provides a comprehen
 ## Media Resources
 
 -   **Website:** [SmartHousing Demo Site](https://smart-housing.vercel.app/)
--   **Pitch deck:** [Download Pitch Deck](https://smart-housing.vercel.app/pitch-deck)
+-   **Pitch deck:** [Download Pitch Deck](https://smart-housing.vercel.app/SmartHousing-Pitch-Deck.key)
 -   **Community:** [Join Our Community](https://t.me/+IXJCZ-EBgeIzZTM0)
 -   **Contact:** [Contact Us](https://t.me/newtmex)
 
