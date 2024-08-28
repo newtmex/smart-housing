@@ -6,7 +6,7 @@
 
 ### Challenges in Nigeria's Real Estate Market
 
-Nigeria faces a significant housing deficit, with a need for 550,000 housing units annually and an estimated cost of N5.5 trillion over the next decade. This shortage presents a challenge for both low-income earners and developers, with high costs and limited access to real estate investments. The traditional real estate market is characterized by:
+Nigeria faces a significant housing deficit, with a need for 550,000 housing units annually and an estimated cost of N5.5 trillion annually over the next decade. This shortage presents a challenge for both low-income earners and developers, with high costs and limited access to real estate investments. The traditional real estate market is characterized by:
 
 -   **High Entry Costs:** The large capital required for property investment limits participation to wealthy individuals and institutions.
 -   **Limited Liquidity:** Real estate investments are often illiquid, making it difficult for investors to access funds quickly.

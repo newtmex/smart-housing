@@ -12,10 +12,15 @@ const nextConfig = {
   },
   redirects: async () => [
     {
-      source: '/pitch-deck',
-      destination: '/SmartHouisng-Pitch-Deck.key',
-      permanent: true
-    }
+      source: "/pitch-deck",
+      destination: "/SmartHouisng-Pitch-Deck.key",
+      permanent: true,
+    },
+    {
+      source: "/demo",
+      destination: "https://youtu.be/IFvYTUqaDRA",
+      permanent: true,
+    },
   ],
   webpack: config => {
     config.resolve.fallback = { fs: false, net: false, tls: false };
