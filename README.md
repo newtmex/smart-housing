@@ -73,19 +73,19 @@ The SmartHousing ecosystem architecture integrates several key components: the `
 
 The [SmartHousing](./packages/backend/contracts/main/) contract is the central hub of the SmartHousing ecosystem, facilitating real estate tokenization, fractional ownership, and investment opportunities. It manages user registrations, housing projects, staking mechanisms, and the distribution of rewards, making it a crucial component of the ecosystem's operations. Key features include initializing the ecosystem with essential addresses, managing user referrals, onboarding new projects, and facilitating staking and rewards for users.
 
-Deployment: [0xBcCd3f7BcA798508bc7aa44bbD76a1CE1E9dfc9e](https://testnet.opbnbscan.com/address/0xBcCd3f7BcA798508bc7aa44bbD76a1CE1E9dfc9e#code)
+Deployment: [0x5372A122f975F158414aE3737735d918F1CC477a](https://testnet.emcscan.com/address/0x5372A122f975F158414aE3737735d918F1CC477a#code)
 
 ### 2. **ProjectFunding Contract**: [Link to code](./packages/backend/contracts/project-funding/)
 
 The [ProjectFunding](./packages/backend/contracts/project-funding/) contract handles the deployment and funding of housing projects within the SmartHousing ecosystem. It manages the investment processes, distributes tokens to project investors, and integrates with the SmartHousing contract for project onboarding and token management. Key functions include initializing the first project, deploying additional projects, managing funding contributions, and distributing tokens upon successful funding.
 
-Deployment: [0x780FE8Dda96247AF2B3F5aa62e75d61Aa66AB66B](https://testnet.opbnbscan.com/address/0x780FE8Dda96247AF2B3F5aa62e75d61Aa66AB66B#code)
+Deployment: [0x98656048016a6b9f3566dac77371e56Ad4E0ca7c](https://testnet.emcscan.com/address/0x98656048016a6b9f3566dac77371e56Ad4E0ca7c#code)
 
 ### 3. **Coinbase Contract**: [Link to code](./packages/backend/contracts/coinbase/)
 
 The [Coinbase](./packages/backend/contracts/coinbase/) contract is responsible for initializing the SmartHousing ecosystem. It deploys the first housing project and configures the ProjectFunding contract with necessary parameters. This contract ensures that the initial project is set up correctly, paving the way for the deployment of additional projects.
 
-Deployment: [0xE2ae4623A59930977DA62fb976e055AEB2B63eFb](https://testnet.opbnbscan.com/address/0xE2ae4623A59930977DA62fb976e055AEB2B63eFb#code)
+Deployment: [0xCB538225d84769a0A1da8CB88396360966f33d19](https://testnet.emcscan.com/address/0xCB538225d84769a0A1da8CB88396360966f33d19#code)
 
 ### 4. **HousingProject Contract**: [Link to code](./packages/backend/contracts/housing-project/)
 
@@ -211,7 +211,7 @@ By integrating these components, the SmartHousing ecosystem provides a comprehen
 
 **1. Governance Module Deployment**
 
--   Deploy the Governance contract on the BNB Chain testnet.
+-   Deploy the Governance contract on testnet.
 -   Start public testing and collect community feedback.
 -   Implement any required adjustments based on feedback.
 
@@ -231,7 +231,7 @@ By integrating these components, the SmartHousing ecosystem provides a comprehen
 
 **1. Governance Module Deployment**
 
--   Deploy the Governance contract on the BNB Chain mainnet.
+-   Deploy the Governance contract on the mainnet.
 -   Monitor and support the initial usage of the Governance features.
 
 **2. Staking and Unstaking Features**
