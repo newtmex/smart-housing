@@ -9,13 +9,14 @@ export default async function getFundingTokenInfo({
   tokenAddress: string;
   client: UsePublicClientReturnType;
 }) {
-  if (isZeroAddress(tokenAddress)) {
-    // TODO set these values from config
-    return { name: "BNB Chain Coin", decimals: 18, symbol: "BNB", isNative: true, tokenAddress };
-  }
-
   if (!client) {
     throw new Error("Client not set");
+  }
+
+  if (isZeroAddress(tokenAddress)) {
+    const { decimals, symbol, name } = client.chain.nativeCurrency;
+
+    return { name, decimals, symbol, isNative: true, tokenAddress };
   }
 
   const [symbol, name, decimals] = await Promise.all([

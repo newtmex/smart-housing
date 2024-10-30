@@ -46,6 +46,11 @@ const config: HardhatUserConfig = {
       url: `https://opbnb-testnet-rpc.bnbchain.org/`,
       accounts: [deployerPrivateKey],
     },
+    emc: {
+      chainId: 99876,
+      url: `https://rpc1-testnet.emc.network`,
+      accounts: [deployerPrivateKey],
+    },
   },
   // configuration for harhdat-verify plugin
   etherscan: {

@@ -9,25 +9,24 @@ export type ScaffoldConfig = {
   onlyLocalBurnerWallet: boolean;
 };
 
-const nativeCurrency = { decimals: 18, name: "BNB Coin", symbol: "BNB" };
+const nativeCurrency = { decimals: 18, name: "EMC Coin", symbol: "EMC" };
 
 const scaffoldConfig = {
   // The networks on which your DApp is live
   targetNetworks: [
-    { ...chains.hardhat, nativeCurrency },
     {
-      id: 5611,
-      name: "opbnb",
+      id: 99876,
+      name: "EMC Testnet",
       nativeCurrency,
       rpcUrls: {
-        default: { http: ["https://opbnb-testnet-rpc.bnbchain.org"] },
-        public: { http: ["https://opbnb-testnet-rpc.bnbchain.org"] },
+        default: { http: ["https://rpc1-testnet.emc.network"] },
+        public: { http: ["https://rpc1-testnet.emc.network"] },
       },
       testnet: true,
     },
   ],
 
-  defaultTargetNetwork: Number(process.env.NEXT_PUBLIC_DEFAULT_TARGET_NETWORK ?? 1),
+  defaultTargetNetwork: Number(process.env.NEXT_PUBLIC_DEFAULT_TARGET_NETWORK ?? 0),
 
   // The interval at which your front-end polls the RPC servers for new data
   // it has no effect if you only target the local network (default is 4000)
