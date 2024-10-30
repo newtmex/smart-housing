@@ -1,4 +1,4 @@
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import FormErrorMessage from "./FormErrorMessage";
 import LoadingState from "./LoadingState";
 import { useModalToShow } from "./Modals";
@@ -23,7 +23,22 @@ export default function StakingModal() {
   const { ownedAssets: ownedAssets_, lkSht, sht, refresh: refreshAccountTokens } = useAccountTokens();
   const { refreshBalance: refreshHST } = useHousingStakingToken();
 
-  const ownedAssets = ownedAssets_.filter(token => token.tokenAddress != sht?.address);
+  const ownedAssets = useMemo(
+    () =>
+      ownedAssets_
+        .filter(token => token.tokenAddress != sht?.address)
+        .map(token => {
+          return {
+            value: {
+              nonce: token.nonce,
+              amount: token.qty,
+              token: token.tokenAddress,
+            },
+            label: `${token.symbol + "-" + nonceToRandString(token.nonce, token.tokenAddress)} ${prettyFormatAmount({ value: token.qty, decimals: token.decimals })}`,
+          };
+        }),
+    [ownedAssets_, sht],
+  );
 
   const { errors, values, handleChange, setFieldValue, isValid } = useFormik({
     initialValues: {
@@ -177,16 +192,7 @@ export default function StakingModal() {
                           },
                         }}
                         isMulti={true}
-                        options={ownedAssets.map(token => {
-                          return {
-                            value: {
-                              nonce: token.nonce,
-                              amount: token.qty,
-                              token: token.tokenAddress,
-                            },
-                            label: `${token.symbol + "-" + nonceToRandString(token.nonce, token.tokenAddress)} ${prettyFormatAmount({ value: token.qty, decimals: token.decimals })}`,
-                          };
-                        })}
+                        options={ownedAssets}
                       />
                     </div>
                   </div>
