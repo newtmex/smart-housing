@@ -5,7 +5,7 @@ const deployCoinbaseContract: DeployFunction = async function (hre: HardhatRunti
   const { deployer } = await hre.getNamedAccounts();
   const { deploy } = hre.deployments;
 
-  await deploy("Coinbase", { from: deployer });
+  await deploy("Coinbase", { from: deployer, waitConfirmations: 3 });
 };
 
 export default deployCoinbaseContract;

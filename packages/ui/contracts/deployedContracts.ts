@@ -4583,7 +4583,7 @@ const deployedContracts = {
   },
   31337: {
     Coinbase: {
-      address: "0x998abeb3E57409262aE5b751f60747921B33613E",
+      address: "0x5FbDB2315678afecb367f032d93F642f64180aa3",
       abi: [
         {
           inputs: [],
@@ -5026,7 +5026,7 @@ const deployedContracts = {
       },
     },
     HousingProject: {
-      address: "0xb7278A61aa25c888815aFC32Ad3cC52fF24fE575",
+      address: "0x0DCd1Bf9A1b36cE34237eEaFef220932846BCD82",
       abi: [
         {
           inputs: [
@@ -5442,7 +5442,7 @@ const deployedContracts = {
       },
     },
     HousingSFT: {
-      address: "0x2bdCC0de6bE1f7D2ee689a0342D76F52E8EFABa3",
+      address: "0x959922bE3CAee4b8Cd9a407cc3ac1C251C2007B1",
       abi: [
         {
           inputs: [
@@ -6173,7 +6173,7 @@ const deployedContracts = {
       },
     },
     HousingStakingToken: {
-      address: "0xCD8a1C3ba11CF5ECfa6267617243239504a98d90",
+      address: "0x9A676e781A523b5d0C0e43731313A708CB607508",
       abi: [
         {
           inputs: [],
@@ -7031,7 +7031,7 @@ const deployedContracts = {
       inheritedFunctions: {},
     },
     LkSHT: {
-      address: "0x82e01223d51Eb87e16A03E24687EDF0F294da6f1",
+      address: "0x0B306BF915C4d645ff596e518fAf3F9669b97016",
       abi: [
         {
           inputs: [
@@ -7674,7 +7674,7 @@ const deployedContracts = {
       inheritedFunctions: {},
     },
     ProjectFunding: {
-      address: "0x99bbA657f2BbC93c02D617f8bA121cB8Fc104Acf",
+      address: "0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9",
       abi: [
         {
           inputs: [
@@ -8309,7 +8309,7 @@ const deployedContracts = {
       },
     },
     SmartHousing: {
-      address: "0x8f86403A4DE0BB5791fa46B8e795C547942fE4Cf",
+      address: "0x5FC8d32690cc91D4c39d9d3abcBD16989F875707",
       abi: [
         {
           inputs: [

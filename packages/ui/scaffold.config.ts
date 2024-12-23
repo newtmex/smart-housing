@@ -1,32 +1,30 @@
 import * as chains from "viem/chains";
 
 export type ScaffoldConfig = {
-  targetNetworks: readonly chains.Chain[];
-  defaultTargetNetwork: number;
+  targetNetworks: chains.Chain[];
   pollingInterval: number;
   alchemyApiKey: string;
   walletConnectProjectId: string;
   onlyLocalBurnerWallet: boolean;
 };
 
-const nativeCurrency = { decimals: 18, name: "EMC Coin", symbol: "EMC" };
+const nativeCurrency = { decimals: 18, name: "EMC Coin", symbol: "EMC 💎" };
 
 const scaffoldConfig = {
   // The networks on which your DApp is live
   targetNetworks: [
+    { ...chains.hardhat, nativeCurrency },
     {
-      id: 99876,
-      name: "EMC Testnet",
+      id: 99879,
+      name: "Edge Matrix Chain Sepolia",
       nativeCurrency,
       rpcUrls: {
-        default: { http: ["https://rpc1-testnet.emc.network"] },
-        public: { http: ["https://rpc1-testnet.emc.network"] },
+        default: { http: ["https://rpc1-sepolia.emc.network"] },
+        public: { http: ["https://rpc1-sepolia.emc.network"] },
       },
       testnet: true,
     },
   ],
-
-  defaultTargetNetwork: Number(process.env.NEXT_PUBLIC_DEFAULT_TARGET_NETWORK ?? 0),
 
   // The interval at which your front-end polls the RPC servers for new data
   // it has no effect if you only target the local network (default is 4000)
@@ -47,5 +45,9 @@ const scaffoldConfig = {
   // Only show the Burner Wallet when running on hardhat network
   onlyLocalBurnerWallet: true,
 } as const satisfies ScaffoldConfig;
+
+if (!process.env.NEXT_PUBLIC_SHOW_LOCAL_NETWORK) {
+  scaffoldConfig.targetNetworks.splice(0, 1);
+}
 
 export default scaffoldConfig;

@@ -14,12 +14,6 @@ const deployHousingProject: DeployFunction = async function (hre: HardhatRuntime
   const projectFunding = await ethers.getContract<ProjectFunding>("ProjectFunding", deployer);
   const coinbase = await ethers.getContract<Coinbase>("Coinbase", deployer);
 
-  const fundingToken = await ethers.deployContract("MintableERC20", ["FundingToken", "FTK"], { from: deployer });
-
-  const testers = process.env.TESTERS?.split(",") || [];
-  for (const tester of testers) {
-    await fundingToken.mint(tester, parseEther("1500"));
-  }
   const currentBlock = await ethers.provider.getBlockNumber();
   const currentTimestamp = (await ethers.provider.getBlock(currentBlock))!.timestamp;
 
@@ -42,22 +36,27 @@ const deployHousingProject: DeployFunction = async function (hre: HardhatRuntime
   await hre.deployments.deploy("HousingProject", {
     from: deployer,
     args: ["", "", ZeroAddress, ZeroAddress],
+    waitConfirmations: 3,
   });
   await hre.deployments.deploy("HousingStakingToken", {
     from: deployer,
+    waitConfirmations: 3,
   });
   await hre.deployments.deploy("LkSHT", {
     from: deployer,
     args: ["", ""],
+    waitConfirmations: 3,
   });
   await hre.deployments.deploy("HousingSFT", {
     from: deployer,
     args: ["", ""],
+    waitConfirmations: 3,
   });
 
-  const signer = await ethers.getSigner(deployer);
   if (hre.network.name == "localhost") {
     // Send network tokens
+    const signer = await ethers.getSigner(deployer);
+    const testers = process.env.TESTERS?.split(",") || [];
     await Promise.all(testers.map(tester => signer.sendTransaction({ value: parseEther("99"), to: tester })));
   }
 };

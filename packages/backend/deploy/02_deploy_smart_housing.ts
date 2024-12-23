@@ -11,12 +11,14 @@ const deploySmartHousingContract: DeployFunction = async function (hre: HardhatR
   const coinbaseAddress = await coinbase.getAddress();
   const projectFundingAddress = await (await ethers.getContract("ProjectFunding", deployer)).getAddress();
   const newHSTlib = await ethers.deployContract("NewHousingStakingToken");
+  await newHSTlib.waitForDeployment();
 
   await deploy("SmartHousing", {
     from: deployer,
     args: [coinbaseAddress, projectFundingAddress],
 
     libraries: { NewHousingStakingToken: await newHSTlib.getAddress() },
+    waitConfirmations: 3,
   });
 
   const smartHousing = await hre.ethers.getContract<SmartHousing>("SmartHousing", deployer);

@@ -9,8 +9,10 @@ import "solidity-coverage";
 import "@nomicfoundation/hardhat-verify";
 import "hardhat-deploy";
 import "hardhat-deploy-ethers";
+
 import "./scripts/deployHousingProject";
 import "./scripts/feedSmartHousing";
+import "./scripts/moveTime";
 
 // If not set, it uses the hardhat account 0 private key.
 const deployerPrivateKey =
@@ -47,8 +49,8 @@ const config: HardhatUserConfig = {
       accounts: [deployerPrivateKey],
     },
     emc: {
-      chainId: 99876,
-      url: `https://rpc1-testnet.emc.network`,
+      chainId: 99879,
+      url: `https://rpc1-sepolia.emc.network`,
       accounts: [deployerPrivateKey],
     },
   },
