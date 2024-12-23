@@ -13,16 +13,18 @@ const deploySmartHousingContract: DeployFunction = async function (hre: HardhatR
   const newHSTlib = await ethers.deployContract("NewHousingStakingToken");
   await newHSTlib.waitForDeployment();
 
-  await deploy("SmartHousing", {
+  const { address: smartHousingAddress } = await deploy("SmartHousing", {
     from: deployer,
     args: [coinbaseAddress, projectFundingAddress],
 
     libraries: { NewHousingStakingToken: await newHSTlib.getAddress() },
-    waitConfirmations: 3,
+    log: true,
   });
 
-  const smartHousing = await hre.ethers.getContract<SmartHousing>("SmartHousing", deployer);
-  await coinbase.feedSmartHousing(await smartHousing.getAddress());
+  const feedSmartHousing = await coinbase.feedSmartHousing(smartHousingAddress);
+  if (hre.network.name != "localhost") {
+    await feedSmartHousing.wait(3);
+  }
 };
 
 export default deploySmartHousingContract;

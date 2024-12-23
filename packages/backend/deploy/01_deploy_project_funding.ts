@@ -22,7 +22,7 @@ const deployProjectFundingContract: DeployFunction = async function (hre: Hardha
       NewLkSHT: await newLkSHTlib.getAddress(),
       NewHousingProject: await newHousingProjectLib.getAddress(),
     },
-    waitConfirmations: 3,
+    log: true,
   });
 };
 

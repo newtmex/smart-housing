@@ -18,7 +18,8 @@ const deployHousingProject: DeployFunction = async function (hre: HardhatRuntime
   const currentTimestamp = (await ethers.provider.getBlock(currentBlock))!.timestamp;
 
   const threeWeeks = 3 * 7 * 24 * 3600;
-  await coinbase.startICO(
+  console.log("starting ICO");
+  const startICO = await coinbase.startICO(
     "UloAku",
     "AKU",
     projectFunding,
@@ -27,30 +28,37 @@ const deployHousingProject: DeployFunction = async function (hre: HardhatRuntime
     parseEther("2.005"),
     currentTimestamp + threeWeeks,
   );
+  if (hre.network.name != "localhost") {
+    await startICO.wait(3);
+  }
   // TODO idealy, this is to be done after successful funding, but it will be teadious
   // to simulate this in demo, hence we do this here with contract modificatino also
-  await projectFunding.addProjectToEcosystem(1n);
+  console.log("adding project to ecosystem");
+  const addProjectToEcosystem = await projectFunding.addProjectToEcosystem(1n);
+  if (hre.network.name != "localhost") {
+    await addProjectToEcosystem.wait(3);
+  }
 
   // Done to have the abis in front end
 
   await hre.deployments.deploy("HousingProject", {
     from: deployer,
     args: ["", "", ZeroAddress, ZeroAddress],
-    waitConfirmations: 3,
+    log: true,
   });
   await hre.deployments.deploy("HousingStakingToken", {
     from: deployer,
-    waitConfirmations: 3,
+    log: true,
   });
   await hre.deployments.deploy("LkSHT", {
     from: deployer,
     args: ["", ""],
-    waitConfirmations: 3,
+    log: true,
   });
   await hre.deployments.deploy("HousingSFT", {
     from: deployer,
     args: ["", ""],
-    waitConfirmations: 3,
+    log: true,
   });
 
   if (hre.network.name == "localhost") {

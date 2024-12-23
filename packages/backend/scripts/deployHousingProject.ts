@@ -15,16 +15,18 @@ task("deployProject", "Deploys new Housing Project")
     const currentTimestamp = (await hre.ethers.provider.getBlock(currentBlock))!.timestamp;
 
     const threeWeeks = 3 * 7 * 24 * 3600;
-    await projectFunding.deployProject(
-      name,
-      symbol,
-      ZeroAddress,
-      parseEther(fundingGoal),
-      currentTimestamp + threeWeeks,
-    );
+    await (
+      await projectFunding.deployProject(
+        name,
+        symbol,
+        ZeroAddress,
+        parseEther(fundingGoal),
+        currentTimestamp + threeWeeks,
+      )
+    ).wait(3);
     const projectId = await projectFunding.projectCount();
 
     // TODO idealy, this is to be done after successful funding, but it will be teadious
     // to simulate this in demo, hence we do this here with contract modificatino also
-    await projectFunding.addProjectToEcosystem(projectId);
+    await (await projectFunding.addProjectToEcosystem(projectId)).wait(3);
   });

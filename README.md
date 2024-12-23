@@ -69,25 +69,25 @@ SmartHousing employs a native token, the SmartHousing Token (SHT), which serves 
 
 The SmartHousing ecosystem architecture integrates several key components: the `SmartHousing`, `ProjectFunding`, `Coinbase`, and `HousingProject` contracts. Here’s a summary of how these components interact within the ecosystem.
 
-### 1. **SmartHousing Contract**: [Link to code](./packages/backend/contracts/main/)
+### 1. **SmartHousing Contract**: [Link to code](./packages/backend/contracts/main/README.md)
 
 The [SmartHousing](./packages/backend/contracts/main/) contract is the central hub of the SmartHousing ecosystem, facilitating real estate tokenization, fractional ownership, and investment opportunities. It manages user registrations, housing projects, staking mechanisms, and the distribution of rewards, making it a crucial component of the ecosystem's operations. Key features include initializing the ecosystem with essential addresses, managing user referrals, onboarding new projects, and facilitating staking and rewards for users.
 
-Deployment: [0x5372A122f975F158414aE3737735d918F1CC477a](https://testnet.emcscan.com/address/0x5372A122f975F158414aE3737735d918F1CC477a#code)
+Deployment: [0x9d6D17AbA70E87bFa269168a47a0aF4d68Cc00A4](https://sepolia.emcscan.com/address/0x9d6D17AbA70E87bFa269168a47a0aF4d68Cc00A4#code)
 
-### 2. **ProjectFunding Contract**: [Link to code](./packages/backend/contracts/project-funding/)
+### 2. **ProjectFunding Contract**: [Link to code](./packages/backend/contracts/project-funding/README.md)
 
 The [ProjectFunding](./packages/backend/contracts/project-funding/) contract handles the deployment and funding of housing projects within the SmartHousing ecosystem. It manages the investment processes, distributes tokens to project investors, and integrates with the SmartHousing contract for project onboarding and token management. Key functions include initializing the first project, deploying additional projects, managing funding contributions, and distributing tokens upon successful funding.
 
-Deployment: [0x98656048016a6b9f3566dac77371e56Ad4E0ca7c](https://testnet.emcscan.com/address/0x98656048016a6b9f3566dac77371e56Ad4E0ca7c#code)
+Deployment: [0x6cdA93AAf0918B73c379C23a5393608b943eb0E5](https://sepolia.emcscan.com/address/0x6cdA93AAf0918B73c379C23a5393608b943eb0E5#code)
 
-### 3. **Coinbase Contract**: [Link to code](./packages/backend/contracts/coinbase/)
+### 3. **Coinbase Contract**: [Link to code](./packages/backend/contracts/coinbase/README.md)
 
-The [Coinbase](./packages/backend/contracts/coinbase/) contract is responsible for initializing the SmartHousing ecosystem. It deploys the first housing project and configures the ProjectFunding contract with necessary parameters. This contract ensures that the initial project is set up correctly, paving the way for the deployment of additional projects.
+The [Coinbase](./packages/backend/contracts/coinbase/) contract is an ERC20 compliant contract. It is the native and reward token of the SmartHousing ecosystem. It is responsible for initializing the SmartHousing ecosystem. It deploys the first housing project and configures the ProjectFunding contract with necessary parameters. This contract ensures that the initial project is set up correctly, paving the way for the deployment of additional projects.
 
-Deployment: [0xCB538225d84769a0A1da8CB88396360966f33d19](https://testnet.emcscan.com/address/0xCB538225d84769a0A1da8CB88396360966f33d19#code)
+Deployment: [0xf81F07aAC2C3F2586043cAf4fFe10f48AC7CfAAe](https://sepolia.emcscan.com/address/0xf81F07aAC2C3F2586043cAf4fFe10f48AC7CfAAe#code)
 
-### 4. **HousingProject Contract**: [Link to code](./packages/backend/contracts/housing-project/)
+### 4. **HousingProject Contract**: [Link to code](./packages/backend/contracts/housing-project/README.md)
 
 The [HousingProject](./packages/backend/contracts/housing-project/) contract manages individual real estate projects within the SmartHousing ecosystem. It handles the deployment, funding, and tokenization of each project. This contract is essential for managing project-specific operations, such as accepting funding from users, minting tokens based on contributions, and integrating with the ProjectFunding contract.
 
