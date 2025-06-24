@@ -20,12 +20,12 @@ const deployHousingProject: DeployFunction = async function (hre: HardhatRuntime
   const threeWeeks = 3 * 7 * 24 * 3600;
   console.log("starting ICO");
   const startICO = await coinbase.startICO(
-    "UloAku",
-    "AKU",
+    "PH House",
+    "PHH",
     projectFunding,
     smartHousing,
     ZeroAddress,
-    parseEther("2.005"),
+    parseEther("100000000"),
     currentTimestamp + threeWeeks,
   );
   if (hre.network.name != "localhost") {

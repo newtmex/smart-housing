@@ -53,6 +53,11 @@ const config: HardhatUserConfig = {
       url: `https://rpc1-sepolia.emc.network`,
       accounts: [deployerPrivateKey],
     },
+    emc_main: {
+      chainId: 6678,
+      url: `https://rpc1-mainnet.emc.network`,
+      accounts: [deployerPrivateKey],
+    },
   },
   // configuration for harhdat-verify plugin
   etherscan: {

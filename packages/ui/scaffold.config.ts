@@ -24,6 +24,16 @@ const scaffoldConfig = {
       },
       testnet: true,
     },
+    {
+      id: 99879,
+      name: "Edge Matrix Chain",
+      nativeCurrency,
+      rpcUrls: {
+        default: { http: ["https://rpc1-mainnet.emc.network"] },
+        public: { http: ["https://rpc1-mainnet.emc.network"] },
+      },
+      testnet: true,
+    },
   ],
 
   // The interval at which your front-end polls the RPC servers for new data
