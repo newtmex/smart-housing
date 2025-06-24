@@ -25,7 +25,7 @@ const scaffoldConfig = {
       testnet: true,
     },
     {
-      id: 99879,
+      id: 6678,
       name: "Edge Matrix Chain",
       nativeCurrency,
       rpcUrls: {
